@@ -3,6 +3,7 @@ import urllib.request
 import shutil
 import pathlib
 import time
+import cellxgene_census as cxgc
 
 
 def get_collection_metadata(collection_id):
@@ -88,3 +89,12 @@ def download_collection(collection_id, out_dir):
     collection_mdata = get_collection_metadata(collection_id)
     dataset_links = get_dataset_links(collection_mdata)
     download_datasets(dataset_links, out_dir)
+
+
+def get_census_datasets_df():
+    """CellxGene datasets available as SOMA datasets"""
+    with cxgc.open_soma() as census:
+        census_datasets = census["census_info"]["datasets"].read().concat()
+        census_datasets = census_datasets.to_pandas()
+        census_datasets = census_datasets.set_index("soma_joinid")
+        return census_datasets
