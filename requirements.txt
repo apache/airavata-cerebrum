@@ -1,0 +1,2 @@
+airavata-python-sdk==1.1.6
+ipywidgets
