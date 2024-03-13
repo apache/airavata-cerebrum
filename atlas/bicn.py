@@ -19,6 +19,9 @@ BICN_DB = list(BICN_DATA_DIR.keys())
 
 
 def get_disect_meta(data_base, slice):
+    """
+    Load dissection data
+    """
     data_dir = BICN_DATA_DIR[data_base]
     meta_fname = BICN_DISECT_META[data_base][slice]
     meta_file = pathlib.PurePath(data_dir, meta_fname)
