@@ -46,6 +46,15 @@ CCF_COORDS = [
     "y",
     "z",
 ]
+TAXONOMY_META_FIELDS = [
+    "cluster",
+    "cluster_annotation_term",
+    "cluster_annotation_term_set",
+    "cluster_to_cluster_annotation_membership",
+    "cluster_to_cluster_annotation_membership_pivoted",
+    "cluster_to_cluster_annotation_membership_color",
+    "cluster_annotation_term_with_counts",
+]
 
 
 def download_merfish_manifest(manifest_url=MANIFEST_URL, version=ABC_VERSION):
@@ -59,7 +68,7 @@ def download_merfish_manifest(manifest_url=MANIFEST_URL, version=ABC_VERSION):
 
 def merfish_files_meta():
     """
-    Downloads the Manifiest JSON data from ABC AWS Store and retrieve 
+    Downloads the Manifiest JSON data from ABC AWS Store and retrieve
     MERFISH-C57BL6J-638850 meta data JSON object.
     """
     manifest = download_merfish_manifest()
@@ -143,7 +152,7 @@ def download_meta_data(manifest, download_base=ABC_BASE):
 
 def download_abc_exp_matrices(manifest, download_base=ABC_BASE):
     """
-    Download thefollowing genes expression matrices listed in the manifest 
+    Download thefollowing genes expression matrices listed in the manifest
     to download_base
        - ["WMB-10Xv2-TH"]["log2"]["files"]["h5ad"]
        - ["C57BL6J-638850"]["log2"]["files"]["h5ad"]
@@ -226,6 +235,22 @@ def view_dir(manifest, dataset_id, download_base=ABC_BASE):
     return view_directory
 
 
+def taxonomy_meta(manifest, data_key, download_base=ABC_BASE):
+    """
+    Return the taxonomy meta data, as located in data_key, from download_base.
+    The relative paths to the meta data files in download_base are obtaned from
+    the manifest JSON object.
+    """
+    taxonomy_metadata = manifest["file_listing"]["WMB-taxonomy"]["metadata"]
+    #  Cluster Details from Taxonomy Data
+    rpath = taxonomy_metadata[data_key]["files"]["csv"]["relative_path"]
+    file = os.path.join(download_base, rpath)
+    taxnm_meta_df = pd.read_csv(file, keep_default_na=False)
+    if "cluster_alias" in taxnm_meta_df.columns:
+        taxnm_meta_df.set_index("cluster_alias", inplace=True)
+    return taxnm_meta_df
+
+
 def taxonomy_cluster(manifest, download_base=ABC_BASE):
     """
     Return the taxonomy meta data, specifically cluster name annotation and the
@@ -234,22 +259,29 @@ def taxonomy_cluster(manifest, download_base=ABC_BASE):
     the manifest JSON object.
     """
     taxonomy_metadata = manifest["file_listing"]["WMB-taxonomy"]["metadata"]
+    #
     #  Cluster Details from Taxonomy Data
-    rpath = taxonomy_metadata[
-        "cluster_to_cluster_annotation_membership_pivoted"][
-        "files"
-    ]["csv"]["relative_path"]
-    file = os.path.join(download_base, rpath)
-    cluster_details = pd.read_csv(file, keep_default_na=False)
-    cluster_details.set_index("cluster_alias", inplace=True)
+    cluster_details = taxonomy_meta(
+        manifest, "cluster_to_cluster_annotation_membership_pivoted", download_base
+    )
+    # rpath = taxonomy_metadata["cluster_to_cluster_annotation_membership_pivoted"][
+    #     "files"
+    # ]["csv"]["relative_path"]
+    # file = os.path.join(download_base, rpath)
+    # cluster_details = pd.read_csv(file, keep_default_na=False)
+    # cluster_details.set_index("cluster_alias", inplace=True)
+    #
     # Membership Color
-    rpath = taxonomy_metadata[
-        "cluster_to_cluster_annotation_membership_color"][
-        "files"
-    ]["csv"]["relative_path"]
-    file = os.path.join(download_base, rpath)
-    cluster_colors = pd.read_csv(file)
-    cluster_colors.set_index("cluster_alias", inplace=True)
+    cluster_colors = taxonomy_meta(
+        manifest, "cluster_to_cluster_annotation_membership_color", download_base
+    )
+    #
+    # rpath = taxonomy_metadata["cluster_to_cluster_annotation_membership_color"][
+    #     "files"
+    # ]["csv"]["relative_path"]
+    # file = os.path.join(download_base, rpath)
+    # cluster_colors = pd.read_csv(file)
+    # cluster_colors.set_index("cluster_alias", inplace=True)
     return cluster_details, cluster_colors
 
 
@@ -287,7 +319,7 @@ def gene_expression_matrix(
 ):
     """
     Gene expression matrix of data id (default 'C57BL6J-638850') from the
-    download_base directory. source(default 'MERFISH-C57BL6J-638850') entry 
+    download_base directory. source(default 'MERFISH-C57BL6J-638850') entry
     is used to obtain the expression matrix JSON manifest.
     """
     # gene expresssion data
@@ -338,14 +370,15 @@ def aggregate_by_metadata(df, gnames, group_value, sort=False):
     return grouped
 
 
-def plot_heatmap(df, fig_width=8, fig_height=4, cmap=plt.cm.magma_r):
+def plot_heatmap(df, ylabel="Expression", lmin=0, lmax=5, fig_width=8, fig_height=4,
+                 cmap=plt.cm.magma_r):
     """
     Plot Heat Map based on the input data frame
     """
     arr = df.to_numpy()
     fig, ax = plt.subplots()
     fig.set_size_inches(fig_width, fig_height)
-    im = ax.imshow(arr, cmap=cmap, aspect="auto", vmin=0, vmax=5)
+    im = ax.imshow(arr, cmap=cmap, aspect="auto", vmin=lmin, vmax=lmax)
     xlabs = df.columns.values
     ylabs = df.index.values
     ax.set_xticks(range(len(xlabs)))
@@ -354,7 +387,7 @@ def plot_heatmap(df, fig_width=8, fig_height=4, cmap=plt.cm.magma_r):
     res = ax.set_yticklabels(ylabs)
     plt.setp(ax.get_xticklabels(), rotation=90)
     cbar = ax.figure.colorbar(im, ax=ax)
-    cbar.set_label("Expression")
+    cbar.set_label(ylabel)
     return im
 
 
@@ -381,6 +414,136 @@ def filter_invalid_genes(gene_meta, valid_genes):
     pred = [x in valid_genes for x in gene_meta.gene_symbol]
     gf = gene_meta[pred]
     return gf
+
+
+def cell_meta_ei_flags(area_cell_df):
+    pred_glut = area_cell_df["class"].str.endswith("Glut")
+    pred_gaba = area_cell_df["class"].str.endswith("GABA")
+    pred_other = ~(pred_glut | pred_gaba)
+    # Flags for GABA and Glut cells
+    area_cell_df.loc[:, ["E"]] = pred_glut
+    area_cell_df.loc[:, ["I"]] = pred_gaba
+    area_cell_df.loc[:, ["O"]] = pred_other
+    return area_cell_df
+
+
+def cell_meta_gaba_flags(area_cell_df):
+    if len(area_cell_df) == 0:
+        return area_cell_df
+    # GABA Sub types
+    pred_gaba = area_cell_df["subclass"].str.endswith("Gaba")
+    pred_lamp5 = area_cell_df["subclass"].isin(
+        set(["049 Lamp5 Gaba", "050 Lamp5 Lhx6 Gaba"])
+    )
+    pred_sst = area_cell_df["subclass"].isin(
+        set(["053 Sst Gaba", "265 PB Sst Gly-Gaba"])
+    )
+    pred_sst_chodl = area_cell_df["subclass"].isin(set(["056 Sst Chodl Gaba"]))
+    pred_pvalb = area_cell_df["subclass"].isin(
+        set(["051 Pvalb chandelier Gaba", "052 Pvalb Gaba"])
+    )
+    pred_vip = area_cell_df["subclass"].isin(set(["046 Vip Gaba"]))
+    pred_other = pred_gaba & (
+        ~(pred_lamp5 | pred_sst | pred_sst_chodl | pred_pvalb | pred_vip)
+    )
+    # Select only GABA and Glut cells
+    area_cell_df.loc[:, ["GABA"]] = pred_gaba
+    area_cell_df.loc[:, ["Vip"]] = pred_vip
+    area_cell_df.loc[:, ["Pvalb"]] = pred_pvalb
+    area_cell_df.loc[:, ["Sst"]] = pred_sst
+    area_cell_df.loc[:, ["Lamp5"]] = pred_lamp5
+    area_cell_df.loc[:, ["Sst-Chodl"]] = pred_sst_chodl
+    area_cell_df.loc[:, ["GABA-Other"]] = pred_other
+    return area_cell_df
+
+
+def cell_meta_glut_flags(area_cell_df):
+    if len(area_cell_df) == 0:
+        return area_cell_df
+    # Glut Sub-types
+    pred_glut = area_cell_df["subclass"].str.endswith("Glut")
+    pred_et = area_cell_df["subclass"].isin(set(["022 L5 ET CTX Glut"]))
+    pred_ct = area_cell_df["subclass"].isin(
+        set(["028 L6b/CT ENT Glut", "030 L6 CT CTX Glut", "031 CT SUB Glut"])
+    )
+    pred_it_oth = area_cell_df["subclass"].isin(
+        set(
+            [
+                "002 IT EP-CLA Glut",
+                "010 IT AON-TT-DP Glut",
+                "018 L2 IT PPP-APr Glut",
+                "019 L2/3 IT PPP Glut",
+                "020 L2/3 IT RSP Glut",
+            ]
+        )
+    )
+    pred_it_ent = area_cell_df["subclass"].isin(
+        set(
+            [
+                "003 L5/6 IT TPE-ENT Glut",
+                "008 L2/3 IT ENT Glut",
+                "009 L2/3 IT PIR-ENTl Glut",
+                "011 L2 IT ENT-po Glut",
+            ]
+        )
+    )
+    pred_it_ctx = area_cell_df["subclass"].isin(
+        set(
+            [
+                "004 L6 IT CTX Glut",
+                "005 L5 IT CTX Glut",
+                "006 L4/5 IT CTX Glut",
+                "007 L2/3 IT CTX Glut",
+            ]
+        )
+    )
+    pred_np = area_cell_df["subclass"].isin(
+        set(["032 L5 NP CTX Glut", "033 NP SUB Glut", "034 NP PPP Glut"])
+    )
+    pred_it = pred_it_ctx | pred_it_ent | pred_it_oth
+    pred_other = pred_glut & (~(pred_et | pred_ct | pred_it | pred_np))
+    # Select only Glut cells
+    area_cell_df.loc[:, ["Glut"]] = pred_glut
+    area_cell_df.loc[:, ["IT-Other"]] = pred_it_oth
+    area_cell_df.loc[:, ["IT-ENT"]] = pred_it_ent
+    area_cell_df.loc[:, ["IT-CTX"]] = pred_it_ctx
+    area_cell_df.loc[:, ["IT"]] = pred_it
+    area_cell_df.loc[:, ["ET"]] = pred_et
+    area_cell_df.loc[:, ["CT"]] = pred_ct
+    area_cell_df.loc[:, ["NP"]] = pred_np
+    area_cell_df.loc[:, ["Glut-Other"]] = pred_other
+    return area_cell_df
+
+
+def cell_meta_type_flags(area_cell_df):
+    area_cell_df = cell_meta_ei_flags(area_cell_df)
+    return cell_meta_glut_flags(cell_meta_gaba_flags(area_cell_df))
+
+
+def cell_meta_type_ratios(area_sumdf, ax, nregion):
+    area_sumdf["Region"] = ax
+    area_sumdf["Layer"] = [x.replace(ax, "") for x in area_sumdf.index]
+    area_sumdf["nregion"] = nregion
+    area_sumdf["T"] = area_sumdf["E"] + area_sumdf["I"] + area_sumdf["O"]
+    area_sumdf["EI"] = area_sumdf["E"] + area_sumdf["I"]
+    area_sumdf["inhibitory fraction"] = area_sumdf["I"] / area_sumdf["EI"]
+    area_sumdf["fraction wi. region"] = area_sumdf["T"] / nregion
+    #
+    area_sumdf["Vip fraction"] = area_sumdf["Vip"] / area_sumdf["GABA"]
+    area_sumdf["Pvalb fraction"] = area_sumdf["Pvalb"] / area_sumdf["GABA"]
+    area_sumdf["SSt fraction"] = area_sumdf["Sst"] / area_sumdf["GABA"]
+    area_sumdf["Lamp5 fraction"] = area_sumdf["Lamp5"] / area_sumdf["GABA"]
+    area_sumdf["Sst-Chodl fraction"] = area_sumdf["Sst-Chodl"] / area_sumdf["GABA"]
+    area_sumdf["GABA Other fraction"] = area_sumdf["GABA-Other"] / area_sumdf["GABA"]
+    area_sumdf["IT-CTX fraction"] = area_sumdf["IT-CTX"] / area_sumdf["Glut"]
+    area_sumdf["IT-ENT fraction"] = area_sumdf["IT-ENT"] / area_sumdf["Glut"]
+    area_sumdf["IT-Other fraction"] = area_sumdf["IT-Other"] / area_sumdf["Glut"]
+    area_sumdf["IT fraction"] = area_sumdf["IT"] / area_sumdf["Glut"]
+    area_sumdf["ET fraction"] = area_sumdf["ET"] / area_sumdf["Glut"]
+    area_sumdf["CT fraction"] = area_sumdf["CT"] / area_sumdf["Glut"]
+    area_sumdf["NP fraction"] = area_sumdf["NP"] / area_sumdf["Glut"]
+    area_sumdf["Glut Other fraction"] = area_sumdf["Glut-Other"] / area_sumdf["Glut"]
+    return area_sumdf
 
 
 # def main():
