@@ -9,6 +9,7 @@ from model import builder, regions
 
 USER_V1_UPDATE = regions.Network(
     name="v1",
+    dims={"core_radius": 400.0, "radius": 845.0},
     locations={
         "VISp1": regions.Region(
             name="VISp1",
@@ -217,7 +218,6 @@ USER_V1_UPDATE = regions.Network(
         "VISp6a": regions.Region(name="VISp6a", dims={"depth_range": [665, 829]}),
         "VISp6b": regions.Region(name="VISp6b", dims={"depth_range": [665, 829]}),
     },
-    dims={"core_radius": 400.0, "radius": 845.0},
 )
 
 
@@ -243,9 +243,11 @@ def main():
     # NCells
     net_model = netops.fractions2ncells(net_model, 296991)
     pprint.pp(net_model.model_dump())
+    print("----------------------")
     #
     # 
     net_model = netops.subset_network(net_model, ["VISp1"])
+    pprint.pp(net_model.model_dump())
     #
     # Construct model
     bmtk_net = builder.add_nodes_cylinder(net_model)

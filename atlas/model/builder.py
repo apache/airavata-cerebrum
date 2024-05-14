@@ -5,8 +5,7 @@ from model import regions
 from operations import netops
 
 
-def add_nodes_cylinder(net_model: regions.Network , 
-                       fraction=1.00, flat=False):
+def add_nodes_cylinder(net_model: regions.Network, fraction=1.00, flat=False):
     # if miniature:
     #     node_props = "glif_props/v1_node_models_miniature.json"
     # else:
@@ -22,17 +21,18 @@ def add_nodes_cylinder(net_model: regions.Network ,
     for location, loc_region in net_model.locations.items():
         for pop_name, pop_neurons in loc_region.neurons.items():
             pop_size = pop_neurons.ncells
+            if pop_size == 0:
+                continue
             depth_range = -np.array(loc_region.dims["depth_range"], dtype=float)
             ei = pop_neurons.ei
             # TODO:
+            # print("dims", pop_neurons.dims)
             nsyn_lognorm_shape = 0
             if "nsyn_lognorm_shape" in pop_neurons.dims:
                 nsyn_lognorm_shape = pop_neurons.dims["nsyn_lognorm_shape"]
             nsyn_lognorm_scale = 0
             if "nsyn_lognorm_scale" in pop_neurons.dims:
                 nsyn_lognorm_scale = pop_neurons.dims["nsyn_lognorm_scale"]
-            if pop_size == 0:
-                continue
 
             # for model in pop_neurons["models"]:
             # Assuming there is only one model for all
@@ -53,6 +53,19 @@ def add_nodes_cylinder(net_model: regions.Network ,
             positions = netops.generate_random_cyl_pos(N, depth_range, radial_range)
 
             # properties used to build the cells for each cell-type
+            target_sizes = []
+            if nsyn_lognorm_shape > 0:
+                target_sizes = netops.generate_target_sizes(
+                    N, nsyn_lognorm_shape, nsyn_lognorm_scale
+                )
+            nsyn_size_mean = 0
+            if nsyn_lognorm_shape > 0:
+                nsyn_size_mean = int(
+                    scipy.stats.lognorm(
+                        s=nsyn_lognorm_shape, loc=0, scale=nsyn_lognorm_scale
+                    ).stats(moments="m")
+                )
+            print(pop_name, target_sizes, nsyn_size_mean)
             node_props = {
                 "N": N,
                 # "node_type_id": model["node_type_id"],
@@ -71,18 +84,12 @@ def add_nodes_cylinder(net_model: regions.Network ,
                 "y": positions[:, 1],
                 "z": positions[:, 2],
                 "tuning_angle": np.linspace(0.0, 360.0, N, endpoint=False),
-                "target_sizes": netops.generate_target_sizes(
-                    N, nsyn_lognorm_shape, nsyn_lognorm_scale
-                ) if nsyn_lognorm_shape == 0 else 0,
+                "target_sizes": target_sizes,
                 # "EPSP_unitary": model["EPSP_unitary"],
                 # "IPSP_unitary": model["IPSP_unitary"],
                 "nsyn_size_shape": nsyn_lognorm_shape,
                 "nsyn_size_scale": nsyn_lognorm_scale,
-                "nsyn_size_mean": int(
-                    scipy.stats.lognorm(
-                        s=nsyn_lognorm_shape, loc=0, scale=nsyn_lognorm_scale
-                    ).stats(moments="m") if nsyn_lognorm_shape == 0 else 0
-                ),
+                "nsyn_size_mean": nsyn_size_mean,
                 # "size_connectivity_correction":
             }
             # if model["model_type"] == "biophysical":
@@ -104,7 +111,6 @@ def add_nodes_cylinder(net_model: regions.Network ,
             net.add_nodes(**node_props)
 
     return net
-
 
 
 def build_model(model_struct):

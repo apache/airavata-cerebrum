@@ -3,7 +3,7 @@ import numpy as np
 import scipy
 import scipy.stats
 import typing
-from datasrc import abc_mouse
+from data import abc_mouse
 from model import regions
 
 
@@ -27,10 +27,13 @@ def atlasdata2regionfractions(
         )
     return regions.Network(name=model_name, locations=loc_struct)
 
+
 def subset_network(net_stats: regions.Network, 
                    region_list: typing.List[str]) -> regions.Network:
     sub_locs = {k:v  for k,v in net_stats.locations.items() if k in region_list}
-    return regions.Network(name=net_stats.name, locations=sub_locs)
+    return regions.Network(name=net_stats.name, dims=net_stats.dims,
+                           locations=sub_locs)
+
 
 def update_user_input(
     net_stats: regions.Network, upd_stats: regions.Network
@@ -69,6 +72,9 @@ def update_user_input(
                 net_stats.locations[lx].neurons[nx].fraction = sx.fraction
             if sx.ncells > 0:
                 net_stats.locations[lx].neurons[nx].ncells = sx.ncells
+            # update dimensions
+            for upkx, upvx in uprx.neurons[nx].dims.items():
+                net_stats.locations[lx].neurons[nx].dims[upkx] = upvx
     return net_stats
 
 
@@ -76,7 +82,7 @@ def fractions2ncells(net_stats: regions.Network, N: int) -> regions.Network:
     net_stats.ncells = N
     for lx, lrx in net_stats.locations.items():
         ncells_region = int(lrx.region_fraction * N)
-        ncells_inh = int(lrx.region_fraction * ncells_region)
+        ncells_inh = int(lrx.inh_fraction * ncells_region)
         ncells_exc = ncells_region - ncells_inh
         net_stats.locations[lx].ncells = ncells_region
         net_stats.locations[lx].inh_ncells = ncells_inh
