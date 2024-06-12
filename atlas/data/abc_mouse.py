@@ -14,6 +14,7 @@ ABC_VERSION = "20231215"
 MANIFEST_URL = "https://allen-brain-cell-atlas.s3-us-west-2.amazonaws.com/releases/{}/manifest.json"
 PARCEL_META_DATA = "cell_metadata_with_parcellation_annotation.csv"
 PARCELLATION_SUBSTRUCTURE = "parcellation_substructure"
+PARCELLATION_STRUCTURE = "parcellation_structure"
 CCF_COLS = [
     "class",
     "subclass",
@@ -789,7 +790,7 @@ def region_ccf_cell_types(cell_ccf, region_list):
     #
     for region in region_list:
         # Select the CCF meta data specific to the above region
-        region_df = cell_ccf.loc[cell_ccf[PARCELLATION_SUBSTRUCTURE] == region]
+        region_df = cell_ccf.loc[cell_ccf[PARCELLATION_STRUCTURE] == region]
         # Ignore the regions for which no cells are available
         if len(region_df) == 0:
             continue
@@ -814,10 +815,12 @@ def region_ccf_cell_types(cell_ccf, region_list):
     return region_cell_ccf, region_ctx_ccf, region_frac_ccf
 
 
-def region_cell_type_ratios(region_name):
+def region_cell_type_ratios(region_name,
+                            download_base=ABC_BASE):
     manifest, file_meta = merfish_files_meta()
     # Cell Meta and CCF Meta data
-    merfish_ccf_view_dir = view_dir(manifest, "MERFISH-C57BL6J-638850-CCF")
+    merfish_ccf_view_dir = view_dir(manifest, "MERFISH-C57BL6J-638850-CCF",
+                                    download_base)
     cell_ccf = cell_ccf_meta(
         os.path.join(merfish_ccf_view_dir, PARCEL_META_DATA)
     )

@@ -223,9 +223,9 @@ USER_V1_UPDATE = regions.Network(
 
 def main():
     # Get Ratio from
-    # v1_ei_df = abc_mouse.region_cell_type_ratios("VISp")
+    v1_ei_df = abc_mouse.region_cell_type_ratios("VISp")
     # v1_ei_df.to_csv("region_test.csv")
-    v1_ei_df = pd.read_csv("region_test.csv", index_col=0)
+    # v1_ei_df = pd.read_csv("region_test.csv", index_col=0)
     pd.set_option("display.max_columns", None)
     print(v1_ei_df)
     print("----------------------")

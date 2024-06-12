@@ -5,8 +5,12 @@ import typing
 class Neuron(pydantic.BaseModel):
     ei: typing.Literal["e", "i"]  # Either e or i
     fraction: float
-    ncells: int = 0
+    N : int = 0
     dims: typing.Dict[str, typing.Any] = {}
+    model_name : str = ""
+    model_type: str  =  ""
+    model_template: str  = ""
+    dynamics_params: str = "" 
 
 
 class Region(pydantic.BaseModel):

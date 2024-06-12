@@ -3,8 +3,8 @@ import numpy as np
 import scipy
 import scipy.stats
 import typing
-from data import abc_mouse
-from model import regions
+from ..data import abc_mouse
+from ..model import regions
 
 
 def atlasdata2regionfractions(
@@ -70,11 +70,24 @@ def update_user_input(
                 continue
             if sx.fraction > 0:
                 net_stats.locations[lx].neurons[nx].fraction = sx.fraction
-            if sx.ncells > 0:
-                net_stats.locations[lx].neurons[nx].ncells = sx.ncells
+            if sx.N > 0:
+                net_stats.locations[lx].neurons[nx].N = sx.N
             # update dimensions
             for upkx, upvx in uprx.neurons[nx].dims.items():
                 net_stats.locations[lx].neurons[nx].dims[upkx] = upvx
+            # update model items
+            # model_name : str | None = None
+            # model_type: str | None =  None
+            # model_template: str | None = None
+            # dynamics_params: str | None = None 
+            if sx.model_name is not None:
+                net_stats.locations[lx].neurons[nx].model_name = sx.model_name
+            if sx.model_type is not None:
+                net_stats.locations[lx].neurons[nx].model_type = sx.model_type
+            if sx.model_template is not None:
+                net_stats.locations[lx].neurons[nx].model_template = sx.model_template
+            if sx.dynamics_params is not None:
+                net_stats.locations[lx].neurons[nx].model_template = sx.dynamics_params
     return net_stats
 
 
@@ -93,7 +106,7 @@ def fractions2ncells(net_stats: regions.Network, N: int) -> regions.Network:
             ncells = int(ncells * nurx.fraction)
             if ncells == 0:
                 continue
-            net_stats.locations[lx].neurons[nx].ncells = ncells
+            net_stats.locations[lx].neurons[nx].N = ncells
     return net_stats
 
 

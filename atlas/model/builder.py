@@ -1,10 +1,42 @@
 import numpy as np
 import scipy.stats
 from bmtk.builder import NetworkBuilder
-from model import regions
-from operations import netops
+from ..model import regions
+from ..operations import netops
 
+def generate_random_pos(N, params):
+    # TODO:
+    x = np.array(params["dims"])
+    y = np.array(params["dims"])
+    z = np.array(params["dims"])
+    positions = np.column_stack((x, y, z))
 
+    return positions
+
+def add_network_nodes(net_model: regions.Network, out_file:str):
+    net = NetworkBuilder(net_model.name)
+    for location, loc_region in net_model.locations.items():
+        for pop_name, pop_neurons in loc_region.neurons.items():
+            N = pop_neurons.ncells
+            params = {"location": loc_region.dims,
+                      "population": pop_neurons.dims}
+            positions = generate_random_pos(N, params)
+            ei = pop_neurons.ei
+            node_props = {
+                "N": N,
+                "model_type": "point_process",
+                "ei": ei,
+                "location": location,
+                "pop_name": pop_name,
+                "population": net_model.name,
+                "x": positions[:, 0],
+                "y": positions[:, 1],
+                "z": positions[:, 2],
+                "tuning_angle": np.linspace(0.0, 360.0, N, endpoint=False),
+            }
+            net.add_nodes(**node_props)
+    net.save(out_file)
+ 
 def add_nodes_cylinder(net_model: regions.Network, fraction=1.00, flat=False):
     # if miniature:
     #     node_props = "glif_props/v1_node_models_miniature.json"
@@ -72,6 +104,7 @@ def add_nodes_cylinder(net_model: regions.Network, fraction=1.00, flat=False):
                 # "model_type": model["model_type"],
                 # "model_template": model["model_template"],
                 # "dynamics_params": model["dynamics_params"],
+                "model_type": "point_process",
                 "ei": ei,
                 "location": location,
                 "pop_name": pop_name,
