@@ -15,35 +15,38 @@
 # KIND, either express or implied.  See the License for the
 # specific language governing permissions and limitations
 # under the License.
+[build-system]
+requires = ["setuptools", "setuptools-scm"]
+build-backend = "setuptools.build_meta"
 
-[tool.poetry]
+[project]
 name = "airavata-cerebrum"
-version = "0.1.22"
+version = "0.1"
 description = "Apache Airavata Cerebrum : Integrated Data-driver Modeling for Computational Neuroscience"
 authors = [
-    "Sriram P Chockalingam <srirampc@gatech.edu>",
+    {name = "Sriram P Chockalingam", email =  "srirampc@gatech.edu"},
 ]
 maintainers = [
-    "Apache Airavata Developers <dev@apache.airavata.org>",
+    {name = "Apache Airavata Developers", email =  "dev@apache.airavata.org"},
 ]
 readme = "README.md"
-homepage = "https://github.com/apache/airavata-cerebrum"
-license = "Apache-2.0"
+urls = {Homepage = "https://github.com/apache/airavata-cerebrum"}
+license =  {text = "Apache-2.0"} 
+requires-python = ">=3.8"
 keywords = [ "Data-driven", "Computational Neuroscience", "Neuroscience Modeling"]
+dependencies = [
+   "pandas>=1.5",
+   "airavata-python-sdk>=1.1.6",
+   "intervaltree>=3.1.0",
+   "requests>=2.31",
+   "scanpy>=1.9",
+   "numpy>=1.23",
+   "ipywidgets>=8.1",
+   "matplotlib>=3.7",
+   "scipy>=1.9",
+   "bmtk>=1.1",
+   "pydantic>=2.7"
+]
 
-
-[tool.poetry.dependencies]
-airavata-python-sdk = "1.1.6"
-python = "^3.10"
-pandas = "^1.5"
-scanpy = "^1.9"
-numpy = "^1.23"
-ipywidgets = "^8.1"
-matplotlib = "^3.7"
-scipy = "^1.9"
-bmtk = "^1.1"
-pydantic = "^2.7"
-
-[build-system]
-requires = ["poetry-core"]
-build-backend = "poetry.core.masonry.api"
+[tool.setuptools.packages.find]
+include = ["airavata_cerebrum"]

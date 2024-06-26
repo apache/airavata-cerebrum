@@ -9,7 +9,6 @@ import anndata
 import matplotlib.pyplot as plt
 
 
-ABC_BASE = "/storage/home/hhive1/schockalingam6/data2/airavata-cerebrum/brain_atlases/abc_mouse"
 ABC_VERSION = "20231215"
 MANIFEST_URL = "https://allen-brain-cell-atlas.s3-us-west-2.amazonaws.com/releases/{}/manifest.json"
 PARCEL_META_DATA = "cell_metadata_with_parcellation_annotation.csv"
@@ -175,7 +174,7 @@ def merfish_files_meta():
     return manifest, merf_meta
 
 
-def download_file(manifest, file_dict, download_base=ABC_BASE):
+def download_file(manifest, file_dict, download_base):
     """
     Given a file entry in manifest, download the file using AWS CLI 'aws'
     to the relative path constructed from the download_base.
@@ -259,7 +258,7 @@ def download_size(manifest):
     return file_size_dict
 
 
-def download_meta_data(manifest, download_base=ABC_BASE):
+def download_meta_data(manifest, download_base):
     """
     Download all the metadata files using AWS CLI listed in the manifest to
     download_base.
@@ -302,7 +301,7 @@ def download_meta_data(manifest, download_base=ABC_BASE):
     return download_results
 
 
-def download_abc_exp_matrices(manifest, download_base=ABC_BASE):
+def download_abc_exp_matrices(manifest, download_base):
     """
     Download the following genes expression matrices listed in the manifest
     to download_base location:
@@ -353,7 +352,7 @@ def download_abc_exp_matrices(manifest, download_base=ABC_BASE):
     return download_results
 
 
-def download_image_volumes(manifest, download_base=ABC_BASE):
+def download_image_volumes(manifest, download_base):
     """
     Download all the image volumes listed in the manifest to download_base
 
@@ -393,7 +392,7 @@ def download_image_volumes(manifest, download_base=ABC_BASE):
 
 
 def download_abc_data(
-    manifest_url=MANIFEST_URL, version=ABC_VERSION, download_base=ABC_BASE
+    download_base, version=ABC_VERSION, manifest_url=MANIFEST_URL
 ):
     """
     Downloads meta data, gene expression matrices and the image volumes to the
@@ -420,7 +419,7 @@ def download_abc_data(
     download_image_volumes(manifest, download_base)
 
 
-def view_dir(manifest, dataset_id, download_base=ABC_BASE):
+def view_dir(manifest, dataset_id, download_base):
     """
     Return the view directory
 
@@ -449,7 +448,7 @@ def view_dir(manifest, dataset_id, download_base=ABC_BASE):
     return view_directory
 
 
-def taxonomy_meta(manifest, data_key, download_base=ABC_BASE):
+def taxonomy_meta(manifest, data_key, download_base):
     """
     Return the taxonomy meta data, as located in data_key, from download_base.
     The relative paths to the meta data files in download_base are obtaned from
@@ -480,7 +479,7 @@ def taxonomy_meta(manifest, data_key, download_base=ABC_BASE):
     return taxnm_meta_df
 
 
-def taxonomy_cluster(manifest, download_base=ABC_BASE):
+def taxonomy_cluster(manifest, download_base):
     """
     Return the taxonomy meta data, specifically cluster name annotation and the
     colors assigned for the clusters, from download_base.
@@ -513,7 +512,7 @@ def taxonomy_cluster(manifest, download_base=ABC_BASE):
     return cluster_details, cluster_colors
 
 
-def cell_metadata(file_meta, download_base=ABC_BASE):
+def cell_metadata(file_meta, download_base):
     """
     Cell meta data frame obtained from download_base with the relative path
     of the meta data file obtained from file_meta JSON object.
@@ -539,7 +538,7 @@ def cell_metadata(file_meta, download_base=ABC_BASE):
     return cell_df
 
 
-def gene_metadata(file_meta, download_base=ABC_BASE):
+def gene_metadata(file_meta, download_base):
     """
     Gene meta data frame obtained from download_base with the relative path
     of the meta data file obtained from file_meta JSON object.
@@ -567,7 +566,7 @@ def gene_metadata(file_meta, download_base=ABC_BASE):
 
 def gene_expression_matrix(
     manifest,
-    download_base=ABC_BASE,
+    download_base,
     data_id="C57BL6J-638850",
     source="MERFISH-C57BL6J-638850",
     transform="log2",
@@ -816,7 +815,7 @@ def region_ccf_cell_types(cell_ccf, region_list):
 
 
 def region_cell_type_ratios(region_name,
-                            download_base=ABC_BASE):
+                            download_base):
     manifest, file_meta = merfish_files_meta()
     # Cell Meta and CCF Meta data
     merfish_ccf_view_dir = view_dir(manifest, "MERFISH-C57BL6J-638850-CCF",
