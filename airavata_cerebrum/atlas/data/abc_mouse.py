@@ -71,7 +71,7 @@ GLUT_IT_TYPES = [
     "IT-Other",
 ]
 # Column Names
-GABA_COLUMNS =  [GABA] + GABA_TYPES
+GABA_COLUMNS = [GABA] + GABA_TYPES
 GLUT_COLUMNS = [GLUT] + GLUT_IT_TYPES + GLUT_TYPES
 # GABA subclasses
 LAMP5_SUBCLASSES = set(["049 Lamp5 Gaba", "050 Lamp5 Lhx6 Gaba"])
@@ -743,7 +743,7 @@ def cell_meta_type_flags(area_cell_df: pd.DataFrame):
 
 
 def cell_meta_type_ratios(area_sumdf, ax, nregion):
-    ratio_df = pd.DataFrame(index = area_sumdf.index)
+    ratio_df = pd.DataFrame(index=area_sumdf.index)
     # ratio_df = area_sumdf.loc[:, ["E", "I", "O"]].copy()
     ratio_df["Region"] = ax
     ratio_df["Layer"] = [x.replace(ax, "") for x in ratio_df.index]
@@ -752,8 +752,8 @@ def cell_meta_type_ratios(area_sumdf, ax, nregion):
     ratio_df[FRACTION_WI_REGION_COLUMN] = area_sumdf["T"] / nregion
     #
     for colx in GABA_TYPES:
-           fraction_col = FRACTION_COLUMN_FMT.format(colx)
-           ratio_df[fraction_col] = area_sumdf[colx] / area_sumdf[GABA]
+        fraction_col = FRACTION_COLUMN_FMT.format(colx)
+        ratio_df[fraction_col] = area_sumdf[colx] / area_sumdf[GABA]
     # area_sumdf["Vip fraction"] = area_sumdf["Vip"] / area_sumdf["GABA"]
     # area_sumdf["Pvalb fraction"] = area_sumdf["Pvalb"] / area_sumdf["GABA"]
     # area_sumdf["SSt fraction"] = area_sumdf["Sst"] / area_sumdf["GABA"]
@@ -799,8 +799,8 @@ def region_ccf_cell_types(cell_ccf, region_list):
         # 2. Group by sub structure and find summary counts for each layer
         region_ei_df = region_df[sel_cols].copy()
         region_ei_ctx = region_ei_df.groupby(PARCELLATION_SUBSTRUCTURE).sum()
-        region_ei_ctx["T"] = region_ei_ctx["E"] + region_ei_ctx["I"] + region_ei_ctx["O"]
-        region_ei_ctx["EI"] = region_ei_ctx["E"] + region_ei_ctx["I"]
+        region_ei_ctx["T"] = region_ei_ctx["E"] + region_ei_ctx["I"] + region_ei_ctx["O"]  # type:ignore
+        region_ei_ctx["EI"] = region_ei_ctx["E"] + region_ei_ctx["I"]   # type: ignore
         n_region_layers = len(region_df)
         region_name = region
         # 3. Compute the ratios
@@ -816,7 +816,7 @@ def region_ccf_cell_types(cell_ccf, region_list):
 
 def region_cell_type_ratios(region_name,
                             download_base):
-    manifest, file_meta = merfish_files_meta()
+    manifest, _ = merfish_files_meta()
     # Cell Meta and CCF Meta data
     merfish_ccf_view_dir = view_dir(manifest, "MERFISH-C57BL6J-638850-CCF",
                                     download_base)
@@ -825,5 +825,3 @@ def region_cell_type_ratios(region_name,
     )
     _, _, region_frac_ccf = region_ccf_cell_types(cell_ccf, [region_name])
     return region_frac_ccf[region_name]
-
-
