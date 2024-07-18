@@ -27,7 +27,7 @@ notifications:
 
 github:
   description: "Apache Airavata Cerebrum"
-  homepage: https://airavata.apache.org/custos
+  homepage: https://airavata.apache.org
   labels:
     - airavata
     - apache
