@@ -13,5 +13,5 @@ Develop a package (will be part of Cerebrum) that can
 If possible, to develop an intelligent system which will decide if you need to just update parameters or reconstruct the model based on the requested change to the model.
 
 **Demonstration**
-Single layer of visual cortex
-In the whole V1 network model
+1. Single layer of visual cortex
+2. In the whole V1 network model
