@@ -3,9 +3,9 @@ import pprint
 
 #
 #
-from data import abc_mouse
-from operations import netops
-from model import builder, regions
+from airavata_cereburm.atlas.data import abc_mouse
+from airavata_cereburm.atlas.operations import netops
+from airavata_cerebur.atlas.model import builder, regions
 
 USER_V1_UPDATE = regions.Network(
     name="v1",
@@ -245,7 +245,7 @@ def main():
     pprint.pp(net_model.model_dump())
     print("----------------------")
     #
-    # 
+    #
     net_model = netops.subset_network(net_model, ["VISp1"])
     pprint.pp(net_model.model_dump())
     #
