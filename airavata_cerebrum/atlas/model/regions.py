@@ -1,16 +1,42 @@
 import pydantic
 import typing
+import inspect
+
+
+class DataFilters(pydantic.BaseModel):
+    bounds: typing.List[typing.Tuple[str, typing.Any, typing.Any]] = []
+    exact: typing.List[typing.Tuple[str, typing.Any]] = []
+
+
+
+class DataConnection(pydantic.BaseModel):
+    name: str = ""
+    attr_list: typing.Dict = {}
+    # attr_match: typing.Callable[..., bool] = lambda _ : True
+
+    # @pydantic.field_serializer('attr_match')
+    # def serialize_attr_match(self, attr_match: typing.Callable[..., bool], _info):
+    #     return inspect.getsourcelines(attr_match)[0][0].strip()
+    # @pydantic.field_validator('attr_match')
+    #  TODO::
+
+
+class NeuronModel(pydantic.BaseModel):
+    N: int = 0
+    m_id: int = 0
+    m_name: str = ""
+    m_type: str = ""
+    m_template: str = ""
+    m_dynamics_params: str = ""
+    m_data_connect: DataConnection = DataConnection()
 
 
 class Neuron(pydantic.BaseModel):
     ei: typing.Literal["e", "i"]  # Either e or i
-    fraction: float
+    fraction: float = 0.0
     N : int = 0
     dims: typing.Dict[str, typing.Any] = {}
-    model_name : str = ""
-    model_type: str  =  ""
-    model_template: str  = ""
-    dynamics_params: str = "" 
+    neuron_models : typing.List[NeuronModel] = []
 
 
 class Region(pydantic.BaseModel):

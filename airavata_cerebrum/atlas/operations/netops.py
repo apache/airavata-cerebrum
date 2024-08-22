@@ -28,9 +28,9 @@ def atlasdata2regionfractions(
     return regions.Network(name=model_name, locations=loc_struct)
 
 
-def subset_network(net_stats: regions.Network, 
+def subset_network(net_stats: regions.Network,
                    region_list: typing.List[str]) -> regions.Network:
-    sub_locs = {k:v  for k,v in net_stats.locations.items() if k in region_list}
+    sub_locs = {k: v for k, v in net_stats.locations.items() if k in region_list}
     return regions.Network(name=net_stats.name, dims=net_stats.dims,
                            locations=sub_locs)
 
@@ -79,15 +79,15 @@ def update_user_input(
             # model_name : str | None = None
             # model_type: str | None =  None
             # model_template: str | None = None
-            # dynamics_params: str | None = None 
-            if sx.model_name is not None:
-                net_stats.locations[lx].neurons[nx].model_name = sx.model_name
-            if sx.model_type is not None:
-                net_stats.locations[lx].neurons[nx].model_type = sx.model_type
-            if sx.model_template is not None:
-                net_stats.locations[lx].neurons[nx].model_template = sx.model_template
+            # dynamics_params: str | None = None
+            if sx.neuron_model_name is not None:
+                net_stats.locations[lx].neurons[nx].neuron_model_name = sx.neuron_model_name
+            if sx.neuron_model_type is not None:
+                net_stats.locations[lx].neurons[nx].neuron_model_type = sx.neuron_model_type
+            if sx.neuron_model_template is not None:
+                net_stats.locations[lx].neurons[nx].neuron_model_template = sx.neuron_model_template
             if sx.dynamics_params is not None:
-                net_stats.locations[lx].neurons[nx].model_template = sx.dynamics_params
+                net_stats.locations[lx].neurons[nx].neuron_model_template = sx.dynamics_params
     return net_stats
 
 

@@ -4,6 +4,7 @@ from bmtk.builder import NetworkBuilder
 from ..model import regions
 from ..operations import netops
 
+
 def generate_random_pos(N, params):
     # TODO:
     x = np.array(params["dims"])
@@ -13,11 +14,12 @@ def generate_random_pos(N, params):
 
     return positions
 
-def add_network_nodes(net_model: regions.Network, out_file:str):
+
+def add_network_nodes(net_model: regions.Network, out_file: str):
     net = NetworkBuilder(net_model.name)
     for location, loc_region in net_model.locations.items():
         for pop_name, pop_neurons in loc_region.neurons.items():
-            N = pop_neurons.ncells
+            N = pop_neurons.N
             params = {"location": loc_region.dims,
                       "population": pop_neurons.dims}
             positions = generate_random_pos(N, params)
@@ -36,7 +38,8 @@ def add_network_nodes(net_model: regions.Network, out_file:str):
             }
             net.add_nodes(**node_props)
     net.save(out_file)
- 
+
+
 def add_nodes_cylinder(net_model: regions.Network, fraction=1.00, flat=False):
     # if miniature:
     #     node_props = "glif_props/v1_node_models_miniature.json"
@@ -52,7 +55,7 @@ def add_nodes_cylinder(net_model: regions.Network, fraction=1.00, flat=False):
 
     for location, loc_region in net_model.locations.items():
         for pop_name, pop_neurons in loc_region.neurons.items():
-            pop_size = pop_neurons.ncells
+            pop_size = pop_neurons.N
             if pop_size == 0:
                 continue
             depth_range = -np.array(loc_region.dims["depth_range"], dtype=float)

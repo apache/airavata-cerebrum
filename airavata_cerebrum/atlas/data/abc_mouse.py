@@ -645,7 +645,7 @@ def plot_heatmap(
     ax.set_xticks(range(len(xlabs)))  # type:ignore
     ax.set_xticklabels(xlabs)  # type:ignore
     ax.set_yticks(range(len(ylabs)))  # type:ignore
-    ax.set_yticklabels(ylabs)
+    ax.set_yticklabels(ylabs)  # type:ignore
     plt.setp(ax.get_xticklabels(), rotation=90)  # type:ignore
     cbar = ax.figure.colorbar(im, ax=ax)  # type:ignore
     cbar.set_label(ylabel)

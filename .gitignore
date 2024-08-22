@@ -13,6 +13,7 @@ develop-eggs/
 dist/
 downloads/
 eggs/
+wheel/
 .eggs/
 lib/
 lib64/
@@ -78,6 +79,7 @@ target/
 
 # Jupyter Notebook
 .ipynb_checkpoints
+.virtual_documents
 
 # IPython
 profile_default/
