@@ -1,0 +1,52 @@
+{
+    "name": "v1",
+    "dims": {"core_radius": 400.0, "radius": 845.0},
+    "locations": {
+        "VISp4": {
+            "name": "VISp4",
+            "dims": {"depth_range": [357, 505]},
+            "neurons": {
+                "Sst": {
+                    "ei": "i",
+                    "fraction": 0.0,
+                    "dims": {
+                        "nsyn_lognorm_shape": 0.55,
+                        "nsyn_lognorm_scale": 5305.151
+                    }
+                },
+                "Pvalb": {
+                    "ei": "i",
+                    "fraction": 0.0,
+                    "dims": {
+                        "nsyn_lognorm_shape": 0.433,
+                        "nsyn_lognorm_scale": 7432.587
+                    }
+                },
+                "Vip": {
+                    "ei": "i",
+                    "fraction": 0.0,
+                    "dims": {
+                        "nsyn_lognorm_shape": 0.537,
+                        "nsyn_lognorm_scale": 2355.279
+                    }
+                },
+                "Rorb": {
+                    "ei": "e",
+                    "fraction": 0.0,
+                    "dims": {
+                        "nsyn_lognorm_shape": 0.345,
+                        "nsyn_lognorm_scale": 2188.765
+                    }
+                },
+                "Scnn1a": {
+                    "ei": "e",
+                    "fraction": 0.0,
+                    "dims": {
+                        "nsyn_lognorm_shape": 0.345,
+                        "nsyn_lognorm_scale": 2188.765
+                    }
+                }
+            }
+        }
+    }
+}

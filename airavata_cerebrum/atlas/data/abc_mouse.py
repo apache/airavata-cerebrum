@@ -7,11 +7,15 @@ import time
 import pandas as pd
 import anndata
 import matplotlib.pyplot as plt
+import abc_atlas_access.abc_atlas_cache.abc_project_cache as abc_cache
 
+from ..log.logging import LOGGER
 
 ABC_VERSION = "20231215"
 MANIFEST_URL = "https://allen-brain-cell-atlas.s3-us-west-2.amazonaws.com/releases/{}/manifest.json"
-PARCEL_META_DATA = "cell_metadata_with_parcellation_annotation.csv"
+PARCEL_META_DATA_KEY = "cell_metadata_with_parcellation_annotation"
+PARCEL_META_DATA_CSV = PARCEL_META_DATA_KEY + ".csv"
+MERFISH_CCF_DATASET_KEY = "MERFISH-C57BL6J-638850-CCF"
 PARCELLATION_SUBSTRUCTURE = "parcellation_substructure"
 PARCELLATION_STRUCTURE = "parcellation_structure"
 CCF_COLS = [
@@ -744,7 +748,7 @@ def cell_meta_type_flags(area_cell_df: pd.DataFrame):
 
 def cell_meta_type_ratios(area_sumdf, ax, nregion):
     ratio_df = pd.DataFrame(index=area_sumdf.index)
-    # ratio_df = area_sumdf.loc[:, ["E", "I", "O"]].copy()
+    #
     ratio_df["Region"] = ax
     ratio_df["Layer"] = [x.replace(ax, "") for x in ratio_df.index]
     ratio_df["nregion"] = nregion
@@ -754,27 +758,14 @@ def cell_meta_type_ratios(area_sumdf, ax, nregion):
     for colx in GABA_TYPES:
         fraction_col = FRACTION_COLUMN_FMT.format(colx)
         ratio_df[fraction_col] = area_sumdf[colx] / area_sumdf[GABA]
-    # area_sumdf["Vip fraction"] = area_sumdf["Vip"] / area_sumdf["GABA"]
-    # area_sumdf["Pvalb fraction"] = area_sumdf["Pvalb"] / area_sumdf["GABA"]
-    # area_sumdf["SSt fraction"] = area_sumdf["Sst"] / area_sumdf["GABA"]
-    # area_sumdf["Lamp5 fraction"] = area_sumdf["Lamp5"] / area_sumdf["GABA"]
-    # area_sumdf["Sst-Chodl fraction"] = area_sumdf["Sst-Chodl"] / area_sumdf["GABA"]
-    # area_sumdf["GABA Other fraction"] = area_sumdf["GABA-Other"] / area_sumdf["GABA"]
-
+    #
     for colx in GLUT_IT_TYPES:
         fraction_col = FRACTION_COLUMN_FMT.format(colx)
         ratio_df[fraction_col] = area_sumdf[colx] / area_sumdf[GLUT]
-    # area_sumdf["IT-CTX fraction"] = area_sumdf["IT-CTX"] / area_sumdf["Glut"]
-    # area_sumdf["IT-ENT fraction"] = area_sumdf["IT-ENT"] / area_sumdf["Glut"]
-    # area_sumdf["IT-Other fraction"] = area_sumdf["IT-Other"] / area_sumdf["Glut"]
+    #
     for colx in GLUT_TYPES:
         fraction_col = FRACTION_COLUMN_FMT.format(colx)
         ratio_df[fraction_col] = area_sumdf[colx] / area_sumdf[GLUT]
-    # area_sumdf["IT fraction"] = area_sumdf["IT"] / area_sumdf["Glut"]
-    # area_sumdf["ET fraction"] = area_sumdf["ET"] / area_sumdf["Glut"]
-    # area_sumdf["CT fraction"] = area_sumdf["CT"] / area_sumdf["Glut"]
-    # area_sumdf["NP fraction"] = area_sumdf["NP"] / area_sumdf["Glut"]
-    # area_sumdf["Glut Other fraction"] = area_sumdf["Glut-Other"] / area_sumdf["Glut"]
     return ratio_df
 
 
@@ -818,10 +809,69 @@ def region_cell_type_ratios(region_name,
                             download_base):
     manifest, _ = merfish_files_meta()
     # Cell Meta and CCF Meta data
-    merfish_ccf_view_dir = view_dir(manifest, "MERFISH-C57BL6J-638850-CCF",
+    merfish_ccf_view_dir = view_dir(manifest, MERFISH_CCF_DATASET_KEY,
                                     download_base)
     cell_ccf = cell_ccf_meta(
-        os.path.join(merfish_ccf_view_dir, PARCEL_META_DATA)
+        os.path.join(merfish_ccf_view_dir, PARCEL_META_DATA_CSV)
     )
     _, _, region_frac_ccf = region_ccf_cell_types(cell_ccf, [region_name])
     return region_frac_ccf[region_name]
+
+
+class ABCDbMERFISH_CCFQuery:
+    def __init__(self, **params):
+        """
+        Initialize MERFISH Query
+        Parameters
+        ----------
+        download_base : str (Mandatory)
+           File location to store the manifest and the cells.json files
+
+        """
+        self.name = __name__ + ".ABCDbMERFISHQuery"
+        self.download_base = params["download_base"]
+        self.pcache = abc_cache.AbcProjectCache.from_s3_cache(self.download_base)
+        self.pcache.load_latest_manifest()
+        self.pcache.get_directory_metadata(MERFISH_CCF_DATASET_KEY)
+        self.ccf_meta_file = self.pcache.get_metadata_path(MERFISH_CCF_DATASET_KEY,
+                                                           PARCEL_META_DATA_KEY)
+
+    def run(self, in_stream, **params):
+        """
+        Get the cell types ratios corresponding to a region
+
+        Parameters
+        ----------
+        run_params: dict with the following keys:
+            region : List[str]
+             lis of regions of interest
+        Returns
+        -------
+        dict of elements for each sub-regio:
+        {
+            subr 1 : {}
+        }
+        """
+        #
+        default_args = {}
+        rarg = (
+            {**default_args, **params} if params is not None else default_args
+        )
+        LOGGER.info("ABCDbMERFISH_CCFQuery Args : %s", rarg)
+        region_list = rarg["region"]
+        #
+        mfish_ccf_df = pd.read_csv(self.ccf_meta_file)
+        _, _, region_frac_map = region_ccf_cell_types(mfish_ccf_df, region_list)
+        return [
+            {
+                rx: rdf.to_dict(orient="index") for rx, rdf in region_frac_map.items()
+            }
+        ]
+
+
+ABC_QUERY_REGISTER = {
+    "ABCDbMERFISH_CCFQuery" : ABCDbMERFISH_CCFQuery,
+    __name__ + ".ABCDbMERFISH_CCFQuery": ABCDbMERFISH_CCFQuery
+}
+
+ABC_XFORM_REGISTER = {}
