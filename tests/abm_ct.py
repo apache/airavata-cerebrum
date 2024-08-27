@@ -88,7 +88,7 @@ class ModelDescription:
                                                   self.model_name)
         return self.net_model
 
-    def update_model(self):
+    def update_user_input(self):
         import airavata_cerebrum.atlas.model.structure as structure
         #
         user_update = structure.Network.model_validate(load_json(self.user_update_config))
@@ -103,7 +103,7 @@ class ModelDescription:
         # print("----------------------")
         return self.net_model
 
-    def build_model_bmtk(self):
+    def build_bmtk(self):
         import airavata_cerebrum.atlas.model.builder as builder
         #
         #
@@ -117,6 +117,16 @@ def abm_ct_model():
     model_name = "abm_ct"
     user_update_config = "abm_ct/description/user_location_config.json"
     return ModelDescription(model_base, model_name, user_update_config, False)
+
+
+def main():
+    model_dex = abm_ct_model()
+    model_dex.download_db_data()
+    model_dex.xform_db_data()
+    model_dex.map_db_data_locations()
+    model_dex.atlasdata2netstruct()
+    model_dex.update_user_input()
+    model_dex.build_bmtk()
 
 
 # if __name__ == "__main__":
