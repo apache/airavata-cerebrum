@@ -9,6 +9,7 @@ from airavata_cerebrum.atlas.data.base import (
 )
 import airavata_cerebrum.atlas.operations.netops as netops
 import airavata_cerebrum.atlas.model.structure as structure
+import airavata_cerebrum.atlas.model.mousev1 as mousev1
 
 logging.basicConfig(level=logging.INFO)
 
@@ -16,10 +17,6 @@ logging.basicConfig(level=logging.INFO)
 def load_json(file_name):
     with open(file_name) as in_fptr:
         return json.load(in_fptr)
-
-
-#
-#
 
 
 def save_json(json_obj, file_name, indent):
@@ -30,10 +27,10 @@ def save_json(json_obj, file_name, indent):
 class ModelDescription:
     description_files = {
         "db_connections" : "db_connect.json",
-        "db_data_xform" : "db_select_xform.json",
+        "db_select_xform" : "db_select_xform.json",
         "db_location_map" : "db_location_map.json",
         "db_connections_output": "db_connect_output.json",
-        "db_data_xform_output" : "db_select_xform_output.json",
+        "db_select_xform_output" : "db_select_xform_output.json",
         "network_desc_output" : "network_desc_output.json"
     }
 
@@ -42,9 +39,12 @@ class ModelDescription:
         return pathlib.PurePath(self.model_desc_dir, file_name)
 
     def __init__(self, model_base, model_name,
+                 desc2region_mapper, desc2neuron_mapper,
                  user_update_config=None,
                  save_output=True) -> None:
         self.model_name = model_name
+        self.desc2region_mapper = desc2region_mapper
+        self.desc2neuron_mapper = desc2neuron_mapper
         self.model_base = model_base
         self.user_update_config = user_update_config
         self.save_output = save_output
@@ -74,9 +74,9 @@ class ModelDescription:
         return db_xformed_data
 
     def map_db_data_locations(self):
-        db_location_config = load_json(self.location("db_location_config"))
+        db_location_map = load_json(self.location("db_location_map"))
         db_xformed_data = load_json(self.location("db_select_xform_output"))
-        network_desc_output = dbconn2locations(db_xformed_data, db_location_config)
+        network_desc_output = dbconn2locations(db_xformed_data, db_location_map)
         if self.save_output:
             save_json(network_desc_output, self.location("network_desc_output"),
                       indent=4)
@@ -85,7 +85,9 @@ class ModelDescription:
     def atlasdata2netstruct(self):
         network_desc_output = load_json(self.location("network_desc_output"))
         self.net_model = netops.atlasdata2network(network_desc_output,
-                                                  self.model_name)
+                                                  self.model_name,
+                                                  self.desc2region_mapper,
+                                                  self.desc2neuron_mapper)
         return self.net_model
 
     def update_user_input(self):
@@ -116,7 +118,10 @@ def abm_ct_model():
     model_base = "./"
     model_name = "abm_ct"
     user_update_config = "abm_ct/description/user_location_config.json"
-    return ModelDescription(model_base, model_name, user_update_config, False)
+    return ModelDescription(model_base, model_name,
+                            mousev1.V1ModelDesc2Region,
+                            mousev1.V1ModelDesc2Neuron,
+                            user_update_config, False)
 
 
 def main():
@@ -131,3 +136,7 @@ def main():
 
 # if __name__ == "__main__":
 #     main()
+
+model_dex = abm_ct_model()
+network_desc_output = model_dex.map_db_data_locations()
+net_model = model_dex.atlasdata2netstruct()

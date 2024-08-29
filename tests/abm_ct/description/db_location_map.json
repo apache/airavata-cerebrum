@@ -1,6 +1,26 @@
 {
     "locations": {
         "VISp4": {
+            "region_meta" : {
+                "property_map" : {
+                    "neurons" : ["Scnn1a", "Rorb", "Vip", "Pvalb", "Sst"]
+                },
+                "db_connections": {
+                    "airavata_cerebrum.atlas.data.abc_mouse": {
+                        "workflow": [
+                            {
+                                "type": "xform",
+                                "name": "airavata_cerebrum.atlas.data.base.JPointerFilter",
+                                "init_params": {},
+                                "exec_params": {
+                                    "paths": ["/0/VISp4/inhibitory fraction", "/0/VISp4/fraction wi. region"],
+                                    "keys": ["inh_fraction", "region_fraction", "fraction"]
+                                }
+                            }
+                        ]
+                    }
+                }
+            },
             "Scnn1a": {
                 "property_map" : { "ei" : "e" },
                 "db_connections": {

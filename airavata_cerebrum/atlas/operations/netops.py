@@ -8,23 +8,22 @@ from ..model import structure
 
 
 def atlasdata2network(
-    atlas_data, model_name: str
+    atlas_data, model_name: str, desc2region_mapper, desc2neuron_mapper
 ) -> structure.Network:
     loc_struct = {}
     for region, region_desc in atlas_data.items():
-        ifrac = 0.0
-        rfrac = 0.0
+        drx_mapper = desc2region_mapper(region_desc)
         neuron_struct = {}
-        for neuron, neuron_desc in region_desc.items():
-            ntype = neuron_desc["property_map"]["ei"]
-            nfrac = neuron_desc["airavata_cerebrum.atlas.data.abc_mouse"][0]["fraction"]
-            ifrac = neuron_desc["airavata_cerebrum.atlas.data.abc_mouse"][0]["inh_fraction"]
-            rfrac = neuron_desc["airavata_cerebrum.atlas.data.abc_mouse"][0]["region_fraction"]
-            neuron_struct[neuron] = structure.Neuron(ei=ntype, fraction=float(nfrac))
+        for neuron in drx_mapper.neuron_list():
+            if neuron not in region_desc:
+                continue
+            neuron_desc = region_desc[neuron]
+            dn_mapper = desc2neuron_mapper(neuron_desc)
+            neuron_struct[neuron] = dn_mapper.map()
         loc_struct[region] = structure.Region(
             name=str(region),
-            inh_fraction=float(ifrac),
-            region_fraction=float(rfrac),
+            inh_fraction=drx_mapper.inh_fraction(),
+            region_fraction=drx_mapper.region_fraction(),
             neurons=neuron_struct,
         )
     return structure.Network(name=model_name, locations=loc_struct)

@@ -1,5 +1,22 @@
 {
     "VISp4": {
+        "region_meta": {
+            "airavata_cerebrum.atlas.data.abc_mouse": [
+                {
+                    "inh_fraction": 0.1119157340355497,
+                    "region_fraction": 0.20969879128692392
+                }
+            ],
+            "property_map": {
+                "neurons": [
+                    "Scnn1a",
+                    "Rorb",
+                    "Vip",
+                    "Pvalb",
+                    "Sst"
+                ]
+            }
+        },
         "Scnn1a": {
             "airavata_cerebrum.atlas.data.abm_celltypes": [
                 {
