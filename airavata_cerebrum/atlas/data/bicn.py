@@ -2,7 +2,7 @@ import pathlib
 import pandas as pd
 import numpy as np
 
-BICN_BASE = "/storage/home/hhive1/schockalingam6/data2/airavata-cerebrum/brain_atlases/"
+BICN_BASE = "airavata-cerebrum/brain_atlases/"
 #
 BICN_DATA_DIR = {
     "cytoarch": BICN_BASE + "cytoarch",

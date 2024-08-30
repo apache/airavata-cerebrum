@@ -1,7 +1,7 @@
 import numpy as np
 import scipy.stats
 from bmtk.builder import NetworkBuilder
-from ..model import regions
+from ..model import structure
 from ..operations import netops
 
 
@@ -15,7 +15,7 @@ def generate_random_pos(N, params):
     return positions
 
 
-def add_network_nodes(net_model: regions.Network, out_file: str):
+def add_network_nodes(net_model: structure.Network, out_file: str):
     net = NetworkBuilder(net_model.name)
     for location, loc_region in net_model.locations.items():
         for pop_name, pop_neurons in loc_region.neurons.items():
@@ -40,7 +40,7 @@ def add_network_nodes(net_model: regions.Network, out_file: str):
     net.save(out_file)
 
 
-def add_nodes_cylinder(net_model: regions.Network, fraction=1.00, flat=False):
+def add_nodes_cylinder(net_model: structure.Network, fraction=1.00, flat=False):
     # if miniature:
     #     node_props = "glif_props/v1_node_models_miniature.json"
     # else:

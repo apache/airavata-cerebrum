@@ -1,0 +1,55 @@
+{
+    "db_connections": [
+        {
+            "db_name": "airavata_cerebrum.atlas.data.abm_celltypes",
+            "workflow": [
+                {
+                    "type": "query",
+                    "name": "airavata_cerebrum.atlas.data.abm_celltypes.CTDbCellApiQuery",
+                    "init_params": {},
+                    "exec_params": {
+                        "species": ["Mus musculus"]
+                    }
+                },
+                {
+                    "type": "xform",
+                    "name": "airavata_cerebrum.atlas.data.base.TQDMWrapper",
+                    "init_params": {},
+                    "exec_params": {}
+                },
+                {
+                    "type": "xform",
+                    "name": "airavata_cerebrum.atlas.data.abm_celltypes.CTDbCellAttrFilter",
+                    "init_params": {},
+                    "exec_params": {
+                        "filters": [
+                            ["structure__layer", "__eq__", "4" ],
+                            ["structure_parent__acronym", "__eq__", "VISp"]
+                        ]
+                    }
+                },
+                {
+                    "type": "query",
+                    "name": "airavata_cerebrum.atlas.data.abm_celltypes.CTDbGlifApiQuery",
+                    "init_params": {},
+                    "exec_params": {"key": "specimen__id", "first": "True"}
+                }
+           ]
+        },
+        {
+            "db_name": "airavata_cerebrum.atlas.data.abc_mouse",
+            "workflow": [
+                {
+                    "type": "query",
+                    "name": "airavata_cerebrum.atlas.data.abc_mouse.ABCDbMERFISH_CCFQuery",
+                    "init_params": {
+                        "download_base": "./cache/abc_mouse/"
+                    },
+                    "exec_params": {
+                        "region": ["VISp"] 
+                    }
+                }
+            ]
+        }
+    ]
+}

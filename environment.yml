@@ -1,0 +1,55 @@
+channels:
+  - conda-forge
+
+dependencies:
+  # Basics ------------------
+  - python=3.10
+  - pip
+
+  # Convenience -------------
+  - black
+  
+  # Testing
+  - pytest
+  - iminuit
+  
+  # modeling
+  - openpyxl
+  - numba
+
+  # allensdk
+  - future
+  - jinja2
+  - jsonpath-python
+  - jupyter
+  - numpy
+  - matplotlib
+  # - nest-asyncio
+  - pandas
+  - psycopg2-binary
+  - pydantic
+  - pynrrd
+  - python-dateutil
+  - requests
+  - scikit-build
+  - scikit-image
+  - scipy
+  - seaborn
+  - semver
+  - simpleitk
+  - simplejson
+  - six
+  - sqlalchemy
+  - tqdm
+  - xarray
+
+
+  # PIP dependencies
+  - pip:
+    - mpi4py
+    - anndata
+    - allensdk
+    - bmtk
+    - pylightxl
+    - scanpy
+    - git+https://github.com/alleninstitute/abc_atlas_access

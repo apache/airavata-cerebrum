@@ -4,40 +4,62 @@ import scipy
 import scipy.stats
 import typing
 from ..data import abc_mouse
-from ..model import regions
+from ..model import structure
+
+
+def atlasdata2network(
+    atlas_data, model_name: str, desc2region_mapper, desc2neuron_mapper
+) -> structure.Network:
+    loc_struct = {}
+    for region, region_desc in atlas_data.items():
+        drx_mapper = desc2region_mapper(region_desc)
+        neuron_struct = {}
+        for neuron in drx_mapper.neuron_list():
+            if neuron not in region_desc:
+                continue
+            neuron_desc = region_desc[neuron]
+            dn_mapper = desc2neuron_mapper(neuron_desc)
+            neuron_struct[neuron] = dn_mapper.map()
+        loc_struct[region] = structure.Region(
+            name=str(region),
+            inh_fraction=drx_mapper.inh_fraction(),
+            region_fraction=drx_mapper.region_fraction(),
+            neurons=neuron_struct,
+        )
+    return structure.Network(name=model_name, locations=loc_struct)
 
 
 def atlasdata2regionfractions(
     region_frac_df: pd.DataFrame, model_name: str
-) -> regions.Network:
+) -> structure.Network:
     loc_struct = {}
     for loc, row in region_frac_df.iterrows():
         neuron_struct = {}
         for gx in abc_mouse.GABA_TYPES:
             frac_col = abc_mouse.FRACTION_COLUMN_FMT.format(gx)
-            neuron_struct[gx] = regions.Neuron(ei="i", fraction=float(row[frac_col]))
+            neuron_struct[gx] = structure.Neuron(ei="i", fraction=float(row[frac_col]))
         for gx in abc_mouse.GLUT_TYPES:
             frac_col = abc_mouse.FRACTION_COLUMN_FMT.format(gx)
-            neuron_struct[gx] = regions.Neuron(ei="e", fraction=float(row[frac_col]))
-        loc_struct[loc] = regions.Region(
+            neuron_struct[gx] = structure.Neuron(ei="e", fraction=float(row[frac_col]))
+        loc_struct[loc] = structure.Region(
             name=str(loc),
             inh_fraction=float(row[abc_mouse.INHIBITORY_FRACTION_COLUMN]),
             region_fraction=float(row[abc_mouse.FRACTION_WI_REGION_COLUMN]),
             neurons=neuron_struct,
         )
-    return regions.Network(name=model_name, locations=loc_struct)
+    return structure.Network(name=model_name, locations=loc_struct)
 
 
-def subset_network(net_stats: regions.Network,
-                   region_list: typing.List[str]) -> regions.Network:
+def subset_network(net_stats: structure.Network,
+                   region_list: typing.List[str]) -> structure.Network:
     sub_locs = {k: v for k, v in net_stats.locations.items() if k in region_list}
-    return regions.Network(name=net_stats.name, dims=net_stats.dims,
-                           locations=sub_locs)
+    return structure.Network(name=net_stats.name, dims=net_stats.dims,
+                             locations=sub_locs)
 
 
 def update_user_input(
-    net_stats: regions.Network, upd_stats: regions.Network
-) -> regions.Network:
+    net_stats: structure.Network, upd_stats: structure.Network
+) -> structure.Network:
     # update dims
     for upkx, upvx in upd_stats.dims.items():
         net_stats.dims[upkx] = upvx
@@ -80,18 +102,21 @@ def update_user_input(
             # model_type: str | None =  None
             # model_template: str | None = None
             # dynamics_params: str | None = None
-            if sx.neuron_model_name is not None:
-                net_stats.locations[lx].neurons[nx].neuron_model_name = sx.neuron_model_name
-            if sx.neuron_model_type is not None:
-                net_stats.locations[lx].neurons[nx].neuron_model_type = sx.neuron_model_type
-            if sx.neuron_model_template is not None:
-                net_stats.locations[lx].neurons[nx].neuron_model_template = sx.neuron_model_template
-            if sx.dynamics_params is not None:
-                net_stats.locations[lx].neurons[nx].neuron_model_template = sx.dynamics_params
+            for sx_model in sx.neuron_models:
+                nmodel = structure.NeuronModel()
+                if sx_model.name is not None:
+                    nmodel.name = sx_model.name
+                if sx_model.m_type is not None:
+                    nmodel.m_type = sx_model.m_type
+                if sx_model.template is not None:
+                    nmodel.template = sx_model.template
+                if sx_model.dynamics_params is not None:
+                    nmodel.template = sx_model.dynamics_params
+                net_stats.locations[lx].neurons[nx].neuron_models.append(nmodel)
     return net_stats
 
 
-def fractions2ncells(net_stats: regions.Network, N: int) -> regions.Network:
+def fractions2ncells(net_stats: structure.Network, N: int) -> structure.Network:
     net_stats.ncells = N
     for lx, lrx in net_stats.locations.items():
         ncells_region = int(lrx.region_fraction * N)
