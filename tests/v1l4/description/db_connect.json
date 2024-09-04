@@ -1,6 +1,6 @@
 {
-    "db_connections": [
-        {
+    "db_connect": {
+        "airavata_cerebrum.atlas.data.abm_celltypes": {
             "db_name": "airavata_cerebrum.atlas.data.abm_celltypes",
             "workflow": [
                 {
@@ -36,7 +36,7 @@
                 }
            ]
         },
-        {
+        "airavata_cerebrum.atlas.data.abc_mouse": {
             "db_name": "airavata_cerebrum.atlas.data.abc_mouse",
             "workflow": [
                 {
@@ -51,5 +51,5 @@
                 }
             ]
         }
-    ]
+    }
 }

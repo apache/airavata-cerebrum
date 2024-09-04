@@ -2,13 +2,17 @@ import abc
 import typing
 import tqdm
 import itertools
+import json
 import jsonpath
+import pathlib
 import tqdm.contrib.logging as tqdm_log
 from .abm_celltypes import CTDbGlifApiQuery, CTDbCellApiQuery, CTDbCellCacheQuery
 from .abm_celltypes import CTDbCellAttrMapper, CTDbCellAttrFilter
 from .abc_mouse import ABCDbMERFISH_CCFQuery
+from .ai_synphys import AISynPhysQuery
 from .abm_celltypes import ABMCT_QUERY_REGISTER, ABMCT_XFORM_REGISTER
 from .abc_mouse import ABC_QUERY_REGISTER, ABC_XFORM_REGISTER
+from .ai_synphys import AISYNPHYS_QUERY_REGISTER, AISYNPHYS_XFORM_REGISTER
 from ..log.logging import LOGGER
 
 
@@ -170,6 +174,7 @@ DbQuery.register(CTDbCellCacheQuery)
 DbQuery.register(CTDbCellApiQuery)
 DbQuery.register(CTDbGlifApiQuery)
 DbQuery.register(ABCDbMERFISH_CCFQuery)
+DbQuery.register(AISynPhysQuery)
 #
 DbRecordXFormer.register(IdentityXformer)
 DbRecordXFormer.register(TQDMWrapper)
@@ -199,8 +204,8 @@ BASE_XFORM_REGISTER = {
 }
 BASE_QUERY_REGISTER = {}
 #
-QUERY_REGISTER = {**BASE_QUERY_REGISTER, **ABMCT_QUERY_REGISTER, **ABC_QUERY_REGISTER}
-XFORM_REGISTER = {**BASE_XFORM_REGISTER, **ABMCT_XFORM_REGISTER, **ABC_XFORM_REGISTER}
+QUERY_REGISTER = BASE_QUERY_REGISTER | ABMCT_QUERY_REGISTER | ABC_QUERY_REGISTER | AISYNPHYS_QUERY_REGISTER
+XFORM_REGISTER = BASE_XFORM_REGISTER | ABMCT_XFORM_REGISTER | ABC_XFORM_REGISTER | AISYNPHYS_XFORM_REGISTER
 
 
 def get_query_object(query_key, **init_params) -> typing.Union[DbQuery, None]:
@@ -244,9 +249,7 @@ def run_dc_workflow(workflow_steps, wf_stream=None):
 def run_db_conn_workflows(db_conn_desc):
     db_conn_output = {}
     #
-    for db_conn in db_conn_desc:
-        db_name = db_conn["db_name"]
-        db_wflow = db_conn["workflow"]
+    for db_name, db_wflow in db_conn_desc.items():
         LOGGER.info("Running workflow for db: " + db_name)
         with tqdm_log.logging_redirect_tqdm():
             model_itr = run_dc_workflow(db_wflow)
@@ -290,3 +293,44 @@ def dbconn2locations(db_conn_output, network_desc):
             LOGGER.info("Completed db connection for neuron " + neuron)
         network_locations[location] = neuron_desc_map
     return network_locations
+
+
+#
+#
+def load_json(file_name: str | pathlib.PurePath) -> typing.Dict:
+    with open(file_name) as in_fptr:
+        return json.load(in_fptr)
+
+
+def save_json(json_obj: typing.Dict, file_name: str | pathlib.PurePath, indent: int):
+    with open(file_name, "w") as out_fptr:
+        json.dump(json_obj, out_fptr, indent=indent)
+
+
+class ModelDescConfig:
+    DB_CONFIG_KEY = "config"
+    DB_CONNECT_KEY = "db_connect"
+    DB_XFORM_KEY = "db_xform"
+    DB_LOCATION_MAP_KEY = "db_location_map"
+    DB_CFG_KEYS = [DB_CONNECT_KEY, DB_XFORM_KEY, DB_LOCATION_MAP_KEY]
+
+    def __init__(self, config_files: typing.Dict[str, str]):
+        if len(config_files) == 1:
+            self.load_config(config_files[ModelDescConfig.DB_CONFIG_KEY])
+        elif len(config_files) == 3:
+            self.load_config_from(config_files)
+
+    def load_config(self, config_file):
+        self.md_config: typing.Dict[str, typing.Any] = load_json(config_file)
+
+    def load_config_from(self, config_files):
+        self.md_config: typing.Dict[str, typing.Any] = {}
+        for cfg_key in ModelDescConfig.DB_CFG_KEYS:
+            json_obj = load_json(config_files[cfg_key])
+            self.md_config[cfg_key] = json_obj[cfg_key]
+
+    def output_json(self, cfg_key: str) -> str:
+        return cfg_key + "_output.json"
+
+    def get_config(self, cfg_key: str) -> typing.Dict[str, typing.Any]:
+        return self.md_config[cfg_key]

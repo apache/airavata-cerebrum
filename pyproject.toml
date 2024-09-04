@@ -37,6 +37,8 @@ keywords = [ "Data-driven", "Computational Neuroscience", "Neuroscience Modeling
 [tool.poetry.dependencies]
 python = "^3.10"
 abc_atlas_access =  { git = "https://github.com/alleninstitute/abc_atlas_access" }
+neuroanalysis = { git = "https://github.com/alleninstitute/neuroanalysis" }
+aisynphys = { git = "https://github.com/alleninstitute/aisynphys" }
 allensdk = "^2.16"
 anndata = "^0.10"
 airavata-python-sdk = "^1.1.6"
@@ -53,7 +55,9 @@ requests = "^2.31"
 scanpy = "^1.9"
 scipy = "^1.9"
 tqdm = "^4.66"
-
+pillow = "^10.4"
+pyyaml = "^6.0"
+statsmodels = "^0.14"
 
 [tool.setuptools.packages.find]
 include = ["airavata_cerebrum"]

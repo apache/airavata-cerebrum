@@ -26,16 +26,20 @@ dependencies:
   - matplotlib
   # - nest-asyncio
   - pandas
+  - pillow
   - psycopg2-binary
   - pydantic
   - pynrrd
   - python-dateutil
+  - pyyaml
   - requests
   - scikit-build
   - scikit-image
+  - scikit-learn
   - scipy
   - seaborn
   - semver
+  - statsmodels
   - simpleitk
   - simplejson
   - six
@@ -53,3 +57,5 @@ dependencies:
     - pylightxl
     - scanpy
     - git+https://github.com/alleninstitute/abc_atlas_access
+    - git+https://github.com/alleninstitute/neuroanalysis
+    - git+https://github.com/alleninstitute/aisynphys
