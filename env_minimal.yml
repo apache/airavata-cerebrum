@@ -13,9 +13,12 @@ dependencies:
   - matplotlib
   - openpyxl
   - pandas
+  - psycopg2-binary
   - pydantic
+  - pyyaml
   - requests
   - scipy
+  - sqlalchemy
   - tqdm
 
   - pip:
@@ -24,3 +27,5 @@ dependencies:
       - bmtk
       - allensdk
       - git+https://github.com/alleninstitute/abc_atlas_access
+      - git+https://github.com/alleninstitute/neuroanalysis
+      - git+https://github.com/alleninstitute/aisynphys
