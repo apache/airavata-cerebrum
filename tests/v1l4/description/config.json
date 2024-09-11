@@ -65,7 +65,7 @@
                 }
             ]
         },
-        "airavata_cerebrum.atlas.data.abm_celltypes": {
+        "airavata_cerebrum.atlas.data.ai_synphys": {
             "workflow": [
                 {
                     "type": "query",
@@ -88,7 +88,7 @@
             "workflow": [
                 {
                     "type": "xform",
-                    "name": "airavata_cerebrum.atlas.data.base.IterJPatchFilter",
+                    "name": "airavata_cerebrum.atlas.data.json_filter.IterJPatchFilter",
                     "init_params": {},
                     "exec_params": {
                         "filter_exp": "$.glif.neuronal_models[?('3 LIF + Afterspike Currents' in @.name)]",
@@ -97,7 +97,7 @@
                 },
                 {
                     "type": "xform",
-                    "name": "airavata_cerebrum.atlas.data.base.IterJPatchFilter",
+                    "name": "airavata_cerebrum.atlas.data.json_filter.IterJPatchFilter",
                     "init_params": {},
                     "exec_params": {
                         "filter_exp": "$.glif.neuronal_models[0].neuronal_model_runs[?(@.explained_variance_ratio > 0.7)]",
@@ -106,7 +106,7 @@
                 },
                 {
                     "type": "xform",
-                    "name": "airavata_cerebrum.atlas.data.base.IterJPointerFilter",
+                    "name": "airavata_cerebrum.atlas.data.json_filter.IterJPointerFilter",
                     "init_params": {},
                     "exec_params": {
                         "path": "/glif/neuronal_models/0/neuronal_model_runs/0"
@@ -119,7 +119,7 @@
             "workflow": [
                 {
                     "type": "xform",
-                    "name": "airavata_cerebrum.atlas.data.base.JPointerFilter",
+                    "name": "airavata_cerebrum.atlas.data.json_filter.JPointerFilter",
                     "init_params": {},
                     "exec_params": {
                         "paths": [
@@ -151,7 +151,7 @@
                             "workflow": [
                                 {
                                     "type": "xform",
-                                    "name": "airavata_cerebrum.atlas.data.base.JPointerFilter",
+                                    "name": "airavata_cerebrum.atlas.data.json_filter.JPointerFilter",
                                     "init_params": {},
                                     "exec_params": {
                                         "paths": [
@@ -160,8 +160,7 @@
                                         ],
                                         "keys": [
                                             "inh_fraction",
-                                            "region_fraction",
-                                            "fraction"
+                                            "region_fraction"
                                         ]
                                     }
                                 }
@@ -202,7 +201,7 @@
                             "workflow": [
                                 {
                                     "type": "xform",
-                                    "name": "airavata_cerebrum.atlas.data.base.JPointerFilter",
+                                    "name": "airavata_cerebrum.atlas.data.json_filter.JPointerFilter",
                                     "init_params": {},
                                     "exec_params": {
                                         "paths": [
@@ -254,7 +253,7 @@
                             "workflow": [
                                 {
                                     "type": "xform",
-                                    "name": "airavata_cerebrum.atlas.data.base.JPointerFilter",
+                                    "name": "airavata_cerebrum.atlas.data.json_filter.JPointerFilter",
                                     "init_params": {},
                                     "exec_params": {
                                         "paths": [
@@ -306,7 +305,7 @@
                             "workflow": [
                                 {
                                     "type": "xform",
-                                    "name": "airavata_cerebrum.atlas.data.base.JPointerFilter",
+                                    "name": "airavata_cerebrum.atlas.data.json_filter.JPointerFilter",
                                     "init_params": {},
                                     "exec_params": {
                                         "paths": [
@@ -358,7 +357,7 @@
                             "workflow": [
                                 {
                                     "type": "xform",
-                                    "name": "airavata_cerebrum.atlas.data.base.JPointerFilter",
+                                    "name": "airavata_cerebrum.atlas.data.json_filter.JPointerFilter",
                                     "init_params": {},
                                     "exec_params": {
                                         "paths": [
@@ -410,7 +409,7 @@
                             "workflow": [
                                 {
                                     "type": "xform",
-                                    "name": "airavata_cerebrum.atlas.data.base.JPointerFilter",
+                                    "name": "airavata_cerebrum.atlas.data.json_filter.JPointerFilter",
                                     "init_params": {},
                                     "exec_params": {
                                         "paths": [

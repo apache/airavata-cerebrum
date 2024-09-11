@@ -4,7 +4,8 @@ import allensdk.core.cell_types_cache
 import allensdk.api.queries.cell_types_api
 import allensdk.api.queries.glif_api
 
-from ..log.logging import LOGGER
+from .. import base
+from ..util.log.logging import LOGGER
 
 
 class CTDbCellCacheQuery:
@@ -20,7 +21,7 @@ class CTDbCellCacheQuery:
         self.name = "allensdk.core.cell_types_cache.CellTypesCache"
         self.download_base = params["download_base"]
 
-    def run(self, in_stream, **run_params):
+    def run(self, in_stream: typing.Iterable, **run_params) -> typing.Iterable:
         """
         Get the cell types information from allensdk.core.cell_types_cache.CellTypesCache
 
@@ -68,7 +69,7 @@ class CTDbCellApiQuery:
     def __init__(self, **params):
         self.name = "allensdk.api.queries.cell_types_api.CellTypesApi"
 
-    def run(self, in_stream, **run_params):
+    def run(self, in_stream: typing.Iterable, **run_params) -> typing.Iterable:
         """
         Get the cell types information from allensdk.api.queries.cell_types_api.CellTypesApi
 
@@ -91,10 +92,11 @@ class CTDbCellApiQuery:
         rarg = (
             {**default_args, **run_params} if run_params else default_args
         )
+        sp_arg = [rarg["species"]] if rarg["species"] else None
         #
         LOGGER.debug("CTDbCellApiQuery Args : %s", rarg)
         ctxa = allensdk.api.queries.cell_types_api.CellTypesApi()
-        ct_list = ctxa.list_cells_api(species=rarg["species"])
+        ct_list = ctxa.list_cells_api(species=sp_arg)
         LOGGER.debug("CTDbCellApiQuery CT List : %d", len(ct_list))
         return ct_list
 
@@ -150,94 +152,22 @@ class CTDbGlifApiQuery:
             )
 
 
-class CTDbCellAttrMapper:
-    def __init__(self, **init_params):
-        """
-        Attribute value mapper
-
-        Parameters
-        ----------
-        attribute : str
-           Attribute of the cell type; key of the cell type descr. dict
-        """
-        self.attr = init_params["attribute"]
-
-    def xform(self, in_iter: typing.Iterable, **params):
-        """
-        Get values from cell type descriptions
-
-        Parameters
-        ----------
-        in_iter : Iterator
-           iterator of cell type descriptions
-        attribute : str
-           Attribute of the cell type; key of the cell type descr. dict
-
-        Returns
-        -------
-        value_iter: iterator
-           iterator of values from cell type descriptions for given attribute
-        """
-        return iter(x[self.attr] for x in in_iter)
-
-
-class CTDbCellAttrFilter:
-    def __init__(self, **init_params):
-        self.name = __name__ + ".CTDbCellAttrFilter"
-        self.key_fn = lambda x: x
-
-    def xform(self, ct_iter, **params):
-        """
-        Filter cell type descriptions matching all the values for the given attrs.
-
-        Parameters
-        ----------
-        ct_iter : Iterator
-           iterator of cell type descriptions
-        filter_params: requires the following keyword parameters
-        {
-            filters (mandatory): Iterater of triples [attribute, bin_op, value]
-                attribute : attribute of the cell type;
-                  key of the cell type descr. dict
-                bin_op    : binary operation special function (mandatory)
-                value     : attributes acceptable value (mandatory)
-                  value in the cell type descr. dict
-        }
-
-        Returns
-        -------
-        ct_iter: iterator
-           iterator of cell type descriptions
-        """
-        LOGGER.debug("CTDbCellAttrFilter Args : %s", params)
-        filters_itr = params["filters"]
-        if params and "key" in params and params["key"]:
-            self.key_fn = lambda x: x[params["key"]]
-        return iter(
-            x
-            for x in ct_iter
-            if x and all(
-                getattr(self.key_fn(x)[attr], bin_op)(val)
-                for attr, bin_op, val in filters_itr
-            )
-        )
-
-
 #
 # Query and Xform Registers
 #
-ABMCT_QUERY_REGISTER = {
-    "CTDbCellCacheQuery": CTDbCellCacheQuery,
-    "CTDbCellApiQuery": CTDbCellApiQuery,
-    "CTDbGlifApiQuery": CTDbGlifApiQuery,
-    __name__ + ".CTDbCellCacheQuery": CTDbCellCacheQuery,
-    __name__ + ".CTDbCellApiQuery": CTDbCellApiQuery,
-    __name__ + ".CTDbGlifApiQuery": CTDbGlifApiQuery,
-}
+base.DbQuery.register(CTDbCellCacheQuery)
+base.DbQuery.register(CTDbGlifApiQuery)
+base.DbQuery.register(CTDbCellApiQuery)
+#
 
-ABMCT_XFORM_REGISTER = {
-    "CTDbCellAttrFilter": CTDbCellAttrFilter,
-    __name__ + ".CTDbCellAttrFilter": CTDbCellAttrFilter,
-    "CTDbCellAttrMapper": CTDbCellAttrMapper,
-    __name__ + ".CTDbCellAttrMapper": CTDbCellAttrMapper,
-}
+
+def query_register():
+    return [
+        CTDbCellCacheQuery,
+        CTDbCellApiQuery,
+        CTDbGlifApiQuery,
+    ]
+
+
+def xform_register():
+    return []

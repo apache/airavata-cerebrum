@@ -50,6 +50,22 @@
                     }
                 }
             ]
+        },
+        "airavata_cerebrum.atlas.data.ai_synphys": {
+            "workflow": [
+                {
+                    "type": "query",
+                    "name": "airavata_cerebrum.atlas.data.ai_synphys.AISynPhysQuery",
+                    "init_params": {
+                        "download_base": "./cache/ai_synphys/"
+                    },
+                    "exec_params": {
+                        "layer": [
+                            "L4"
+                        ]
+                    }
+                }
+            ]
         }
     }
 }

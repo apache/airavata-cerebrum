@@ -8,7 +8,8 @@ import anndata
 import matplotlib.pyplot as plt
 import abc_atlas_access.abc_atlas_cache.abc_project_cache as abc_cache
 
-from ..log.logging import LOGGER
+from ..util.log.logging import LOGGER
+from .. import base
 
 PARCEL_META_DATA_KEY = "cell_metadata_with_parcellation_annotation"
 MERFISH_CCF_DATASET_KEY = "MERFISH-C57BL6J-638850-CCF"
@@ -972,9 +973,9 @@ class ABCDbMERFISH_CCFQuery:
              lis of regions of interest
         Returns
         -------
-        dict of elements for each sub-regio:
+        dict of elements for each sub-region:
         {
-            subr 1 : {}
+            subr_1 : {}
         }
         """
         #
@@ -990,9 +991,17 @@ class ABCDbMERFISH_CCFQuery:
         ]
 
 
-ABC_QUERY_REGISTER = {
-    "ABCDbMERFISH_CCFQuery": ABCDbMERFISH_CCFQuery,
-    __name__ + ".ABCDbMERFISH_CCFQuery": ABCDbMERFISH_CCFQuery,
-}
+#
+# ------- Registers -----
+#
+base.DbQuery.register(ABCDbMERFISH_CCFQuery)
 
-ABC_XFORM_REGISTER = {}
+
+def query_register() -> typing.List[typing.Type]:
+    return [
+        ABCDbMERFISH_CCFQuery,
+    ]
+
+
+def xform_register():
+    return []

@@ -3,26 +3,24 @@ import json
 import typing
 import os
 import pathlib
-from airavata_cerebrum.atlas.data.base import (
-    run_db_conn_workflows,
-    run_db_conn_xformers,
+from airavata_cerebrum.workflow import (
+    run_db_connect_workflows,
+    run_op_xformers,
     dbconn2locations,
-    load_json,
-    save_json,
+
+)
+import airavata_cerebrum.util.io  as io_util 
+from airavata_cerebrum.model.desc import (
     ModelDescConfig
 )
-import airavata_cerebrum.atlas.operations.netops as netops
-import airavata_cerebrum.atlas.model.structure as structure
-import airavata_cerebrum.atlas.model.mousev1 as mousev1
+import airavata_cerebrum.operations.netops as netops
+import airavata_cerebrum.model.structure as structure
+import airavata_cerebrum.model.mousev1 as mousev1
 
 logging.basicConfig(level=logging.INFO)
 
 
 class ModelDescription:
-    def output_location(self, key: str):
-        file_name = self.model_config.output_json(key)
-        return pathlib.PurePath(self.model_desc_dir, file_name)
-
     def __init__(
         self,
         model_config: ModelDescConfig,
@@ -48,38 +46,47 @@ class ModelDescription:
             os.makedirs(self.model_dir)
         self.net_model = structure.Network(name=self.model_name)
 
+    def output_location(self, key: str):
+        file_name = self.model_config.out_json(key)
+        return pathlib.PurePath(self.model_desc_dir, file_name)
+
     def download_db_data(self):
         db_connect_config = self.model_config.get_config(ModelDescConfig.DB_CONNECT_KEY)
-        db_connect_output = run_db_conn_workflows(db_connect_config)
+        db_connect_output = run_db_connect_workflows(db_connect_config)
         if self.save_output:
-            save_json(db_connect_output,
-                      self.output_location(ModelDescConfig.DB_CONNECT_KEY), indent=4)
+            io_util.dump(db_connect_output,
+                         self.output_location(ModelDescConfig.DB_CONNECT_KEY),
+                         indent=4)
         return db_connect_output
 
     def xform_db_data(self):
         db_connect_key = ModelDescConfig.DB_CONNECT_KEY
         db_xform_key = ModelDescConfig.DB_XFORM_KEY
-        db_connect_data = load_json(self.output_location(db_connect_key))
+        db_connect_data = io_util.load(self.output_location(db_connect_key))
         db_xform_config = self.model_config.get_config(db_xform_key)
-        db_xformed_data = run_db_conn_xformers(db_connect_data, db_xform_config)
-        if self.save_output:
-            save_json(db_xformed_data, self.output_location(db_xform_key), indent=4)
+        db_xformed_data = None
+        if db_connect_data:
+            db_xformed_data = run_op_xformers(db_connect_data, db_xform_config)
+        if self.save_output and db_xformed_data:
+            io_util.dump(db_xformed_data, self.output_location(db_xform_key), indent=4)
         return db_xformed_data
 
     def map_db_data_locations(self):
         db_loc_map_key = ModelDescConfig.DB_LOCATION_MAP_KEY
         db_xform_key = ModelDescConfig.DB_XFORM_KEY
         db_location_map = self.model_config.get_config(db_loc_map_key)
-        db_xformed_data = load_json(self.output_location(db_xform_key))
-        network_desc_output = dbconn2locations(db_xformed_data, db_location_map)
-        if self.save_output:
-            save_json(
+        db_xformed_data = io_util.load(self.output_location(db_xform_key))
+        network_desc_output = None
+        if db_xformed_data:
+            network_desc_output = dbconn2locations(db_xformed_data, db_location_map)
+        if self.save_output and network_desc_output:
+            io_util.dump(
                 network_desc_output, self.output_location(db_loc_map_key), indent=4
             )
         return network_desc_output
 
     def atlasdata2netstruct(self):
-        network_desc_output = load_json(
+        network_desc_output = io_util.load(
             self.output_location(ModelDescConfig.DB_XFORM_KEY)
         )
         self.net_model = netops.atlasdata2network(
@@ -91,12 +98,12 @@ class ModelDescription:
         return self.net_model
 
     def update_user_input(self):
-        import airavata_cerebrum.atlas.model.structure as structure
+        import airavata_cerebrum.model.structure as structure
 
         if self.model_patch:
             #
             user_update = structure.Network.model_validate(
-                load_json(self.model_patch)
+                io_util.load(self.model_patch)
             )
             # Update user preference
             self.net_model = netops.update_user_input(self.net_model, user_update)
@@ -110,7 +117,7 @@ class ModelDescription:
         return self.net_model
 
     def build_bmtk(self):
-        import airavata_cerebrum.atlas.model.builder as builder
+        import airavata_cerebrum.model.builder as builder
 
         #
         #
@@ -119,10 +126,11 @@ class ModelDescription:
         bmtk_net.save(str(self.model_dir))
 
 
-def abm_ct_model():
-    model_cfg = ModelDescConfig({"config": "config.json"})
+def v1l4_model_desc(config_files={"config": "config.json"},
+                    config_dir="./v1l4/description/"):
     model_base_dir = "./"
     model_name = "v1l4"
+    model_cfg = ModelDescConfig(config_files, config_dir)
     model_patch = "v1l4/description/model_patch.json"
     return ModelDescription(
         model_cfg,
@@ -136,7 +144,7 @@ def abm_ct_model():
 
 
 def main():
-    model_dex = abm_ct_model()
+    model_dex = v1l4_model_desc()
     model_dex.download_db_data()
     model_dex.xform_db_data()
     model_dex.map_db_data_locations()
@@ -148,6 +156,6 @@ def main():
 # if __name__ == "__main__":
 #     main()
 
-model_dex = abm_ct_model()
-network_desc_output = model_dex.map_db_data_locations()
-net_model = model_dex.atlasdata2netstruct()
+# model_dex = abm_ct_model()
+# network_desc_output = model_dex.map_db_data_locations()
+# net_model = model_dex.atlasdata2netstruct()

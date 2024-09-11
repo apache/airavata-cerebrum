@@ -1,6 +1,6 @@
 import typing
 import jsonpath
-from ..log.logging import LOGGER
+from ..util.log.logging import LOGGER
 from . import structure
 
 

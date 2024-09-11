@@ -3,7 +3,7 @@ import numpy as np
 import scipy
 import scipy.stats
 import typing
-from ..data import abc_mouse
+from ..dataset import abc_mouse
 from ..model import structure
 
 

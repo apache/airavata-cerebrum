@@ -4,7 +4,8 @@ from aisynphys.database import SynphysDatabase
 from aisynphys.cell_class import CellClass, classify_cells, classify_pairs
 from aisynphys.connectivity import measure_connectivity
 
-from ..log.logging import LOGGER
+from .. import base
+from ..util.log.logging import LOGGER
 
 
 class CellClassSelection(
@@ -124,9 +125,16 @@ class AISynPhysQuery:
         ]
 
 
-AISYNPHYS_QUERY_REGISTER = {
-    "AISynPhysQuery": AISynPhysQuery,
-    __name__ + ".AISynPhysQuery": AISynPhysQuery,
-}
+#
+#  ----- Registers and Filters ---
+base.DbQuery.register(AISynPhysQuery)
 
-AISYNPHYS_XFORM_REGISTER = {}
+
+def query_register():
+    return [
+        AISynPhysQuery,
+    ]
+
+
+def xform_register():
+    return []
