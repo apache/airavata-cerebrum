@@ -1,167 +1,24 @@
 {
-    "db_connect": {
-        "airavata_cerebrum.atlas.data.abm_celltypes": {
-            "db_name": "airavata_cerebrum.atlas.data.abm_celltypes",
-            "workflow": [
-                {
-                    "type": "query",
-                    "name": "airavata_cerebrum.atlas.data.abm_celltypes.CTDbCellApiQuery",
-                    "init_params": {},
-                    "exec_params": {
-                        "species": [
-                            "Mus musculus"
-                        ]
-                    }
-                },
-                {
-                    "type": "xform",
-                    "name": "airavata_cerebrum.atlas.data.base.TQDMWrapper",
-                    "init_params": {},
-                    "exec_params": {}
-                },
-                {
-                    "type": "xform",
-                    "name": "airavata_cerebrum.atlas.data.abm_celltypes.CTDbCellAttrFilter",
-                    "init_params": {},
-                    "exec_params": {
-                        "filters": [
-                            [
-                                "structure__layer",
-                                "__eq__",
-                                "4"
-                            ],
-                            [
-                                "structure_parent__acronym",
-                                "__eq__",
-                                "VISp"
-                            ]
-                        ]
-                    }
-                },
-                {
-                    "type": "query",
-                    "name": "airavata_cerebrum.atlas.data.abm_celltypes.CTDbGlifApiQuery",
-                    "init_params": {},
-                    "exec_params": {
-                        "key": "specimen__id",
-                        "first": "True"
-                    }
-                }
-            ]
-        },
-        "airavata_cerebrum.atlas.data.abc_mouse": {
-            "workflow": [
-                {
-                    "type": "query",
-                    "name": "airavata_cerebrum.atlas.data.abc_mouse.ABCDbMERFISH_CCFQuery",
-                    "init_params": {
-                        "download_base": "./cache/abc_mouse/"
-                    },
-                    "exec_params": {
-                        "region": [
-                            "VISp"
-                        ]
-                    }
-                }
-            ]
-        },
-        "airavata_cerebrum.atlas.data.ai_synphys": {
-            "workflow": [
-                {
-                    "type": "query",
-                    "name": "airavata_cerebrum.atlas.data.ai_synphys.AISynPhysQuery",
-                    "init_params": {
-                        "download_base": "./cache/ai_synphys/"
-                    },
-                    "exec_params": {
-                        "layer": [
-                            "L4"
-                        ]
-                    }
-                }
-            ]
-        }
-    },
-    "db_xform": {
-        "airavata_cerebrum.atlas.data.abm_celltypes": {
-            "db_name": "airavata_cerebrum.atlas.data.abm_celltypes",
-            "workflow": [
-                {
-                    "type": "xform",
-                    "name": "airavata_cerebrum.atlas.data.json_filter.IterJPatchFilter",
-                    "init_params": {},
-                    "exec_params": {
-                        "filter_exp": "$.glif.neuronal_models[?('3 LIF + Afterspike Currents' in @.name)]",
-                        "dest_path": "/glif/neuronal_models"
-                    }
-                },
-                {
-                    "type": "xform",
-                    "name": "airavata_cerebrum.atlas.data.json_filter.IterJPatchFilter",
-                    "init_params": {},
-                    "exec_params": {
-                        "filter_exp": "$.glif.neuronal_models[0].neuronal_model_runs[?(@.explained_variance_ratio > 0.7)]",
-                        "dest_path": "/glif/neuronal_models/0/neuronal_model_runs"
-                    }
-                },
-                {
-                    "type": "xform",
-                    "name": "airavata_cerebrum.atlas.data.json_filter.IterJPointerFilter",
-                    "init_params": {},
-                    "exec_params": {
-                        "path": "/glif/neuronal_models/0/neuronal_model_runs/0"
-                    }
-                }
-            ]
-        },
-        "airavata_cerebrum.atlas.data.abc_mouse": {
-            "db_name": "airavata_cerebrum.atlas.data.abc_mouse",
-            "workflow": [
-                {
-                    "type": "xform",
-                    "name": "airavata_cerebrum.atlas.data.json_filter.JPointerFilter",
-                    "init_params": {},
-                    "exec_params": {
-                        "paths": [
-                            "/0/VISp/VISp4"
-                        ],
-                        "keys": [
-                            "VISp4"
-                        ]
-                    }
-                }
-            ]
-        }
-    },
-    "db_location_map": {
+    "data2model_map": {
         "locations": {
             "VISp4": {
-                "region_meta": {
-                    "property_map": {
-                        "neurons": [
-                            "Scnn1a",
-                            "Rorb",
-                            "Vip",
-                            "Pvalb",
-                            "Sst"
-                        ]
-                    },
-                    "db_connections": {
-                        "airavata_cerebrum.atlas.data.abc_mouse": {
+                "meta": {
+                    "neurons": [
+                        "Scnn1a",
+                        "Rorb",
+                        "Vip",
+                        "Pvalb",
+                        "Sst"
+                    ],
+                    "source_data": {
+                        "airavata_cerebrum.dataset.abc_mouse": {
                             "workflow": [
                                 {
                                     "type": "xform",
-                                    "name": "airavata_cerebrum.atlas.data.json_filter.JPointerFilter",
+                                    "name": "airavata_cerebrum.operations.abc_mouse.ABCDbMERFISH_CCFFractionFilter",
                                     "init_params": {},
                                     "exec_params": {
-                                        "paths": [
-                                            "/0/VISp4/inhibitory fraction",
-                                            "/0/VISp4/fraction wi. region"
-                                        ],
-                                        "keys": [
-                                            "inh_fraction",
-                                            "region_fraction"
-                                        ]
+                                        "region": "VISp4"
                                     }
                                 }
                             ]
@@ -169,51 +26,33 @@
                     }
                 },
                 "Scnn1a": {
-                    "property_map": {
+                    "meta": {
                         "ei": "e"
                     },
-                    "db_connections": {
-                        "airavata_cerebrum.atlas.data.abm_celltypes": {
+                    "source_data": {
+                        "airavata_cerebrum.dataset.abm_celltypes": {
                             "workflow": [
                                 {
                                     "type": "xform",
-                                    "name": "airavata_cerebrum.atlas.data.abm_celltypes.CTDbCellAttrFilter",
+                                    "name": "airavata_cerebrum.operations.abm_celltypes.CTPropertyFilter",
                                     "init_params": {},
                                     "exec_params": {
                                         "key": "ct",
-                                        "filters": [
-                                            [
-                                                "line_name",
-                                                "__contains__",
-                                                "Scnn1a"
-                                            ],
-                                            [
-                                                "cell_reporter_status",
-                                                "__eq__",
-                                                "positive"
-                                            ]
-                                        ]
+                                        "line": "Scnn1a",
+                                        "reporter_status": "positive"
                                     }
                                 }
                             ]
                         },
-                        "airavata_cerebrum.atlas.data.abc_mouse": {
+                        "airavata_cerebrum.dataset.abc_mouse": {
                             "workflow": [
                                 {
                                     "type": "xform",
-                                    "name": "airavata_cerebrum.atlas.data.json_filter.JPointerFilter",
+                                    "name": "airavata_cerebrum.operations.abc_mouse.ABCDbMERFISH_CCFFractionFilter",
                                     "init_params": {},
                                     "exec_params": {
-                                        "paths": [
-                                            "/0/VISp4/inhibitory fraction",
-                                            "/0/VISp4/fraction wi. region",
-                                            "/0/VISp4/IT fraction"
-                                        ],
-                                        "keys": [
-                                            "inh_fraction",
-                                            "region_fraction",
-                                            "fraction"
-                                        ]
+                                        "region": "VISp4",
+                                        "cell_type": "IT"
                                     }
                                 }
                             ]
@@ -221,51 +60,33 @@
                     }
                 },
                 "Rorb": {
-                    "property_map": {
+                    "meta": {
                         "ei": "e"
                     },
-                    "db_connections": {
-                        "airavata_cerebrum.atlas.data.abm_celltypes": {
+                    "source_data": {
+                        "airavata_cerebrum.dataset.abm_celltypes": {
                             "workflow": [
                                 {
                                     "type": "xform",
-                                    "name": "airavata_cerebrum.atlas.data.abm_celltypes.CTDbCellAttrFilter",
+                                    "name": "airavata_cerebrum.operations.abm_celltypes.CTPropertyFilter",
                                     "init_params": {},
                                     "exec_params": {
                                         "key": "ct",
-                                        "filters": [
-                                            [
-                                                "line_name",
-                                                "__contains__",
-                                                "Rorb"
-                                            ],
-                                            [
-                                                "cell_reporter_status",
-                                                "__eq__",
-                                                "positive"
-                                            ]
-                                        ]
+                                        "line": "Rorb",
+                                        "reporter_status": "positive"
                                     }
                                 }
                             ]
                         },
-                        "airavata_cerebrum.atlas.data.abc_mouse": {
+                        "airavata_cerebrum.dataset.abc_mouse": {
                             "workflow": [
                                 {
                                     "type": "xform",
-                                    "name": "airavata_cerebrum.atlas.data.json_filter.JPointerFilter",
+                                    "name": "airavata_cerebrum.operations.abc_mouse.ABCDbMERFISH_CCFFractionFilter",
                                     "init_params": {},
                                     "exec_params": {
-                                        "paths": [
-                                            "/0/VISp4/inhibitory fraction",
-                                            "/0/VISp4/fraction wi. region",
-                                            "/0/VISp4/IT fraction"
-                                        ],
-                                        "keys": [
-                                            "inh_fraction",
-                                            "region_fraction",
-                                            "fraction"
-                                        ]
+                                        "region": "VISp4",
+                                        "cell_type": "IT"
                                     }
                                 }
                             ]
@@ -273,51 +94,33 @@
                     }
                 },
                 "Vip": {
-                    "property_map": {
+                    "meta": {
                         "ei": "i"
                     },
-                    "db_connections": {
-                        "airavata_cerebrum.atlas.data.abm_celltypes": {
+                    "source_data": {
+                        "airavata_cerebrum.dataset.abm_celltypes": {
                             "workflow": [
                                 {
                                     "type": "xform",
-                                    "name": "airavata_cerebrum.atlas.data.abm_celltypes.CTDbCellAttrFilter",
+                                    "name": "airavata_cerebrum.operations.abm_celltypes.CTPropertyFilter",
                                     "init_params": {},
                                     "exec_params": {
                                         "key": "ct",
-                                        "filters": [
-                                            [
-                                                "line_name",
-                                                "__contains__",
-                                                "Vip-"
-                                            ],
-                                            [
-                                                "cell_reporter_status",
-                                                "__eq__",
-                                                "positive"
-                                            ]
-                                        ]
+                                        "line": "Vip-",
+                                        "reporter_status": "positive"
                                     }
                                 }
                             ]
                         },
-                        "airavata_cerebrum.atlas.data.abc_mouse": {
+                        "airavata_cerebrum.dataset.abc_mouse": {
                             "workflow": [
                                 {
                                     "type": "xform",
-                                    "name": "airavata_cerebrum.atlas.data.json_filter.JPointerFilter",
+                                    "name": "airavata_cerebrum.operations.abc_mouse.ABCDbMERFISH_CCFFractionFilter",
                                     "init_params": {},
                                     "exec_params": {
-                                        "paths": [
-                                            "/0/VISp4/inhibitory fraction",
-                                            "/0/VISp4/fraction wi. region",
-                                            "/0/VISp4/Vip fraction"
-                                        ],
-                                        "keys": [
-                                            "inh_fraction",
-                                            "region_fraction",
-                                            "fraction"
-                                        ]
+                                        "region": "VISp4",
+                                        "cell_type": "Vip"
                                     }
                                 }
                             ]
@@ -325,51 +128,33 @@
                     }
                 },
                 "Pvalb": {
-                    "property_map": {
+                    "meta": {
                         "ei": "i"
                     },
-                    "db_connections": {
-                        "airavata_cerebrum.atlas.data.abm_celltypes": {
+                    "source_data": {
+                        "airavata_cerebrum.dataset.abm_celltypes": {
                             "workflow": [
                                 {
                                     "type": "xform",
-                                    "name": "airavata_cerebrum.atlas.data.abm_celltypes.CTDbCellAttrFilter",
+                                    "name": "airavata_cerebrum.operations.abm_celltypes.CTPropertyFilter",
                                     "init_params": {},
                                     "exec_params": {
                                         "key": "ct",
-                                        "filters": [
-                                            [
-                                                "line_name",
-                                                "__contains__",
-                                                "Pvalb-IRES"
-                                            ],
-                                            [
-                                                "cell_reporter_status",
-                                                "__eq__",
-                                                "positive"
-                                            ]
-                                        ]
+                                        "line": "Pvalb-IRES",
+                                        "reporter_status": "positive"
                                     }
                                 }
                             ]
                         },
-                        "airavata_cerebrum.atlas.data.abc_mouse": {
+                        "airavata_cerebrum.dataset.abc_mouse": {
                             "workflow": [
                                 {
                                     "type": "xform",
-                                    "name": "airavata_cerebrum.atlas.data.json_filter.JPointerFilter",
+                                    "name": "airavata_cerebrum.operations.abc_mouse.ABCDbMERFISH_CCFFractionFilter",
                                     "init_params": {},
                                     "exec_params": {
-                                        "paths": [
-                                            "/0/VISp4/inhibitory fraction",
-                                            "/0/VISp4/fraction wi. region",
-                                            "/0/VISp4/Pvalb fraction"
-                                        ],
-                                        "keys": [
-                                            "inh_fraction",
-                                            "region_fraction",
-                                            "fraction"
-                                        ]
+                                        "region": "VISp4",
+                                        "cell_type": "Pvalb"
                                     }
                                 }
                             ]
@@ -377,57 +162,161 @@
                     }
                 },
                 "Sst": {
-                    "property_map": {
+                    "meta": {
                         "ei": "i"
                     },
-                    "db_connections": {
-                        "airavata_cerebrum.atlas.data.abm_celltypes": {
+                    "source_data": {
+                        "airavata_cerebrum.dataset.abm_celltypes": {
                             "workflow": [
                                 {
                                     "type": "xform",
-                                    "name": "airavata_cerebrum.atlas.data.abm_celltypes.CTDbCellAttrFilter",
+                                    "name": "airavata_cerebrum.operations.abm_celltypes.CTPropertyFilter",
                                     "init_params": {},
                                     "exec_params": {
                                         "key": "ct",
-                                        "filters": [
-                                            [
-                                                "line_name",
-                                                "__contains__",
-                                                "Sst"
-                                            ],
-                                            [
-                                                "cell_reporter_status",
-                                                "__eq__",
-                                                "positive"
-                                            ]
-                                        ]
+                                        "line": "Sst",
+                                        "reporter_status": "positive"
                                     }
                                 }
                             ]
                         },
-                        "airavata_cerebrum.atlas.data.abc_mouse": {
+                        "airavata_cerebrum.dataset.abc_mouse": {
                             "workflow": [
                                 {
                                     "type": "xform",
-                                    "name": "airavata_cerebrum.atlas.data.json_filter.JPointerFilter",
+                                    "name": "airavata_cerebrum.operations.abc_mouse.ABCDbMERFISH_CCFFractionFilter",
                                     "init_params": {},
                                     "exec_params": {
-                                        "paths": [
-                                            "/0/VISp4/inhibitory fraction",
-                                            "/0/VISp4/fraction wi. region",
-                                            "/0/VISp4/Sst fraction"
-                                        ],
-                                        "keys": [
-                                            "inh_fraction",
-                                            "region_fraction",
-                                            "fraction"
-                                        ]
+                                        "region": "VISp4",
+                                        "cell_type": "Pvalb"
                                     }
                                 }
                             ]
                         }
                     }
                 }
+            }
+        },
+        "connections": {
+        },
+    },
+    "source_data": {
+        "airavata_cerebrum.dataset.abm_celltypes": {
+            "db_connect": {
+                "label": "Allen Cell Types Databse",
+                "workflow": [
+                    {
+                        "type": "query",
+                        "label": "Query w. CT API",
+                        "name": "airavata_cerebrum.dataset.abm_celltypes.CTDbCellApiQuery",
+                        "init_params": {},
+                        "exec_params": {
+                            "species": "Mus musculus"
+                        }
+                    },
+                    {
+                        "type": "xform",
+                        "label": "Progress Bar",
+                        "name": "airavata_cerebrum.operations.xform.TQDMWrapper",
+                        "init_params": {},
+                        "exec_params": {}
+                    },
+                    {
+                        "type": "xform",
+                        "label": "Filter by Layer",
+                        "name": "airavata_cerebrum.operations.abm_celltypes.CTPropertyFilter",
+                        "init_params": {},
+                        "exec_params": {
+                            "layer": "4",
+                            "region": "VISp"
+                        }
+                    },
+                    {
+                        "type": "query",
+                        "label": "Query GLIF Models",
+                        "name": "airavata_cerebrum.dataset.abm_celltypes.CTDbGlifApiQuery",
+                        "init_params": {},
+                        "exec_params": {
+                            "key": "specimen__id",
+                            "first": true
+                        }
+                    }
+                ]
+            },
+            "post_ops": {
+                "label": "GLIF Models w. Explained Variance",
+                "workflow": [
+                    {
+                        "type": "xform",
+                        "name": "airavata_cerebrum.operations.abm_celltypes.CTModelNameFilter",
+                        "init_params": {},
+                        "exec_params": {
+                            "name": "3 LIF + Afterspike Currents"
+                        }
+                    },
+                    {
+                        "type": "xform",
+                        "name": "airavata_cerebrum.operations.abm_celltypes.CTExplainedRatioFilter",
+                        "init_params": {},
+                        "exec_params": {
+                            "ratio": 0.7
+                        }
+                    }
+                ]
+            },
+        },
+        "airavata_cerebrum.dataset.abc_mouse": {
+            "db_connect": {
+                "label": "Allen Brain Cell Atlas",
+                "workflow": [
+                    {
+                        "type": "query",
+                        "label": "Query ABC MERFISH dataset",
+                        "name": "airavata_cerebrum.dataset.ABCDbMERFISH_CCFQuery",
+                        "init_params": {
+                            "download_base": "./cache/abc_mouse/"
+                        },
+                        "exec_params": {
+                            "region": [
+                                "VISp"
+                            ]
+                        }
+                    }
+                ]
+            },
+            "post_ops": {
+                "label": "ABC Region Filter",
+                "workflow": [
+                    {
+                        "type": "xform",
+                        "name": "airavata_cerebrum.operations.abc_mouse.ABCDbMERFISH_CCFLayerRegionFilter",
+                        "init_params": {},
+                        "exec_params": {
+                            "region": "VISp",
+                            "sub_region": "VISp4"
+                        }
+                    }
+                ]
+            }
+        },
+        "airavata_cerebrum.dataset.ai_synphys": {
+            "db_connect": {
+                "label": "Allen Syn Phys Database",
+                "workflow": [
+                    {
+                        "type": "query",
+                        "label": "AI Syn. Phys. Query",
+                        "name": "airavata_cerebrum.dataset.AISynPhysQuery",
+                        "init_params": {
+                            "download_base": "./cache/ai_synphys/"
+                        },
+                        "exec_params": {
+                            "layer": [
+                                "L4"
+                            ]
+                        }
+                    }
+                ]
             }
         }
     }

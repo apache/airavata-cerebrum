@@ -1,18 +1,14 @@
 import logging
-import json
 import typing
 import os
 import pathlib
 from airavata_cerebrum.workflow import (
     run_db_connect_workflows,
-    run_op_xformers,
-    dbconn2locations,
-
+    run_ops_workflows,
+    map_srcdata_locations,
 )
-import airavata_cerebrum.util.io  as io_util 
-from airavata_cerebrum.model.desc import (
-    ModelDescConfig
-)
+import airavata_cerebrum.util.io as cbmio
+import airavata_cerebrum.model.desc as cbmdesc
 import airavata_cerebrum.operations.netops as netops
 import airavata_cerebrum.model.structure as structure
 import airavata_cerebrum.model.mousev1 as mousev1
@@ -23,98 +19,99 @@ logging.basicConfig(level=logging.INFO)
 class ModelDescription:
     def __init__(
         self,
-        model_config: ModelDescConfig,
-        model_base: str,
-        model_name: str,
-        desc2region_mapper: typing.Callable,
-        desc2neuron_mapper: typing.Callable,
-        model_patch: str | pathlib.Path | None = None,
-        save_output: bool = True,
+        config: cbmdesc.ModelDescConfig,
+        region_mapper: typing.Callable,
+        neuron_mapper: typing.Callable,
+        custom_mod: str | pathlib.Path | None = None,
+        save_flag: bool = True,
+        out_format: str = "json"
     ) -> None:
-        self.model_config = model_config
-        self.model_name = model_name
-        self.desc2region_mapper = desc2region_mapper
-        self.desc2neuron_mapper = desc2neuron_mapper
-        self.model_base = model_base
-        self.model_patch = model_patch
-        self.save_output = save_output
-        self.model_dir = pathlib.PurePath(model_base, model_name)
-        self.model_desc_dir = pathlib.PurePath(self.model_dir, "description")
-        if not os.path.exists(self.model_dir):
-            os.makedirs(self.model_dir)
-        if not os.path.exists(self.model_desc_dir):
-            os.makedirs(self.model_dir)
-        self.net_model = structure.Network(name=self.model_name)
+        self.config = config
+        self.region_mapper = region_mapper
+        self.neuron_mapper = neuron_mapper
+        self.custom_mod = custom_mod
+        self.save_flag = save_flag
+        self.out_format = out_format
+        self.desc_dir = pathlib.PurePath(self.config.model_dir,
+                                         cbmdesc.DESCRIPTION_DIR)
+        if not os.path.exists(self.desc_dir):
+            os.makedirs(self.desc_dir)
+        self.model_struct = structure.Network(name=self.config.name)
 
     def output_location(self, key: str):
-        file_name = self.model_config.out_json(key)
-        return pathlib.PurePath(self.model_desc_dir, file_name)
+        file_name = self.config.out_prefix(key)
+        out_path = pathlib.PurePath(self.desc_dir, file_name)
+        return out_path.with_suffix("." + self.out_format)
 
     def download_db_data(self):
-        db_connect_config = self.model_config.get_config(ModelDescConfig.DB_CONNECT_KEY)
-        db_connect_output = run_db_connect_workflows(db_connect_config)
-        if self.save_output:
-            io_util.dump(db_connect_output,
-                         self.output_location(ModelDescConfig.DB_CONNECT_KEY),
-                         indent=4)
+        db_src_config = self.config.get_config(cbmdesc.DB_DATA_SRC_KEY)
+        db_connect_output = run_db_connect_workflows(db_src_config)
+        if self.save_flag:
+            cbmio.dump(db_connect_output,
+                       self.output_location(cbmdesc.DB_CONNECT_KEY),
+                       indent=4)
         return db_connect_output
 
-    def xform_db_data(self):
-        db_connect_key = ModelDescConfig.DB_CONNECT_KEY
-        db_xform_key = ModelDescConfig.DB_XFORM_KEY
-        db_connect_data = io_util.load(self.output_location(db_connect_key))
-        db_xform_config = self.model_config.get_config(db_xform_key)
-        db_xformed_data = None
+    def db_post_ops(self):
+        db_connect_key = cbmdesc.DB_CONNECT_KEY
+        db_postop_key = cbmdesc.DB_POSTOP_KEY
+        db_connect_data = cbmio.load(self.output_location(db_connect_key))
+        db_src_config = self.config.get_config(cbmdesc.DB_DATA_SRC_KEY)
+        db_post_op_data = None
         if db_connect_data:
-            db_xformed_data = run_op_xformers(db_connect_data, db_xform_config)
-        if self.save_output and db_xformed_data:
-            io_util.dump(db_xformed_data, self.output_location(db_xform_key), indent=4)
-        return db_xformed_data
+            db_post_op_data = run_ops_workflows(db_connect_data,
+                                                db_src_config,
+                                                cbmdesc.DB_POSTOP_KEY)
+        if self.save_flag and db_post_op_data:
+            cbmio.dump(db_post_op_data,
+                       self.output_location(db_postop_key),
+                       indent=4)
+        return db_post_op_data
 
-    def map_db_data_locations(self):
-        db_loc_map_key = ModelDescConfig.DB_LOCATION_MAP_KEY
-        db_xform_key = ModelDescConfig.DB_XFORM_KEY
-        db_location_map = self.model_config.get_config(db_loc_map_key)
-        db_xformed_data = io_util.load(self.output_location(db_xform_key))
-        network_desc_output = None
-        if db_xformed_data:
-            network_desc_output = dbconn2locations(db_xformed_data, db_location_map)
-        if self.save_output and network_desc_output:
-            io_util.dump(
-                network_desc_output, self.output_location(db_loc_map_key), indent=4
+    def map_srcdata2locations(self):
+        db_loc_map_key = cbmdesc.DB2MODEL_MAP_KEY
+        db_location_map = self.config.get_config(cbmdesc.DB2MODEL_MAP_KEY)
+        db_postop_data = cbmio.load(self.output_location(cbmdesc.DB_POSTOP_KEY))
+        db2location_output = None
+        if db_postop_data:
+            db2location_output = map_srcdata_locations(db_postop_data,
+                                                       db_location_map)
+        if self.save_flag and db2location_output:
+            cbmio.dump(
+                db2location_output, self.output_location(db_loc_map_key), indent=4
             )
-        return network_desc_output
+        return db2location_output
 
-    def atlasdata2netstruct(self):
-        network_desc_output = io_util.load(
-            self.output_location(ModelDescConfig.DB_XFORM_KEY)
+    def map_locdata2netstruct(self):
+        network_desc_output = cbmio.load(
+            self.output_location(cbmdesc.DB2MODEL_MAP_KEY)
         )
-        self.net_model = netops.atlasdata2network(
+        self.model_struct = netops.atlasdata2network(
             network_desc_output,
-            self.model_name,
-            self.desc2region_mapper,
-            self.desc2neuron_mapper,
+            self.config.name,
+            self.region_mapper,
+            self.neuron_mapper,
         )
-        return self.net_model
+        return self.model_struct
 
-    def update_user_input(self):
+    def apply_cusom_mod(self):
         import airavata_cerebrum.model.structure as structure
 
-        if self.model_patch:
+        if self.custom_mod:
             #
             user_update = structure.Network.model_validate(
-                io_util.load(self.model_patch)
+                cbmio.load(self.custom_mod)
             )
             # Update user preference
-            self.net_model = netops.update_user_input(self.net_model, user_update)
+            self.model_struct = netops.update_user_input(self.model_struct, user_update)
             # pprint.pp(net_model.model_dump())
             # print("----------------------")
         #
         # NCells
-        self.net_model = netops.fractions2ncells(self.net_model, 30000)
+        self.model_struct = netops.fractions2ncells(self.model_struct, 30000)
         # pprint.pp(net_model.model_dump())
         # print("----------------------")
-        return self.net_model
+        return self.model_struct
 
     def build_bmtk(self):
         import airavata_cerebrum.model.builder as builder
@@ -122,23 +119,27 @@ class ModelDescription:
         #
         #
         # Construct model
-        bmtk_net = builder.add_nodes_cylinder(self.net_model)
-        bmtk_net.save(str(self.model_dir))
+        bmtk_net = builder.add_nodes_cylinder(self.model_struct)
+        bmtk_net.save(str(self.config.model_dir))
 
 
 def v1l4_model_desc(config_files={"config": "config.json"},
                     config_dir="./v1l4/description/"):
     model_base_dir = "./"
     model_name = "v1l4"
-    model_cfg = ModelDescConfig(config_files, config_dir)
-    model_patch = "v1l4/description/model_patch.json"
+    model_custom_mod = "v1l4/description/model_patch.json"
+    model_cfg = cbmdesc.ModelDescConfig(
+        model_name,
+        model_base_dir,
+        config_files,
+        config_dir,
+        True
+    )
     return ModelDescription(
         model_cfg,
-        model_base_dir,
-        model_name,
-        mousev1.V1ModelDesc2Region,
-        mousev1.V1ModelDesc2Neuron,
-        model_patch,
+        mousev1.V1RegionMapper,
+        mousev1.V1NeuronMapper,
+        model_custom_mod,
         False,
     )
 
@@ -146,10 +147,10 @@ def v1l4_model_desc(config_files={"config": "config.json"},
 def main():
     model_dex = v1l4_model_desc()
     model_dex.download_db_data()
-    model_dex.xform_db_data()
-    model_dex.map_db_data_locations()
-    model_dex.atlasdata2netstruct()
-    model_dex.update_user_input()
+    model_dex.db_post_ops()
+    model_dex.map_srcdata2locations()
+    model_dex.map_locdata2netstruct()
+    model_dex.apply_cusom_mod()
     model_dex.build_bmtk()
 
 

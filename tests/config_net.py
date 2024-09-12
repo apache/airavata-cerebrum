@@ -4,10 +4,10 @@ import json
 
 #
 #
-import airavata_cerebrum.atlas.data.abc_mouse as abc_mouse
-import airavata_cerebrum.atlas.operations.netops as netops
-import airavata_cerebrum.atlas.model.builder as builder
-import airavata_cerebrum.atlas.model.structure as structure
+import airavata_cerebrum.dataset.abc_mouse as abc_mouse
+import airavata_cerebrum.operations.netops as netops
+import airavata_cerebrum.model.builder as builder
+import airavata_cerebrum.model.structure as structure
 
 
 LOCATION_CUSTOM_CONFIG = "./net_config/user_location_config.json"

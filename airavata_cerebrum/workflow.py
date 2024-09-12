@@ -3,91 +3,102 @@ import tqdm.contrib.logging as tqdm_log
 
 from . import register, base
 from .util.log.logging import LOGGER
+from .model import desc as cbmdesc
 
 
-def run_dc_workflow(
+def run_workflow(
     workflow_steps: typing.List[typing.Dict], wf_stream: typing.Iterable | None = None
 ) -> typing.Iterable | None:
     for wf_stx in workflow_steps:
-        sname = wf_stx["name"]
+        sname = wf_stx[cbmdesc.NAME_KEY]
+        slabel = wf_stx[cbmdesc.LABEL_KEY] if cbmdesc.LABEL_KEY in wf_stx else sname
         iparams: typing.Dict[str, typing.Any] = wf_stx["init_params"]
         eparams: typing.Dict[str, typing.Any] = wf_stx["exec_params"]
         match wf_stx["type"]:
             case "query":
-                LOGGER.info("Running Query : " + sname)
+                LOGGER.info("Start Query : {}",  slabel)
                 qobj: base.DbQuery | None = register.QUERY_REGISTER.object(
                     sname, **iparams
                 )
                 if qobj:
                     wf_stream = qobj.run(wf_stream, **eparams)
-                    LOGGER.info("Completed Query : " + sname)
+                    LOGGER.info("Complete Query : {}", slabel)
                 else:
-                    LOGGER.error("Failed to find Query : " + sname)
+                    LOGGER.error("Failed to find Query : {}",  sname)
             case "xform":
-                LOGGER.info("Running XFormer : " + wf_stx["name"])
+                LOGGER.info("Running XFormer : {}",  slabel)
                 fobj: typing.Union[base.OpXFormer, None] = (
                     register.XFORM_REGISTER.object(sname, **iparams)
                 )
                 if fobj and wf_stream:
                     wf_stream = fobj.xform(wf_stream, **eparams)
-                    LOGGER.info("Completed XForm : " + sname)
+                    LOGGER.info("Complete XForm : {}", slabel)
                 else:
-                    LOGGER.error("Failed to find XFormer : " + sname)
+                    LOGGER.error("Failed to find XFormer : {}" + sname)
     return wf_stream
 
 
 def run_db_connect_workflows(
-    db_conn_desc: typing.Dict[str, typing.Any]
+    source_data_desc: typing.Dict[str, typing.Any]
 ) -> typing.Dict[str, typing.Any]:
-    db_conn_output = {}
+    db_connect_output = {}
     #
-    for db_name, db_wflow in db_conn_desc.items():
-        LOGGER.info("Running workflow for db: " + db_name)
+    for db_name, db_cfg in source_data_desc.items():
+        db_label = db_name
+        if cbmdesc.LABEL_KEY in db_cfg:
+            db_label = db_cfg[cbmdesc.LABEL_KEY]
+        LOGGER.info("Start db_connect workflow for db: {}",  db_label)
         with tqdm_log.logging_redirect_tqdm():
-            model_itr = run_dc_workflow(db_wflow)
+            model_itr = run_workflow(db_cfg[cbmdesc.DB_CONNECT_KEY])
             if model_itr:
-                db_conn_output[db_name] = list(model_itr)
-        LOGGER.info("Completed workflow for db: " + db_name)
+                db_connect_output[db_name] = list(model_itr)
+        LOGGER.info("Complete db_connect workflow for db: {}", db_label)
     #
-    return db_conn_output
+    return db_connect_output
 
 
-def run_op_xformers(
+def run_ops_workflows(
     db_conn_data: typing.Dict[str, typing.Any],
-    xformers_config: typing.Dict[str, typing.Any],
+    ops_config_desc: typing.Dict[str, typing.Any],
+    ops_key: str | None = None
 ) -> typing.Dict[str, typing.Any]:
-    neuron_dc_map = {}
-    for db_name, wf_desc in xformers_config.items():
-        LOGGER.info("Processing xformers for db " + db_name)
-        wf_input = db_conn_data[db_name]
-        neuron_dc = list(run_dc_workflow(wf_desc["workflow"], wf_input))  # type: ignore
+    op_output_data = {}
+    for src_db, op_config in ops_config_desc.items():
+        LOGGER.info("Start op workflow for db {}", src_db)
+        wf_input = db_conn_data[src_db]
+        op_desc = op_config[ops_key] if ops_key else op_config
+        op_output = list(
+            run_workflow(op_desc[cbmdesc.WORKFLOW_KEY], wf_input) # type: ignore
+        )
         LOGGER.debug(
             ";".join(
                 (
-                    "WF Desc : " + str(wf_desc),
+                    "WF Desc : " + str(op_desc),
                     "WF IN:" + str(len(wf_input)),
                     "Neuron DC:" + str(len(wf_input)),
                 )
             )
         )
-        neuron_dc_map[db_name] = neuron_dc
-        LOGGER.info("Completed processing xformers for db " + db_name)
-    return neuron_dc_map
+        op_output_data[src_db] = op_output
+        LOGGER.info("Complete op workflow for db {}", src_db)
+    return op_output_data
 
 
-def dbconn2locations(
-    db_conn_output: typing.Dict[str, typing.Any],
-    network_desc: typing.Dict[str, typing.Any],
+def map_srcdata_locations(
+    source_data: typing.Dict[str, typing.Any],
+    data2loc_map: typing.Dict[str, typing.Any],
 ) -> typing.Dict[str, typing.Any]:
-    network_locations = {}
-    for location, location_desc in network_desc["locations"].items():
+    net_locations = {}
+    for location, location_desc in data2loc_map[cbmdesc.WORKFLOW_KEY].items():
         neuron_desc_map = {}
-        for neuron, neuron_desc in location_desc.items():
-            LOGGER.info("Processing db connection for neuron " + neuron)
-            db_conn_xformers = neuron_desc["db_connections"]
-            neuron_dc_map = run_op_xformers(db_conn_output, db_conn_xformers)
-            neuron_dc_map["property_map"] = neuron_desc["property_map"]
+        for neuron, neuron_dcfg in location_desc.items():
+            LOGGER.info("Processing db connection for neuron {}", neuron)
+            ops_dict = neuron_dcfg[cbmdesc.DB_DATA_SRC_KEY]
+            neuron_dc_map = run_ops_workflows(source_data, ops_dict)
+            for dkey in neuron_dcfg.keys():
+                if dkey != cbmdesc.DB_DATA_SRC_KEY:
+                    neuron_dc_map[dkey] = neuron_dcfg[dkey]
             neuron_desc_map[neuron] = neuron_dc_map
-            LOGGER.info("Completed db connection for neuron " + neuron)
-        network_locations[location] = neuron_desc_map
-    return network_locations
+            LOGGER.info("Completed db connection for neuron {}", neuron)
+        net_locations[location] = neuron_desc_map
+    return net_locations

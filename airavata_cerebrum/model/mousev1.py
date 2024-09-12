@@ -4,7 +4,7 @@ from ..util.log.logging import LOGGER
 from . import structure
 
 
-class V1ModelDesc2Region:
+class V1RegionMapper:
     def __init__(self, region_desc):
         self.region_desc = region_desc
         self.region_meta = self.region_desc["region_meta"]
@@ -22,7 +22,7 @@ class V1ModelDesc2Region:
         return float(self.region_meta_abc["region_fraction"])
 
 
-class V1ModelDesc2Neuron:
+class V1NeuronMapper:
     abc_ptr = jsonpath.JSONPointer("/airavata_cerebrum.atlas.data.abc_mouse/0")
     ct_ptr = jsonpath.JSONPointer("/airavata_cerebrum.atlas.data.abm_celltypes")
     ev_ptr = jsonpath.JSONPointer(
