@@ -1,5 +1,5 @@
 {
-    "airavata_cerebrum.atlas.data.abm_celltypes": [
+    "airavata_cerebrum.dataset.abm_celltypes": [
         {
             "ct": {
                 "cell_reporter_status": "negative",
@@ -17029,7 +17029,7 @@
             }
         }
     ],
-    "airavata_cerebrum.atlas.data.abc_mouse": [
+    "airavata_cerebrum.dataset.abc_mouse": [
         {
             "VISp4": {
                 "Region": "VISp",
@@ -17037,21 +17037,39 @@
                 "nregion": 61884,
                 "inhibitory fraction": 0.1119157340355497,
                 "fraction wi. region": 0.20969879128692392,
+                "Vip fraction": 0.1319327731092437,
+                "Pvalb fraction": 0.5327731092436975,
                 "Sst fraction": 0.31512605042016806,
                 "Lamp5 fraction": 0.018487394957983194,
                 "Sst-Chodl fraction": 0.0,
-                "Pvalb fraction": 0.5327731092436975,
-                "Vip fraction": 0.1319327731092437,
-                "GABA-Other fraction": 0.0016806722689075631,
-                "IT-CTX fraction": 0.9626178121359737,
                 "IT-ENT fraction": 0.0,
+                "IT-CTX fraction": 0.9626178121359737,
                 "IT-Other fraction": 0.0,
-                "IT fraction": 0.9626178121359737,
                 "ET fraction": 0.02933389812559568,
                 "CT fraction": 0.00021179709837975219,
                 "NP fraction": 0.007412898443291327,
-                "Glut-Other fraction": 0.00042359419675950437
+                "IT fraction": 0.9626178121359737
             }
+        }
+    ],
+    "airavata_cerebrum.dataset.ai_synphys": [
+        {
+            "('L4-Pyr', 'L4-Pyr')": 0.12598470546038157,
+            "('L4-Pyr', 'L4-Pvalb')": 0.19811334797182897,
+            "('L4-Pyr', 'L4-Sst')": 0.04585453815527242,
+            "('L4-Pyr', 'L4-Vip')": 0.04962389165515759,
+            "('L4-Pvalb', 'L4-Pyr')": 0.35660402634929217,
+            "('L4-Pvalb', 'L4-Pvalb')": 0.6105313078786225,
+            "('L4-Pvalb', 'L4-Sst')": 0.06535395384325071,
+            "('L4-Pvalb', 'L4-Vip')": 0.10164806903453905,
+            "('L4-Sst', 'L4-Pyr')": 0.28763725133758833,
+            "('L4-Sst', 'L4-Pvalb')": 0.39212372305950427,
+            "('L4-Sst', 'L4-Sst')": 0.01619604800777033,
+            "('L4-Sst', 'L4-Vip')": 0.3065035879537235,
+            "('L4-Vip', 'L4-Pyr')": 0.0,
+            "('L4-Vip', 'L4-Pvalb')": 0.02541201725863476,
+            "('L4-Vip', 'L4-Sst')": 0.1885601126012824,
+            "('L4-Vip', 'L4-Vip')": 0.034990462306015206
         }
     ]
 }

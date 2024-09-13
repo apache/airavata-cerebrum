@@ -1,3 +1,4 @@
+import matplotlib
 import logging
 import typing
 import os
@@ -54,7 +55,7 @@ class ModelDescription:
 
     def db_post_ops(self):
         db_connect_key = cbmdesc.DB_CONNECT_KEY
-        db_postop_key = cbmdesc.DB_POSTOP_KEY
+        db_datasrc_key = cbmdesc.DB_DATA_SRC_KEY
         db_connect_data = cbmio.load(self.output_location(db_connect_key))
         db_src_config = self.config.get_config(cbmdesc.DB_DATA_SRC_KEY)
         db_post_op_data = None
@@ -64,17 +65,18 @@ class ModelDescription:
                                                 cbmdesc.DB_POSTOP_KEY)
         if self.save_flag and db_post_op_data:
             cbmio.dump(db_post_op_data,
-                       self.output_location(db_postop_key),
+                       self.output_location(db_datasrc_key),
                        indent=4)
         return db_post_op_data
 
     def map_srcdata2locations(self):
         db_loc_map_key = cbmdesc.DB2MODEL_MAP_KEY
-        db_location_map = self.config.get_config(cbmdesc.DB2MODEL_MAP_KEY)
-        db_postop_data = cbmio.load(self.output_location(cbmdesc.DB_POSTOP_KEY))
+        db2model_map = self.config.get_config(cbmdesc.DB2MODEL_MAP_KEY)
+        db_location_map = db2model_map[cbmdesc.LOCATIONS_KEY]
+        db_source_data = cbmio.load(self.output_location(cbmdesc.DB_DATA_SRC_KEY))
         db2location_output = None
-        if db_postop_data:
-            db2location_output = map_srcdata_locations(db_postop_data,
+        if db_source_data:
+            db2location_output = map_srcdata_locations(db_source_data,
                                                        db_location_map)
         if self.save_flag and db2location_output:
             cbmio.dump(
@@ -86,7 +88,7 @@ class ModelDescription:
         network_desc_output = cbmio.load(
             self.output_location(cbmdesc.DB2MODEL_MAP_KEY)
         )
-        self.model_struct = netops.atlasdata2network(
+        self.model_struct = netops.src_data2network(
             network_desc_output,
             self.config.name,
             self.region_mapper,
@@ -94,16 +96,16 @@ class ModelDescription:
         )
         return self.model_struct
 
-    def apply_cusom_mod(self):
+    def apply_custom_mod(self):
         import airavata_cerebrum.model.structure as structure
 
         if self.custom_mod:
             #
-            user_update = structure.Network.model_validate(
+            mod_struct = structure.Network.model_validate(
                 cbmio.load(self.custom_mod)
             )
             # Update user preference
-            self.model_struct = netops.update_user_input(self.model_struct, user_update)
+            self.model_struct = netops.apply_custom_mod(self.model_struct, mod_struct)
             # pprint.pp(net_model.model_dump())
             # print("----------------------")
         #
@@ -123,24 +125,26 @@ class ModelDescription:
         bmtk_net.save(str(self.config.model_dir))
 
 
-def v1l4_model_desc(config_files={"config": "config.json"},
-                    config_dir="./v1l4/description/"):
-    model_base_dir = "./"
-    model_name = "v1l4"
-    model_custom_mod = "v1l4/description/model_patch.json"
-    model_cfg = cbmdesc.ModelDescConfig(
-        model_name,
-        model_base_dir,
+def v1_model_desc_config(name="v1l4", base_dir="./",
+                         config_files={"config": "config.json"},
+                         config_dir="./v1l4/description/"):
+    return cbmdesc.ModelDescConfig(
+        name,
+        base_dir,
         config_files,
         config_dir,
         True
     )
+
+
+def v1l4_model_desc(save_output=False):
+    model_custom_mod = "./v1l4/description/custom_mod.json"
     return ModelDescription(
-        model_cfg,
+        v1_model_desc_config(),
         mousev1.V1RegionMapper,
         mousev1.V1NeuronMapper,
         model_custom_mod,
-        False,
+        True,
     )
 
 
@@ -150,7 +154,7 @@ def main():
     model_dex.db_post_ops()
     model_dex.map_srcdata2locations()
     model_dex.map_locdata2netstruct()
-    model_dex.apply_cusom_mod()
+    model_dex.apply_custom_mod()
     model_dex.build_bmtk()
 
 

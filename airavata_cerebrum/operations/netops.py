@@ -7,7 +7,7 @@ from ..dataset import abc_mouse
 from ..model import structure
 
 
-def atlasdata2network(
+def src_data2network(
     atlas_data, model_name: str, desc2region_mapper, desc2neuron_mapper
 ) -> structure.Network:
     loc_struct = {}
@@ -57,7 +57,7 @@ def subset_network(net_stats: structure.Network,
                              locations=sub_locs)
 
 
-def update_user_input(
+def apply_custom_mod(
     net_stats: structure.Network, upd_stats: structure.Network
 ) -> structure.Network:
     # update dims

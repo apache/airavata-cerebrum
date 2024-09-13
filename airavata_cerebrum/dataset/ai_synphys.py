@@ -7,6 +7,8 @@ from aisynphys.connectivity import measure_connectivity
 from .. import base
 from ..util.log.logging import LOGGER
 
+PAIR_SEPARATOR = "~"
+
 
 class CellClassSelection(
     collections.namedtuple("CellClassSelection", ["layer", "neuron", "criteria"])
@@ -108,7 +110,7 @@ class AISynPhysQuery:
         default_args = {}
         rarg = {**default_args, **params} if params is not None else default_args
         LOGGER.info("AISynPhysQuery Args : %s", rarg)
-        layer_list = rarg["region"]
+        layer_list = rarg["layer"]
         cell_classes = self.select_cell_classes(layer_list)
         cell_groups = classify_cells(cell_classes.values(), pairs=self.qpairs)
         pair_groups = classify_pairs(self.qpairs, cell_groups)
@@ -119,7 +121,12 @@ class AISynPhysQuery:
         #
         return [
             {
-                (x[0].name, x[1].name): y["adjusted_connectivity"][0]
+                repr(
+                    (
+                        x[0].name,
+                        x[1].name,
+                    )
+                ): y["adjusted_connectivity"][0]
                 for x, y in results.items()
             }
         ]

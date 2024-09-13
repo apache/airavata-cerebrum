@@ -8,7 +8,7 @@ from ..util.io import load, dump
 DB_CONFIG_KEY = "config"
 DB_DATA_SRC_KEY = "source_data"
 DB_CONNECT_KEY = "db_connect"
-DB_POSTOP_KEY = "post_op"
+DB_POSTOP_KEY = "post_ops"
 #
 DB2MODEL_MAP_KEY = "data2model_map"
 TEMPLATES_KEY = "templates"
@@ -16,6 +16,7 @@ LABEL_KEY = "label"
 NAME_KEY = "name"
 WORKFLOW_KEY = "workflow"
 LOCATIONS_KEY = "locations"
+TYPE_KEY = "type"
 #
 DESC_CFG_KEYS = [
     DB2MODEL_MAP_KEY,
@@ -59,7 +60,7 @@ class ModelDescConfig:
     def load_config(self, config_file):
         cdict = load(self.location(config_file))
         if cdict:
-            self.config: typing.Dict[str, typing.Any] = cdict 
+            self.config: typing.Dict[str, typing.Any] = cdict
 
     def load_config_from(self, config_files, db_cfg_keys):
         for cfg_key in db_cfg_keys:

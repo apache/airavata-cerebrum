@@ -1,24 +1,22 @@
 {
     "VISp4": {
-        "region_meta": {
-            "airavata_cerebrum.atlas.data.abc_mouse": [
+        "property_map": {
+            "airavata_cerebrum.dataset.abc_mouse": [
                 {
                     "inh_fraction": 0.1119157340355497,
                     "region_fraction": 0.20969879128692392
                 }
             ],
-            "property_map": {
-                "neurons": [
-                    "Scnn1a",
-                    "Rorb",
-                    "Vip",
-                    "Pvalb",
-                    "Sst"
-                ]
-            }
+            "neurons": [
+                "Scnn1a",
+                "Rorb",
+                "Vip",
+                "Pvalb",
+                "Sst"
+            ]
         },
         "Scnn1a": {
-            "airavata_cerebrum.atlas.data.abm_celltypes": [
+            "airavata_cerebrum.dataset.abm_celltypes": [
                 {
                     "ct": {
                         "cell_reporter_status": "positive",
@@ -1181,7 +1179,7 @@
                     }
                 }
             ],
-            "airavata_cerebrum.atlas.data.abc_mouse": [
+            "airavata_cerebrum.dataset.abc_mouse": [
                 {
                     "inh_fraction": 0.1119157340355497,
                     "region_fraction": 0.20969879128692392,
@@ -1193,7 +1191,7 @@
             }
         },
         "Rorb": {
-            "airavata_cerebrum.atlas.data.abm_celltypes": [
+            "airavata_cerebrum.dataset.abm_celltypes": [
                 {
                     "ct": {
                         "cell_reporter_status": "positive",
@@ -4420,7 +4418,7 @@
                     }
                 }
             ],
-            "airavata_cerebrum.atlas.data.abc_mouse": [
+            "airavata_cerebrum.dataset.abc_mouse": [
                 {
                     "inh_fraction": 0.1119157340355497,
                     "region_fraction": 0.20969879128692392,
@@ -4432,7 +4430,7 @@
             }
         },
         "Vip": {
-            "airavata_cerebrum.atlas.data.abm_celltypes": [
+            "airavata_cerebrum.dataset.abm_celltypes": [
                 {
                     "ct": {
                         "cell_reporter_status": "positive",
@@ -5208,7 +5206,7 @@
                     }
                 }
             ],
-            "airavata_cerebrum.atlas.data.abc_mouse": [
+            "airavata_cerebrum.dataset.abc_mouse": [
                 {
                     "inh_fraction": 0.1119157340355497,
                     "region_fraction": 0.20969879128692392,
@@ -5220,7 +5218,7 @@
             }
         },
         "Pvalb": {
-            "airavata_cerebrum.atlas.data.abm_celltypes": [
+            "airavata_cerebrum.dataset.abm_celltypes": [
                 {
                     "ct": {
                         "cell_reporter_status": "positive",
@@ -7157,7 +7155,7 @@
                     }
                 }
             ],
-            "airavata_cerebrum.atlas.data.abc_mouse": [
+            "airavata_cerebrum.dataset.abc_mouse": [
                 {
                     "inh_fraction": 0.1119157340355497,
                     "region_fraction": 0.20969879128692392,
@@ -7169,7 +7167,7 @@
             }
         },
         "Sst": {
-            "airavata_cerebrum.atlas.data.abm_celltypes": [
+            "airavata_cerebrum.dataset.abm_celltypes": [
                 {
                     "ct": {
                         "cell_reporter_status": "positive",
@@ -7945,11 +7943,11 @@
                     }
                 }
             ],
-            "airavata_cerebrum.atlas.data.abc_mouse": [
+            "airavata_cerebrum.dataset.abc_mouse": [
                 {
                     "inh_fraction": 0.1119157340355497,
                     "region_fraction": 0.20969879128692392,
-                    "fraction": 0.31512605042016806
+                    "fraction": 0.5327731092436975
                 }
             ],
             "property_map": {

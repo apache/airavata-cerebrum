@@ -1,5 +1,5 @@
 {
-    "airavata_cerebrum.atlas.data.abm_celltypes": [
+    "airavata_cerebrum.dataset.abm_celltypes": [
         {
             "ct": {
                 "cell_reporter_status": "positive",
@@ -70532,7 +70532,7 @@
             "glif": null
         }
     ],
-    "airavata_cerebrum.atlas.data.abc_mouse": [
+    "airavata_cerebrum.dataset.abc_mouse": [
         {
             "VISp": {
                 "VISp1": {
@@ -70541,20 +70541,18 @@
                     "nregion": 61884,
                     "inhibitory fraction": 0.40515463917525774,
                     "fraction wi. region": 0.06966259453170448,
+                    "Vip fraction": 0.1475826972010178,
+                    "Pvalb fraction": 0.03816793893129771,
                     "Sst fraction": 0.035623409669211195,
                     "Lamp5 fraction": 0.7201017811704835,
                     "Sst-Chodl fraction": 0.007633587786259542,
-                    "Pvalb fraction": 0.03816793893129771,
-                    "Vip fraction": 0.1475826972010178,
-                    "GABA-Other fraction": 0.05089058524173028,
-                    "IT-CTX fraction": 0.9861351819757366,
                     "IT-ENT fraction": 0.0017331022530329288,
+                    "IT-CTX fraction": 0.9861351819757366,
                     "IT-Other fraction": 0.0017331022530329288,
-                    "IT fraction": 0.9896013864818024,
                     "ET fraction": 0.0,
                     "CT fraction": 0.0,
                     "NP fraction": 0.0,
-                    "Glut-Other fraction": 0.010398613518197574
+                    "IT fraction": 0.9896013864818024
                 },
                 "VISp2/3": {
                     "Region": "VISp",
@@ -70562,20 +70560,18 @@
                     "nregion": 61884,
                     "inhibitory fraction": 0.07875519604538816,
                     "fraction wi. region": 0.34861999870725874,
+                    "Vip fraction": 0.3166904422253923,
+                    "Pvalb fraction": 0.33238231098430815,
                     "Sst fraction": 0.16191155492154066,
                     "Lamp5 fraction": 0.15834522111269614,
                     "Sst-Chodl fraction": 0.0021398002853067048,
-                    "Pvalb fraction": 0.33238231098430815,
-                    "Vip fraction": 0.3166904422253923,
-                    "GABA-Other fraction": 0.028530670470756064,
-                    "IT-CTX fraction": 1.0,
                     "IT-ENT fraction": 0.0,
+                    "IT-CTX fraction": 1.0,
                     "IT-Other fraction": 0.0,
-                    "IT fraction": 1.0,
                     "ET fraction": 0.0,
                     "CT fraction": 0.0,
                     "NP fraction": 0.0,
-                    "Glut-Other fraction": 0.0
+                    "IT fraction": 1.0
                 },
                 "VISp4": {
                     "Region": "VISp",
@@ -70583,20 +70579,18 @@
                     "nregion": 61884,
                     "inhibitory fraction": 0.1119157340355497,
                     "fraction wi. region": 0.20969879128692392,
+                    "Vip fraction": 0.1319327731092437,
+                    "Pvalb fraction": 0.5327731092436975,
                     "Sst fraction": 0.31512605042016806,
                     "Lamp5 fraction": 0.018487394957983194,
                     "Sst-Chodl fraction": 0.0,
-                    "Pvalb fraction": 0.5327731092436975,
-                    "Vip fraction": 0.1319327731092437,
-                    "GABA-Other fraction": 0.0016806722689075631,
-                    "IT-CTX fraction": 0.9626178121359737,
                     "IT-ENT fraction": 0.0,
+                    "IT-CTX fraction": 0.9626178121359737,
                     "IT-Other fraction": 0.0,
-                    "IT fraction": 0.9626178121359737,
                     "ET fraction": 0.02933389812559568,
                     "CT fraction": 0.00021179709837975219,
                     "NP fraction": 0.007412898443291327,
-                    "Glut-Other fraction": 0.00042359419675950437
+                    "IT fraction": 0.9626178121359737
                 },
                 "VISp5": {
                     "Region": "VISp",
@@ -70604,20 +70598,18 @@
                     "nregion": 61884,
                     "inhibitory fraction": 0.16542795492687604,
                     "fraction wi. region": 0.17760648956111436,
+                    "Vip fraction": 0.021739130434782608,
+                    "Pvalb fraction": 0.48768115942028983,
                     "Sst fraction": 0.4557971014492754,
                     "Lamp5 fraction": 0.02246376811594203,
                     "Sst-Chodl fraction": 0.006521739130434782,
-                    "Pvalb fraction": 0.48768115942028983,
-                    "Vip fraction": 0.021739130434782608,
-                    "GABA-Other fraction": 0.005797101449275362,
-                    "IT-CTX fraction": 0.5192473427176099,
                     "IT-ENT fraction": 0.0018672795173800632,
+                    "IT-CTX fraction": 0.5192473427176099,
                     "IT-Other fraction": 0.00014363688595231256,
-                    "IT fraction": 0.5212582591209423,
                     "ET fraction": 0.3230393565067509,
                     "CT fraction": 0.04395288710140764,
                     "NP fraction": 0.1041367423154266,
-                    "Glut-Other fraction": 0.007612754955472565
+                    "IT fraction": 0.5212582591209423
                 },
                 "VISp6a": {
                     "Region": "VISp",
@@ -70625,20 +70617,18 @@
                     "nregion": 61884,
                     "inhibitory fraction": 0.06277924160843167,
                     "fraction wi. region": 0.16366104324219508,
+                    "Vip fraction": 0.03832116788321168,
+                    "Pvalb fraction": 0.5620437956204379,
                     "Sst fraction": 0.34854014598540145,
                     "Lamp5 fraction": 0.025547445255474453,
                     "Sst-Chodl fraction": 0.010948905109489052,
-                    "Pvalb fraction": 0.5620437956204379,
-                    "Vip fraction": 0.03832116788321168,
-                    "GABA-Other fraction": 0.014598540145985401,
-                    "IT-CTX fraction": 0.2124434665688791,
                     "IT-ENT fraction": 0.0017112822393350446,
+                    "IT-CTX fraction": 0.2124434665688791,
                     "IT-Other fraction": 0.0018335166850018336,
-                    "IT fraction": 0.21598826549321598,
                     "ET fraction": 0.0006111722283339445,
                     "CT fraction": 0.7593203764820926,
                     "NP fraction": 0.005378315609338711,
-                    "Glut-Other fraction": 0.0187018701870187
+                    "IT fraction": 0.21598826549321598
                 },
                 "VISp6b": {
                     "Region": "VISp",
@@ -70646,22 +70636,40 @@
                     "nregion": 61884,
                     "inhibitory fraction": 0.05291005291005291,
                     "fraction wi. region": 0.03075108267080344,
+                    "Vip fraction": 0.0375,
+                    "Pvalb fraction": 0.475,
                     "Sst fraction": 0.275,
                     "Lamp5 fraction": 0.0875,
                     "Sst-Chodl fraction": 0.075,
-                    "Pvalb fraction": 0.475,
-                    "Vip fraction": 0.0375,
-                    "GABA-Other fraction": 0.05,
-                    "IT-CTX fraction": 0.04259776536312849,
                     "IT-ENT fraction": 0.0,
+                    "IT-CTX fraction": 0.04259776536312849,
                     "IT-Other fraction": 0.004189944134078212,
-                    "IT fraction": 0.0467877094972067,
                     "ET fraction": 0.0,
                     "CT fraction": 0.7255586592178771,
                     "NP fraction": 0.0,
-                    "Glut-Other fraction": 0.2276536312849162
+                    "IT fraction": 0.0467877094972067
                 }
             }
+        }
+    ],
+    "airavata_cerebrum.dataset.ai_synphys": [
+        {
+            "('L4-Pyr', 'L4-Pyr')": 0.12598470546038157,
+            "('L4-Pyr', 'L4-Pvalb')": 0.19811334797182897,
+            "('L4-Pyr', 'L4-Sst')": 0.04585453815527242,
+            "('L4-Pyr', 'L4-Vip')": 0.04962389165515759,
+            "('L4-Pvalb', 'L4-Pyr')": 0.35660402634929217,
+            "('L4-Pvalb', 'L4-Pvalb')": 0.6105313078786225,
+            "('L4-Pvalb', 'L4-Sst')": 0.06535395384325071,
+            "('L4-Pvalb', 'L4-Vip')": 0.10164806903453905,
+            "('L4-Sst', 'L4-Pyr')": 0.28763725133758833,
+            "('L4-Sst', 'L4-Pvalb')": 0.39212372305950427,
+            "('L4-Sst', 'L4-Sst')": 0.01619604800777033,
+            "('L4-Sst', 'L4-Vip')": 0.3065035879537235,
+            "('L4-Vip', 'L4-Pyr')": 0.0,
+            "('L4-Vip', 'L4-Pvalb')": 0.02541201725863476,
+            "('L4-Vip', 'L4-Sst')": 0.1885601126012824,
+            "('L4-Vip', 'L4-Vip')": 0.034990462306015206
         }
     ]
 }

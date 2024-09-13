@@ -27,22 +27,22 @@ def dump_yaml(json_obj: typing.Dict, file_name: str | pathlib.PurePath, indent: 
 
 # 
 def load(file_name: str | pathlib.PurePath) -> typing.Dict | None:
-    fpath = pathlib.PurePath(file_name)
-    match fpath.suffix:
-        case "yaml":
+    fp_suffix = pathlib.PurePath(file_name).suffix
+    match fp_suffix:
+        case ".yaml" | ".yml":
             return load_yaml(file_name)
-        case "json":
+        case ".json":
             return load_json(file_name)
         case _:
-            return None
+            return {}
 
 
 def dump(json_obj: typing.Dict, file_name: str | pathlib.PurePath, indent: int):
     fpath = pathlib.PurePath(file_name)
     match fpath.suffix:
-        case "yaml":
+        case ".yaml" | ".yml":
             return dump_yaml(json_obj, file_name, indent=indent)
-        case "json":
+        case ".json":
             return dump_json(json_obj, file_name, indent=indent)
         case _:
             return None

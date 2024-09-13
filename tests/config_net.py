@@ -35,7 +35,7 @@ def main():
     print("----------------------")
     #
     # Update user preference
-    net_model = netops.update_user_input(net_model, user_v1_update)
+    net_model = netops.apply_custom_mod(net_model, user_v1_update)
     pprint.pp(net_model.model_dump())
     print("----------------------")
     #

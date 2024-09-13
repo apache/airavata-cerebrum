@@ -41,7 +41,7 @@ class CTExplainedRatioFilter:
 class CTPropertyFilter:
     QUERY_FILTER_MAP = {
         "region": ["structure_parent__acronym", "__eq__"],
-        "layer": ["structure_parent__acronym", "__eq__"],
+        "layer": ["structure__layer", "__eq__"],
         "line": ["line_name", "__contains__"],
         "reporter_status": ["cell_reporter_status", "__eq__"]
     }
