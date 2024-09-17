@@ -7,6 +7,7 @@ from airavata_cerebrum.workflow import (
     run_db_connect_workflows,
     run_ops_workflows,
     map_srcdata_locations,
+    map_srcdata_connections,
 )
 import airavata_cerebrum.util.io as cbmio
 import airavata_cerebrum.model.desc as cbmdesc
@@ -21,15 +22,19 @@ class ModelDescription:
     def __init__(
         self,
         config: cbmdesc.ModelDescConfig,
-        region_mapper: typing.Callable,
-        neuron_mapper: typing.Callable,
+        region_mapper: typing.Type,
+        neuron_mapper: typing.Type,
+        connection_mapper: typing.Type,
+        network_builder: typing.Type,
         custom_mod: str | pathlib.Path | None = None,
         save_flag: bool = True,
-        out_format: str = "json"
+        out_format: typing.Literal["json", "yaml", "yml"] = "json"
     ) -> None:
         self.config = config
         self.region_mapper = region_mapper
         self.neuron_mapper = neuron_mapper
+        self.connection_mapper = connection_mapper
+        self.network_builder = network_builder
         self.custom_mod = custom_mod
         self.save_flag = save_flag
         self.out_format = out_format
@@ -69,30 +74,43 @@ class ModelDescription:
                        indent=4)
         return db_post_op_data
 
-    def map_srcdata2locations(self):
-        db_loc_map_key = cbmdesc.DB2MODEL_MAP_KEY
+    def map_source_data(self):
         db2model_map = self.config.get_config(cbmdesc.DB2MODEL_MAP_KEY)
-        db_location_map = db2model_map[cbmdesc.LOCATIONS_KEY]
+        db_lox_map = db2model_map[cbmdesc.LOCATIONS_KEY]
+        db_conn_map = db2model_map[cbmdesc.CONNECTIONS_KEY]
         db_source_data = cbmio.load(self.output_location(cbmdesc.DB_DATA_SRC_KEY))
-        db2location_output = None
+        srcdata_map_output = None
         if db_source_data:
             db2location_output = map_srcdata_locations(db_source_data,
-                                                       db_location_map)
-        if self.save_flag and db2location_output:
+                                                       db_lox_map)
+            db2connect_output = map_srcdata_connections(db_source_data,
+                                                        db_conn_map)
+            srcdata_map_output = {
+                "locations": db2location_output,
+                "connections": db2connect_output,
+            }
+        if self.save_flag and srcdata_map_output:
             cbmio.dump(
-                db2location_output, self.output_location(db_loc_map_key), indent=4
+                srcdata_map_output,
+                self.output_location(
+                    cbmdesc.DB2MODEL_MAP_KEY
+                ),
+                indent=4,
             )
-        return db2location_output
+        return srcdata_map_output
 
-    def map_locdata2netstruct(self):
+    def build_net_struct(self):
         network_desc_output = cbmio.load(
             self.output_location(cbmdesc.DB2MODEL_MAP_KEY)
         )
-        self.model_struct = netops.src_data2network(
+        if not network_desc_output:
+            return None
+        self.model_struct = netops.srcdata2network(
             network_desc_output,
             self.config.name,
             self.region_mapper,
             self.neuron_mapper,
+            self.connection_mapper,
         )
         return self.model_struct
 
@@ -105,7 +123,7 @@ class ModelDescription:
                 cbmio.load(self.custom_mod)
             )
             # Update user preference
-            self.model_struct = netops.apply_custom_mod(self.model_struct, mod_struct)
+            self.model_struct = self.model_struct.apply_mod(mod_struct)
             # pprint.pp(net_model.model_dump())
             # print("----------------------")
         #
@@ -116,12 +134,11 @@ class ModelDescription:
         return self.model_struct
 
     def build_bmtk(self):
-        import airavata_cerebrum.model.builder as builder
-
         #
         #
         # Construct model
-        bmtk_net = builder.add_nodes_cylinder(self.model_struct)
+        net_builder = self.network_builder()
+        bmtk_net = net_builder.build(self.model_struct)
         bmtk_net.save(str(self.config.model_dir))
 
 
@@ -143,6 +160,8 @@ def v1l4_model_desc(save_output=False):
         v1_model_desc_config(),
         mousev1.V1RegionMapper,
         mousev1.V1NeuronMapper,
+        mousev1.V1ConnectionMapper,
+        mousev1.V1BMTKNetworkBuilder,
         model_custom_mod,
         True,
     )
@@ -152,8 +171,8 @@ def main():
     model_dex = v1l4_model_desc()
     model_dex.download_db_data()
     model_dex.db_post_ops()
-    model_dex.map_srcdata2locations()
-    model_dex.map_locdata2netstruct()
+    model_dex.map_source_data()
+    model_dex.build_net_struct()
     model_dex.apply_custom_mod()
     model_dex.build_bmtk()
 

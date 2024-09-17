@@ -6,6 +6,7 @@ from .dataset import abm_celltypes as abm_celltypes_db
 from .dataset import ai_synphys as ai_synphys_db
 from .operations import abc_mouse as abc_mouse_ops
 from .operations import abm_celltypes as abm_celltypes_ops
+from .operations import ai_synphys as ai_synphys_ops
 from .operations import json_filter
 from .operations import dict_filter
 from .operations import xform
@@ -44,6 +45,7 @@ QUERY_REGISTER : ClassRegister[base.DbQuery] = ClassRegister(
             dict_filter.query_register(),
             abc_mouse_ops.query_register(),
             abm_celltypes_ops.query_register(),
+            ai_synphys_ops.query_register(),
         )
     }
 )
@@ -59,6 +61,7 @@ XFORM_REGISTER : ClassRegister[base.OpXFormer] = ClassRegister(
             dict_filter.xform_register(),
             abc_mouse_ops.xform_register(),
             abm_celltypes_ops.xform_register(),
+            ai_synphys_ops.xform_register(),
         )
     }
 )

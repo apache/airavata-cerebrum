@@ -1,48 +1,231 @@
 import pydantic
 import typing
+import abc
 
 
-class DataConnection(pydantic.BaseModel):
+class DataLink(pydantic.BaseModel):
     name: str = ""
     property_map: typing.Dict = {}
 
 
 class NeuronModel(pydantic.BaseModel):
     N: int = 0
-    id: int = 0
+    id: str = ""
+    proportion: float = 0.0
     name: str = ""
     m_type: str = ""
     template: str = ""
     dynamics_params: str = ""
     property_map: typing.Dict = {}
-    data_connect: DataConnection = DataConnection()
+    data_connect: DataLink = DataLink()
+
+    def apply_mod(self, mod_model: 'NeuronModel') -> 'NeuronModel':
+        if mod_model.name is not None:
+            self.name = mod_model.name
+        # Model Parameters
+        if mod_model.m_type is not None:
+            self.m_type = mod_model.m_type
+        if mod_model.template is not None:
+            self.template = mod_model.template
+        if mod_model.dynamics_params is not None:
+            self.dynamics_params = mod_model.dynamics_params
+        # Model Property Map
+        for pkey, pvalue in mod_model.property_map.items():
+            if pkey not in self.property_map:
+                self.property_map[pkey] = pvalue
+            elif pvalue:
+                self.property_map[pkey] = pvalue
+        return self
 
 
 class Neuron(pydantic.BaseModel):
-    ei: typing.Literal["e", "i"]  # Either e or i
-    fraction: float = 0.0
+    name: str = ""
     N : int = 0
+    fraction: float = 0.0
+    ei: typing.Literal["e", "i"]  # Either e or i
     dims: typing.Dict[str, typing.Any] = {}
-    neuron_models : typing.List[NeuronModel] = []
-    data_connect: DataConnection = DataConnection()
+    neuron_models : typing.Dict[str, NeuronModel] = {}
+    data_connect: DataLink = DataLink()
+
+    def apply_mod(self, mod_neuron: 'Neuron') -> 'Neuron':
+        # Fraction and counts
+        if mod_neuron.fraction > 0:
+            self.fraction = mod_neuron.fraction
+        if mod_neuron.N > 0:
+            self.N = mod_neuron.N
+        # Neuron dimensions
+        for dim_key, dim_value in mod_neuron.dims.items():
+            if dim_key not in self.dims:
+                self.dims[dim_key] = dim_value
+            elif dim_value:
+                self.dims[dim_key] = dim_value
+        # Neuron models
+        for mx_name, neuron_mx in mod_neuron.neuron_models.items():
+            if mx_name not in self.neuron_models:
+                self.neuron_models[mx_name] = neuron_mx
+            else:
+                self.neuron_models[mx_name].apply_mod(neuron_mx)
+        return self
 
 
 class Region(pydantic.BaseModel):
     name: str
     inh_fraction: float = 0.0
     region_fraction: float = 0.0
-    neurons: typing.Dict[str, Neuron] = {}
     ncells: int = 0
     inh_ncells: int = 0
     exc_ncells: int = 0
     dims: typing.Dict[str, typing.Any] = {}
+    neurons: typing.Dict[str, Neuron] = {}
+
+    def apply_mod(self, mod_region: 'Region') -> 'Region':
+        # update fractions
+        if mod_region.inh_fraction > 0:
+            self.inh_fraction = mod_region.inh_fraction
+        if mod_region.region_fraction > 0:
+            self.region_fraction = mod_region.region_fraction
+        # update ncells
+        if mod_region.ncells > 0:
+            self.ncells = mod_region.ncells
+        if mod_region.inh_ncells > 0:
+            self.inh_ncells = mod_region.inh_ncells
+        if mod_region.exc_ncells > 0:
+            self.exc_ncells = mod_region.exc_ncells
+        # update dims
+        for dkey, dvalue in mod_region.dims.items():
+            if dvalue:
+                self.dims[dkey] = dvalue
+        # update neuron details
+        for nx_name, nx_obj in mod_region.neurons.items():
+            if nx_name not in self.neurons:
+                self.neurons[nx_name] = nx_obj
+            else:
+                self.neurons[nx_name].apply_mod(nx_obj)
+        return self
+
+
+class ConnectionModel(pydantic.BaseModel):
+    name: str
+    target_model_id: str = ""
+    source_model_id: str = ""
+    weight_max: float = 0.0
+    delay: float = 0.0
+    property_map: typing.Dict = {}
+
+    def apply_mod(self, mod_cmd: 'ConnectionModel') -> 'ConnectionModel':
+        # Apply modification
+        if mod_cmd.target_model_id:
+            self.target_model_id = mod_cmd.target_model_id
+        if mod_cmd.source_model_id:
+            self.source_model_id = mod_cmd.source_model_id
+        if mod_cmd.delay > 0.0:
+            self.delay = mod_cmd.delay
+        if mod_cmd.weight_max > 0.0:
+            self.weight_max = mod_cmd.weight_max
+        # Model Property Map
+        for pkey, pvalue in mod_cmd.property_map.items():
+            if pkey not in self.property_map:
+                self.property_map[pkey] = pvalue
+            elif pvalue:
+                self.property_map[pkey] = pvalue
+        return self
+
+
+class Connection(pydantic.BaseModel):
+    name: str
+    pre: typing.Tuple[str, str]
+    post: typing.Tuple[str, str]
+    probability: float = 0.0
+    models: typing.Dict[str, ConnectionModel] = {}
+    property_map: typing.Dict = {}
+
+    def apply_mod(self, mod_con: 'Connection') -> 'Connection':
+        if mod_con.pre[0] and mod_con.pre[1]:
+            self.pre = mod_con.pre
+        if mod_con.post[0] and mod_con.post[1]:
+            self.post = mod_con.post
+        if mod_con.probability > 0.0:
+            self.probability = mod_con.probability
+        # Model Property Map
+        for pkey, pvalue in mod_con.property_map.items():
+            if pkey not in self.property_map:
+                self.property_map[pkey] = pvalue
+            elif pvalue:
+                self.property_map[pkey] = pvalue
+        # Models
+        for mx_name, mx_obj in mod_con.models.items():
+            if mx_name not in self.models:
+                self.models[mx_name] = mx_obj
+            else:
+                self.models[mx_name].apply_mod(mx_obj)
+        return self
 
 
 class Network(pydantic.BaseModel):
     name: str
-    locations: typing.Dict[str, Region] = {}
     ncells: int = 0
+    locations: typing.Dict[str, Region] = {}
+    connections: typing.Dict[str, Connection] = {}
     dims: typing.Dict[str, typing.Any] = {}
+
+    def apply_mod(self, mod_net: 'Network') -> 'Network':
+        # Update dims
+        for dkey, dvalue in mod_net.dims.items():
+            if dvalue:
+                self.dims[dkey] = dvalue
+        # Locations
+        for c_name, o_cnx in mod_net.locations.items():
+            if c_name not in self.locations:
+                self.locations[c_name] = o_cnx
+                continue
+            self.locations[c_name].apply_mod(o_cnx)
+        # Connections
+        for c_name, o_cnx in mod_net.connections.items():
+            if c_name not in self.connections:
+                self.connections[c_name] = o_cnx
+                continue
+            self.connections[c_name].apply_mod(o_cnx)
+        return self
+
+
+#
+# Abstract Classes
+#
+class RegionMapper(abc.ABC):
+    @abc.abstractmethod
+    def __init__(self, name: str, desc: typing.Dict[str, typing.Dict]):
+        return None
+
+    @abc.abstractmethod
+    def neuron_names(self) -> typing.List[str]:
+        return []
+
+    @abc.abstractmethod
+    def map(
+        self,
+        region_neurons: typing.Dict[str, Neuron]
+    ) -> Region:
+        return None
+
+
+class NeuronMapper(abc.ABC):
+    @abc.abstractmethod
+    def __init__(self, name: str, desc: typing.Dict[str, typing.Dict]):
+        return None
+
+    @abc.abstractmethod
+    def map(self) -> Neuron | None:
+        return None
+
+
+class ConnectionMapper(abc.ABC):
+    @abc.abstractmethod
+    def __init__(self, name: str, desc: typing.Dict[str, typing.Dict]):
+        return None
+
+    @abc.abstractmethod
+    def map(self) -> Connection | None:
+        return None
 
 
 NETWORK_STATS_EXAMPLE = Network(

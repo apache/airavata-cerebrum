@@ -16,6 +16,7 @@ LABEL_KEY = "label"
 NAME_KEY = "name"
 WORKFLOW_KEY = "workflow"
 LOCATIONS_KEY = "locations"
+CONNECTIONS_KEY = "connections"
 TYPE_KEY = "type"
 #
 DESC_CFG_KEYS = [

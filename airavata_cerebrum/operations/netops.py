@@ -1,53 +1,37 @@
-import pandas as pd
 import numpy as np
 import scipy
 import scipy.stats
 import typing
-from ..dataset import abc_mouse
 from ..model import structure
 
 
-def src_data2network(
-    atlas_data, model_name: str, desc2region_mapper, desc2neuron_mapper
+def srcdata2network(
+    network_desc: typing.Dict,
+    model_name: str,
+    desc2region_mapper: type[structure.RegionMapper],
+    desc2neuron_mapper: type[structure.NeuronMapper],
+    desc2connection_mapper: type[structure.ConnectionMapper]
 ) -> structure.Network:
     loc_struct = {}
-    for region, region_desc in atlas_data.items():
-        drx_mapper = desc2region_mapper(region_desc)
+    for region, region_desc in network_desc["locations"].items():
+        drx_mapper = desc2region_mapper(region, region_desc)
         neuron_struct = {}
-        for neuron in drx_mapper.neuron_list():
+        for neuron in drx_mapper.neuron_names():
             if neuron not in region_desc:
                 continue
             neuron_desc = region_desc[neuron]
-            dn_mapper = desc2neuron_mapper(neuron_desc)
+            dn_mapper = desc2neuron_mapper(neuron, neuron_desc)
             neuron_struct[neuron] = dn_mapper.map()
-        loc_struct[region] = structure.Region(
-            name=str(region),
-            inh_fraction=drx_mapper.inh_fraction(),
-            region_fraction=drx_mapper.region_fraction(),
-            neurons=neuron_struct,
-        )
-    return structure.Network(name=model_name, locations=loc_struct)
-
-
-def atlasdata2regionfractions(
-    region_frac_df: pd.DataFrame, model_name: str
-) -> structure.Network:
-    loc_struct = {}
-    for loc, row in region_frac_df.iterrows():
-        neuron_struct = {}
-        for gx in abc_mouse.GABA_TYPES:
-            frac_col = abc_mouse.FRACTION_COLUMN_FMT.format(gx)
-            neuron_struct[gx] = structure.Neuron(ei="i", fraction=float(row[frac_col]))
-        for gx in abc_mouse.GLUT_TYPES:
-            frac_col = abc_mouse.FRACTION_COLUMN_FMT.format(gx)
-            neuron_struct[gx] = structure.Neuron(ei="e", fraction=float(row[frac_col]))
-        loc_struct[loc] = structure.Region(
-            name=str(loc),
-            inh_fraction=float(row[abc_mouse.INHIBITORY_FRACTION_COLUMN]),
-            region_fraction=float(row[abc_mouse.FRACTION_WI_REGION_COLUMN]),
-            neurons=neuron_struct,
-        )
-    return structure.Network(name=model_name, locations=loc_struct)
+        loc_struct[region] = drx_mapper.map(neuron_struct)
+    conn_struct = {}
+    for cname, connect_desc in network_desc["connections"].items():
+        crx_mapper = desc2connection_mapper(cname, connect_desc)
+        conn_struct[cname] = crx_mapper.map()
+    return structure.Network(
+        name=model_name,
+        locations=loc_struct,
+        connections=conn_struct,
+    )
 
 
 def subset_network(net_stats: structure.Network,
@@ -55,65 +39,6 @@ def subset_network(net_stats: structure.Network,
     sub_locs = {k: v for k, v in net_stats.locations.items() if k in region_list}
     return structure.Network(name=net_stats.name, dims=net_stats.dims,
                              locations=sub_locs)
-
-
-def apply_custom_mod(
-    net_stats: structure.Network, upd_stats: structure.Network
-) -> structure.Network:
-    # update dims
-    for upkx, upvx in upd_stats.dims.items():
-        net_stats.dims[upkx] = upvx
-    upd_locations = upd_stats.locations
-    net_locations = net_stats.locations
-    # Locations
-    for lx, uprx in upd_locations.items():
-        if lx not in net_locations:
-            net_stats.locations[lx] = uprx
-            continue
-        # update fractions
-        if uprx.inh_fraction > 0:
-            net_stats.locations[lx].inh_fraction = uprx.inh_fraction
-        if uprx.region_fraction > 0:
-            net_stats.locations[lx].region_fraction = uprx.region_fraction
-        # update ncells
-        if uprx.ncells > 0:
-            net_stats.locations[lx].ncells = uprx.ncells
-        if uprx.inh_ncells > 0:
-            net_stats.locations[lx].inh_ncells = uprx.inh_ncells
-        if uprx.exc_ncells > 0:
-            net_stats.locations[lx].exc_ncells = uprx.exc_ncells
-        # update dimensions
-        for upkx, upvx in uprx.dims.items():
-            net_stats.locations[lx].dims[upkx] = upvx
-        # update neuron details
-        for nx, sx in uprx.neurons.items():
-            if nx not in net_stats.locations[lx].neurons:
-                net_stats.locations[lx].neurons[nx] = sx
-                continue
-            if sx.fraction > 0:
-                net_stats.locations[lx].neurons[nx].fraction = sx.fraction
-            if sx.N > 0:
-                net_stats.locations[lx].neurons[nx].N = sx.N
-            # update dimensions
-            for upkx, upvx in uprx.neurons[nx].dims.items():
-                net_stats.locations[lx].neurons[nx].dims[upkx] = upvx
-            # update model items
-            # model_name : str | None = None
-            # model_type: str | None =  None
-            # model_template: str | None = None
-            # dynamics_params: str | None = None
-            for sx_model in sx.neuron_models:
-                nmodel = structure.NeuronModel()
-                if sx_model.name is not None:
-                    nmodel.name = sx_model.name
-                if sx_model.m_type is not None:
-                    nmodel.m_type = sx_model.m_type
-                if sx_model.template is not None:
-                    nmodel.template = sx_model.template
-                if sx_model.dynamics_params is not None:
-                    nmodel.template = sx_model.dynamics_params
-                net_stats.locations[lx].neurons[nx].neuron_models.append(nmodel)
-    return net_stats
 
 
 def fractions2ncells(net_stats: structure.Network, N: int) -> structure.Network:

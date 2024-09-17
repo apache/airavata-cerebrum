@@ -7,8 +7,6 @@ from aisynphys.connectivity import measure_connectivity
 from .. import base
 from ..util.log.logging import LOGGER
 
-PAIR_SEPARATOR = "~"
-
 
 class CellClassSelection(
     collections.namedtuple("CellClassSelection", ["layer", "neuron", "criteria"])

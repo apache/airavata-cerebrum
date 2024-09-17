@@ -101,3 +101,21 @@ def map_srcdata_locations(
             LOGGER.info("Completed db connection for neuron [%s]", neuron)
         net_locations[location] = neuron_desc_map
     return net_locations
+
+def map_srcdata_connections(
+    source_data: typing.Dict[str, typing.Any],
+    data2con_map: typing.Dict[str, typing.Any],
+) -> typing.Dict[str, typing.Any]:
+    net_connections = {}
+    for connx, connx_desc in data2con_map.items():
+        conn_desc_map = {}
+        LOGGER.info("Processing db data for connex [%s]", connx)
+        ops_dict = connx_desc[cbmdesc.DB_DATA_SRC_KEY]
+        conn_desc_map = run_ops_workflows(source_data, ops_dict)
+        for dkey in connx_desc.keys():
+            if dkey != cbmdesc.DB_DATA_SRC_KEY:
+                conn_desc_map[dkey] = connx_desc[dkey]
+        LOGGER.info("Completed db data for connex [%s]", connx)
+        net_connections[connx] = conn_desc_map
+    return net_connections
+
