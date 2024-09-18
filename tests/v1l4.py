@@ -28,7 +28,7 @@ class ModelDescription:
         network_builder: typing.Type,
         custom_mod: str | pathlib.Path | None = None,
         save_flag: bool = True,
-        out_format: typing.Literal["json", "yaml", "yml"] = "json"
+        out_format: typing.Literal["json", "yaml", "yml"] = "json",
     ) -> None:
         self.config = config
         self.region_mapper = region_mapper
@@ -38,8 +38,7 @@ class ModelDescription:
         self.custom_mod = custom_mod
         self.save_flag = save_flag
         self.out_format = out_format
-        self.desc_dir = pathlib.PurePath(self.config.model_dir,
-                                         cbmdesc.DESCRIPTION_DIR)
+        self.desc_dir = pathlib.PurePath(self.config.model_dir, cbmdesc.DESCRIPTION_DIR)
         if not os.path.exists(self.desc_dir):
             os.makedirs(self.desc_dir)
         self.model_struct = structure.Network(name=self.config.name)
@@ -53,9 +52,11 @@ class ModelDescription:
         db_src_config = self.config.get_config(cbmdesc.DB_DATA_SRC_KEY)
         db_connect_output = run_db_connect_workflows(db_src_config)
         if self.save_flag:
-            cbmio.dump(db_connect_output,
-                       self.output_location(cbmdesc.DB_CONNECT_KEY),
-                       indent=4)
+            cbmio.dump(
+                db_connect_output,
+                self.output_location(cbmdesc.DB_CONNECT_KEY),
+                indent=4,
+            )
         return db_connect_output
 
     def db_post_ops(self):
@@ -65,13 +66,11 @@ class ModelDescription:
         db_src_config = self.config.get_config(cbmdesc.DB_DATA_SRC_KEY)
         db_post_op_data = None
         if db_connect_data:
-            db_post_op_data = run_ops_workflows(db_connect_data,
-                                                db_src_config,
-                                                cbmdesc.DB_POSTOP_KEY)
+            db_post_op_data = run_ops_workflows(
+                db_connect_data, db_src_config, cbmdesc.DB_POSTOP_KEY
+            )
         if self.save_flag and db_post_op_data:
-            cbmio.dump(db_post_op_data,
-                       self.output_location(db_datasrc_key),
-                       indent=4)
+            cbmio.dump(db_post_op_data, self.output_location(db_datasrc_key), indent=4)
         return db_post_op_data
 
     def map_source_data(self):
@@ -81,10 +80,8 @@ class ModelDescription:
         db_source_data = cbmio.load(self.output_location(cbmdesc.DB_DATA_SRC_KEY))
         srcdata_map_output = None
         if db_source_data:
-            db2location_output = map_srcdata_locations(db_source_data,
-                                                       db_lox_map)
-            db2connect_output = map_srcdata_connections(db_source_data,
-                                                        db_conn_map)
+            db2location_output = map_srcdata_locations(db_source_data, db_lox_map)
+            db2connect_output = map_srcdata_connections(db_source_data, db_conn_map)
             srcdata_map_output = {
                 "locations": db2location_output,
                 "connections": db2connect_output,
@@ -92,17 +89,13 @@ class ModelDescription:
         if self.save_flag and srcdata_map_output:
             cbmio.dump(
                 srcdata_map_output,
-                self.output_location(
-                    cbmdesc.DB2MODEL_MAP_KEY
-                ),
+                self.output_location(cbmdesc.DB2MODEL_MAP_KEY),
                 indent=4,
             )
         return srcdata_map_output
 
     def build_net_struct(self):
-        network_desc_output = cbmio.load(
-            self.output_location(cbmdesc.DB2MODEL_MAP_KEY)
-        )
+        network_desc_output = cbmio.load(self.output_location(cbmdesc.DB2MODEL_MAP_KEY))
         if not network_desc_output:
             return None
         self.model_struct = netops.srcdata2network(
@@ -119,9 +112,7 @@ class ModelDescription:
 
         if self.custom_mod:
             #
-            mod_struct = structure.Network.model_validate(
-                cbmio.load(self.custom_mod)
-            )
+            mod_struct = structure.Network.model_validate(cbmio.load(self.custom_mod))
             # Update user preference
             self.model_struct = self.model_struct.apply_mod(mod_struct)
             # pprint.pp(net_model.model_dump())
@@ -142,28 +133,31 @@ class ModelDescription:
         bmtk_net.save(str(self.config.model_dir))
 
 
-def v1_model_desc_config(name="v1l4", base_dir="./",
-                         config_files={"config": "config.json"},
-                         config_dir="./v1l4/description/"):
-    return cbmdesc.ModelDescConfig(
-        name,
-        base_dir,
-        config_files,
-        config_dir,
-        True
-    )
+def v1_model_desc_config(
+    name="v1l4",
+    base_dir="./",
+    config_files={"config": "config.json"},
+    config_dir="./v1l4/description/",
+):
+    return cbmdesc.ModelDescConfig(name, base_dir, config_files, config_dir, True)
 
 
-def v1l4_model_desc(save_output=False):
+def v1l4_model_desc(
+    name="v1l4",
+    base_dir="./",
+    config_files={"config": "config.json"},
+    config_dir="./v1l4/description/",
+    save_output=False,
+):
     model_custom_mod = "./v1l4/description/custom_mod.json"
     return ModelDescription(
-        v1_model_desc_config(),
+        v1_model_desc_config(name, base_dir, config_files, config_dir),
         mousev1.V1RegionMapper,
         mousev1.V1NeuronMapper,
         mousev1.V1ConnectionMapper,
         mousev1.V1BMTKNetworkBuilder,
         model_custom_mod,
-        True,
+        save_output,
     )
 
 

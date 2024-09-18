@@ -3,10 +3,12 @@ import pathlib
 import subprocess
 import time
 import typing
+from ipywidgets.widgets.widget import _staticproperty
 import pandas as pd
 import anndata
 import matplotlib.pyplot as plt
 import abc_atlas_access.abc_atlas_cache.abc_project_cache as abc_cache
+import traitlets
 
 from ..util.log.logging import LOGGER
 from .. import base
@@ -943,6 +945,11 @@ def region_cell_type_ratios(region_name, download_base,
     return region_frac_ccf[region_name]
 
 
+class ABCDbMERFISH_CCFQueryTraits(traitlets.HasTraits):
+    download_base = traitlets.Unicode()
+    region = traitlets.List()
+
+
 class ABCDbMERFISH_CCFQuery:
     def __init__(self, **params):
         """
@@ -989,6 +996,10 @@ class ABCDbMERFISH_CCFQuery:
         return [
             {rx: rdf.to_dict(orient="index") for rx, rdf in region_frac_map.items()}
         ]
+
+    @_staticproperty
+    def trait_class():
+        return ABCDbMERFISH_CCFQueryTraits
 
 
 #

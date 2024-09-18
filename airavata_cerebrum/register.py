@@ -32,6 +32,11 @@ class ClassRegister(typing.Generic[T]):
             return None
         return self.register_map[query_key](**init_params)
 
+    def get_type(self, query_key: str) -> typing.Type[T] | None:
+        if query_key not in self.register_map:
+            return None
+        return self.register_map[query_key]
+
 
 QUERY_REGISTER : ClassRegister[base.DbQuery] = ClassRegister(
     {
@@ -65,3 +70,9 @@ XFORM_REGISTER : ClassRegister[base.OpXFormer] = ClassRegister(
         )
     }
 )
+
+def find_type_in_register(register_key):
+    reg_type = QUERY_REGISTER.get_type(register_key)
+    if reg_type:
+        return reg_type
+    return XFORM_REGISTER.get_type(register_key)

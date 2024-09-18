@@ -12,9 +12,11 @@
                     ],
                     "source_data": {
                         "airavata_cerebrum.dataset.abc_mouse": {
+                            "label": "Region Filters",
                             "workflow": [
                                 {
                                     "type": "xform",
+                                    "label": "Select Region",
                                     "name": "airavata_cerebrum.operations.abc_mouse.ABCDbMERFISH_CCFFractionFilter",
                                     "init_params": {},
                                     "exec_params": {
@@ -31,8 +33,10 @@
                     },
                     "source_data": {
                         "airavata_cerebrum.dataset.abm_celltypes": {
+                            "label": "Select Cell Types",
                             "workflow": [
                                 {
+                                    "label": "Select Line",
                                     "type": "xform",
                                     "name": "airavata_cerebrum.operations.abm_celltypes.CTPropertyFilter",
                                     "init_params": {},
@@ -45,9 +49,11 @@
                             ]
                         },
                         "airavata_cerebrum.dataset.abc_mouse": {
+                            "label": "Filter Cell Fraction",
                             "workflow": [
                                 {
                                     "type": "xform",
+                                    "label": "Select Region/Type",
                                     "name": "airavata_cerebrum.operations.abc_mouse.ABCDbMERFISH_CCFFractionFilter",
                                     "init_params": {},
                                     "exec_params": {
@@ -65,9 +71,11 @@
                     },
                     "source_data": {
                         "airavata_cerebrum.dataset.abm_celltypes": {
+                            "label": "Select Cell Types",
                             "workflow": [
                                 {
                                     "type": "xform",
+                                    "label": "Select Line",
                                     "name": "airavata_cerebrum.operations.abm_celltypes.CTPropertyFilter",
                                     "init_params": {},
                                     "exec_params": {
@@ -79,9 +87,11 @@
                             ]
                         },
                         "airavata_cerebrum.dataset.abc_mouse": {
+                            "label": "Filter Cell Fraction",
                             "workflow": [
                                 {
                                     "type": "xform",
+                                    "label": "Select Region/Type",
                                     "name": "airavata_cerebrum.operations.abc_mouse.ABCDbMERFISH_CCFFractionFilter",
                                     "init_params": {},
                                     "exec_params": {
@@ -99,9 +109,11 @@
                     },
                     "source_data": {
                         "airavata_cerebrum.dataset.abm_celltypes": {
+                            "label": "Select Cell Types",
                             "workflow": [
                                 {
                                     "type": "xform",
+                                    "label": "Select Line",
                                     "name": "airavata_cerebrum.operations.abm_celltypes.CTPropertyFilter",
                                     "init_params": {},
                                     "exec_params": {
@@ -113,9 +125,11 @@
                             ]
                         },
                         "airavata_cerebrum.dataset.abc_mouse": {
+                            "label": "Filter Cell Fraction",
                             "workflow": [
                                 {
                                     "type": "xform",
+                                    "label": "Select Region/Type",
                                     "name": "airavata_cerebrum.operations.abc_mouse.ABCDbMERFISH_CCFFractionFilter",
                                     "init_params": {},
                                     "exec_params": {
@@ -133,9 +147,11 @@
                     },
                     "source_data": {
                         "airavata_cerebrum.dataset.abm_celltypes": {
+                            "label": "Select Cell Types",
                             "workflow": [
                                 {
                                     "type": "xform",
+                                    "label": "Select Line",
                                     "name": "airavata_cerebrum.operations.abm_celltypes.CTPropertyFilter",
                                     "init_params": {},
                                     "exec_params": {
@@ -147,9 +163,11 @@
                             ]
                         },
                         "airavata_cerebrum.dataset.abc_mouse": {
+                            "label": "Filter Cell Fraction",
                             "workflow": [
                                 {
                                     "type": "xform",
+                                    "label": "Select Region/Type",
                                     "name": "airavata_cerebrum.operations.abc_mouse.ABCDbMERFISH_CCFFractionFilter",
                                     "init_params": {},
                                     "exec_params": {
@@ -167,9 +185,11 @@
                     },
                     "source_data": {
                         "airavata_cerebrum.dataset.abm_celltypes": {
+                            "label": "Select Cell Types",
                             "workflow": [
                                 {
                                     "type": "xform",
+                                    "label": "Select Line",
                                     "name": "airavata_cerebrum.operations.abm_celltypes.CTPropertyFilter",
                                     "init_params": {},
                                     "exec_params": {
@@ -181,8 +201,10 @@
                             ]
                         },
                         "airavata_cerebrum.dataset.abc_mouse": {
+                            "label": "Filter Cell Fraction",
                             "workflow": [
                                 {
+                                    "label": "Select Region/Type",
                                     "type": "xform",
                                     "name": "airavata_cerebrum.operations.abc_mouse.ABCDbMERFISH_CCFFractionFilter",
                                     "init_params": {},
@@ -355,8 +377,9 @@
     },
     "source_data": {
         "airavata_cerebrum.dataset.abm_celltypes": {
+            "label": "Allen Cell Types Databse",
             "db_connect": {
-                "label": "Allen Cell Types Databse",
+                "label": "Query Allen Cell Types Databse",
                 "workflow": [
                     {
                         "type": "query",
@@ -397,10 +420,11 @@
                 ]
             },
             "post_ops": {
-                "label": "GLIF Models w. Explained Variance",
+                "label": "Filter GLIF Models w. Explained Variance",
                 "workflow": [
                     {
                         "type": "xform",
+                        "label": "Filter 3 LIF Models",
                         "name": "airavata_cerebrum.operations.abm_celltypes.CTModelNameFilter",
                         "init_params": {},
                         "exec_params": {
@@ -409,6 +433,7 @@
                     },
                     {
                         "type": "xform",
+                        "label": "Filter Explained variance",
                         "name": "airavata_cerebrum.operations.abm_celltypes.CTExplainedRatioFilter",
                         "init_params": {},
                         "exec_params": {
@@ -419,8 +444,9 @@
             }
         },
         "airavata_cerebrum.dataset.abc_mouse": {
+            "label": "Allen Brain Cell Atlas",
             "db_connect": {
-                "label": "Allen Brain Cell Atlas",
+                "label": "Query Allen Brain Cell Atlas",
                 "workflow": [
                     {
                         "type": "query",
@@ -438,10 +464,11 @@
                 ]
             },
             "post_ops": {
-                "label": "ABC Region Filter",
+                "label": "Filter ABC by Region",
                 "workflow": [
                     {
                         "type": "xform",
+                        "label": "Region filter",
                         "name": "airavata_cerebrum.operations.abc_mouse.ABCDbMERFISH_CCFLayerRegionFilter",
                         "init_params": {},
                         "exec_params": {
@@ -453,8 +480,9 @@
             }
         },
         "airavata_cerebrum.dataset.ai_synphys": {
+            "label": "AI Syn Phys",
             "db_connect": {
-                "label": "Allen Syn Phys Database",
+                "label": "Query Allen Syn Phys Database",
                 "workflow": [
                     {
                         "type": "query",

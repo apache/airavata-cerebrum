@@ -1,7 +1,12 @@
 
+from ipywidgets.widgets.widget import _staticproperty
+import traitlets
 from .. import base
 from ..operations.json_filter import IterJPatchFilter, IterJPointerFilter
 from ..operations.dict_filter import IterAttrFilter
+
+class CTModelNameFilterTraits:
+    name = traitlets.Unicode()
 
 
 class CTModelNameFilter:
@@ -17,6 +22,14 @@ class CTModelNameFilter:
         return self.jpatch_filter.xform(ct_iter,
                                         filter_exp=filter_exp,
                                         dest_path=self.dest_path)
+
+    @_staticproperty
+    def trait_class():
+        return CTModelNameFilterTraits
+
+
+class CTExplainedRatioFilterTraits:
+    ratio = traitlets.Float()
 
 
 class CTExplainedRatioFilter:
@@ -36,6 +49,18 @@ class CTExplainedRatioFilter:
                                              dest_path=self.dest_path)
         return self.jptr_filter.xform(patch_out,
                                       path=self.final_path)
+
+    @_staticproperty
+    def trait_class():
+        return CTExplainedRatioFilterTraits
+
+
+class CTPropertyFilterTraits:
+    key = traitlets.Unicode()
+    region = traitlets.Unicode()
+    layer = traitlets.Unicode()
+    line = traitlets.Unicode()
+    reporter_status = traitlets.Unicode()
 
 
 class CTPropertyFilter:
@@ -61,6 +86,9 @@ class CTPropertyFilter:
                                            key=key,
                                            filters=filters)
 
+    @_staticproperty
+    def trait_class():
+        return CTPropertyFilterTraits
 
 #
 base.OpXFormer.register(CTModelNameFilter)

@@ -3,9 +3,18 @@ import typing
 import allensdk.core.cell_types_cache
 import allensdk.api.queries.cell_types_api
 import allensdk.api.queries.glif_api
+from ipywidgets.widgets.widget import _staticproperty
+import traitlets
 
 from .. import base
 from ..util.log.logging import LOGGER
+
+
+class CTDbCellCacheQueryTraits(traitlets.HasTraits):
+    download_base = traitlets.Unicode()
+    species = traitlets.Unicode()
+    manifest = traitlets.Unicode()
+    cells = traitlets.Unicode()
 
 
 class CTDbCellCacheQuery:
@@ -64,6 +73,14 @@ class CTDbCellCacheQuery:
         LOGGER.debug("CTDbCellCacheQuery CT List : %d", len(ct_list))
         return ct_list
 
+    @_staticproperty
+    def trait_class():
+        return CTDbCellCacheQueryTraits
+
+
+class CTDbCellApiQueryTraits:
+    species = traitlets.Unicode()
+
 
 class CTDbCellApiQuery:
     def __init__(self, **params):
@@ -99,6 +116,15 @@ class CTDbCellApiQuery:
         ct_list = ctxa.list_cells_api(species=sp_arg)
         LOGGER.debug("CTDbCellApiQuery CT List : %d", len(ct_list))
         return ct_list
+
+    @_staticproperty
+    def trait_class():
+        return CTDbCellApiQueryTraits
+
+
+class CTDbGlifApiQueryTraits:
+    key = traitlets.Unicode()
+    first = traitlets.Bool()
 
 
 class CTDbGlifApiQuery:
@@ -150,6 +176,10 @@ class CTDbGlifApiQuery:
                 for x in input_iter
                 if x
             )
+
+    @_staticproperty
+    def trait_class():
+        return CTDbGlifApiQueryTraits
 
 
 #

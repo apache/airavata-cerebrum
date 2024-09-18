@@ -90,7 +90,9 @@ class ModelConfigTemplate(ModelDescConfig):
     ):
         super().__init__(name, base_dir, config_files, config_dir, create_dir)
         if TEMPLATES_KEY in config_files:
-            self.load_config(config_files[TEMPLATES_KEY])
+            cdict = load(self.location(config_files[TEMPLATES_KEY]))
+            if cdict:
+                self.config[TEMPLATES_KEY] = cdict[TEMPLATES_KEY]
 
     def get_template_for(self, cfg_key: str) -> typing.Dict[str, typing.Any]:
         template_config = self.config[TEMPLATES_KEY]

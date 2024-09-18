@@ -1,4 +1,10 @@
+from ipywidgets.widgets.widget import _staticproperty
+import traitlets
 from .json_filter import JPointerFilter
+
+class ABCDbMERFISH_LRFilterTraits(traitlets.HasTraits):
+    region = traitlets.Unicode()
+    sub_region = traitlets.Unicode()
 
 
 class ABCDbMERFISH_CCFLayerRegionFilter:
@@ -11,6 +17,15 @@ class ABCDbMERFISH_CCFLayerRegionFilter:
         sub_region = params["sub_region"]
         rpath = self.path_fmt.format(region, sub_region)
         return self.jptr_filter.xform(ct_iter, paths=[rpath], keys=[sub_region])
+
+    @_staticproperty
+    def trait_class():
+        return ABCDbMERFISH_LRFilterTraits
+
+
+class ABCDbMERFISH_FractionTraits(traitlets.HasTraits):
+    region = traitlets.Unicode()
+    cell_type = traitlets.Unicode()
 
 
 class ABCDbMERFISH_CCFFractionFilter:
@@ -33,6 +48,9 @@ class ABCDbMERFISH_CCFFractionFilter:
             frac_keys.append("fraction")
         return self.jptr_filter.xform(ct_iter, paths=frac_paths, keys=frac_keys)
 
+    @_staticproperty
+    def trait_class():
+        return ABCDbMERFISH_FractionTraits
 
 def query_register():
     return []
