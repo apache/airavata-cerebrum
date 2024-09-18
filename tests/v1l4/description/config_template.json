@@ -28,6 +28,7 @@
                     "doc": "Field to be used as the Output Key",
                     "default": "specimen__id",
                     "options": [
+                        "",
                         "specimen__id"
                     ]
                 },
@@ -108,10 +109,10 @@
             "init_params": {},
             "exec_params": {
                 "ratio": {
-                    "type": "text",
+                    "type": "float",
                     "label": "Explained Ratio",
                     "doc": "Explained Ratio",
-                    "default": "0.7"
+                    "default": 0.7
                 }
             }
         },
@@ -132,6 +133,7 @@
                     "label": "Selected Region",
                     "doc": "Selected Region",
                     "options": [
+                        "",
                         "4",
                         "3",
                         "5",
@@ -145,6 +147,7 @@
                     "label": "Selected Layer",
                     "doc": "Selected Layer",
                     "options": [
+                        "",
                         "VISp",
                         "AUDp"
                     ],
