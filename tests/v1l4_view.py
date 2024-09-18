@@ -2,7 +2,7 @@ import traitlets
 import types
 import ipywidgets as iwidgets
 import ipytree as itree
-from airavata_cerebrum.model.desc import ModelConfigTemplate
+from airavata_cerebrum.util.desc_config import ModelDescConfigTemplate
 from airavata_cerebrum.util import class_qual_name
 from airavata_cerebrum.register import find_type_in_register
 
@@ -243,15 +243,16 @@ for clx in NON_QRY_XFORM_CLASSES:
 def get_config_tree_node(node_key, init_args):
     src_class = find_type_in_register(node_key)
     if src_class:
-        node_class = types.new_class(
-            src_class.__name__ + "Node", bases=(CfgTreeNode, src_class.trait_class)
+        tnode_class = types.new_class(
+            src_class.__name__ + "Node",
+            bases=(CfgTreeNode, src_class.trait_type()),
         )
     else:
         if node_key in NON_QRY_XFORM_NODE_MAP:
-            node_class = NON_QRY_XFORM_NODE_MAP[node_key]
+            tnode_class = NON_QRY_XFORM_NODE_MAP[node_key]
         else:
             return None
-    return node_class(**init_args)
+    return tnode_class(**init_args)
 
 
 def get_cfg_tree_node(query_key, query_dict):
@@ -343,7 +344,7 @@ def get_model_template(
     config_files={"templates": "config_template.json", "config": "config.json"},
     config_dir="./v1l4/description/",
 ):
-    return ModelConfigTemplate(name, base_dir, config_files, config_dir)
+    return ModelDescConfigTemplate(name, base_dir, config_files, config_dir)
 
 
 def source_data_tree(src_data_desc):
@@ -436,5 +437,3 @@ def d2m_map_connect_tree(d2m_map_desc):
     tree.add_node(root_node)
     tree.layout.width = "40%"
     return tree
-
-

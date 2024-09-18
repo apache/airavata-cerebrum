@@ -3,21 +3,19 @@ import typing
 import allensdk.core.cell_types_cache
 import allensdk.api.queries.cell_types_api
 import allensdk.api.queries.glif_api
-from ipywidgets.widgets.widget import _staticproperty
 import traitlets
 
 from .. import base
 from ..util.log.logging import LOGGER
 
 
-class CTDbCellCacheQueryTraits(traitlets.HasTraits):
-    download_base = traitlets.Unicode()
-    species = traitlets.Unicode()
-    manifest = traitlets.Unicode()
-    cells = traitlets.Unicode()
+class CTDbCellCacheQuery(base.DbQuery):
+    class QryTraits(traitlets.HasTraits):
+        download_base = traitlets.Unicode()
+        species = traitlets.Unicode()
+        manifest = traitlets.Unicode()
+        cells = traitlets.Unicode()
 
-
-class CTDbCellCacheQuery:
     def __init__(self, **params):
         """
         Initialixe Cache Query
@@ -30,7 +28,11 @@ class CTDbCellCacheQuery:
         self.name = "allensdk.core.cell_types_cache.CellTypesCache"
         self.download_base = params["download_base"]
 
-    def run(self, in_stream: typing.Iterable, **run_params) -> typing.Iterable:
+    def run(
+        self,
+        in_iter: typing.Iterable | None,
+        **params: typing.Dict[str, typing.Any],
+    ) -> typing.Iterable | None:
         """
         Get the cell types information from allensdk.core.cell_types_cache.CellTypesCache
 
@@ -60,7 +62,7 @@ class CTDbCellCacheQuery:
             "cells": "cells.json",
         }
         rarg = (
-            {**default_args, **run_params} if run_params is not None else default_args
+            {**default_args, **params} if params is not None else default_args
         )
         #
         LOGGER.debug("CTDbCellCacheQuery Args : %s", rarg)
@@ -73,20 +75,23 @@ class CTDbCellCacheQuery:
         LOGGER.debug("CTDbCellCacheQuery CT List : %d", len(ct_list))
         return ct_list
 
-    @_staticproperty
-    def trait_class():
-        return CTDbCellCacheQueryTraits
+    @classmethod
+    def trait_type(cls):
+        return cls.QryTraits
 
 
-class CTDbCellApiQueryTraits:
-    species = traitlets.Unicode()
+class CTDbCellApiQuery(base.DbQuery):
+    class QryTraits(traitlets.HasTraits):
+        species = traitlets.Unicode()
 
-
-class CTDbCellApiQuery:
     def __init__(self, **params):
         self.name = "allensdk.api.queries.cell_types_api.CellTypesApi"
 
-    def run(self, in_stream: typing.Iterable, **run_params) -> typing.Iterable:
+    def run(
+        self,
+        in_iter: typing.Iterable | None,
+        **run_params
+    ) -> typing.Iterable:
         """
         Get the cell types information from allensdk.api.queries.cell_types_api.CellTypesApi
 
@@ -117,23 +122,27 @@ class CTDbCellApiQuery:
         LOGGER.debug("CTDbCellApiQuery CT List : %d", len(ct_list))
         return ct_list
 
-    @_staticproperty
-    def trait_class():
-        return CTDbCellApiQueryTraits
+    @classmethod
+    def trait_type(cls):
+        return cls.QryTraits
 
 
-class CTDbGlifApiQueryTraits:
-    key = traitlets.Unicode()
-    first = traitlets.Bool()
+class CTDbGlifApiQuery(base.DbQuery):
+    class QryTraits(traitlets.HasTraits):
+        key = traitlets.Unicode()
+        first = traitlets.Bool()
 
-
-class CTDbGlifApiQuery:
     def __init__(self, **init_params):
         self.name = "allensdk.api.queries.glif_api.GlifApi"
         self.glif_api = allensdk.api.queries.glif_api.GlifApi()
         self.key_fn = lambda x: x
 
-    def run(self, input_iter, **params):
+    def run(
+        self,
+        in_iter: typing.Iterable | None,
+        **params
+    ) -> typing.Iterable | None:
+
         """
         Get neuronal models using GlifApi for a given iterator of specimen ids
 
@@ -151,6 +160,8 @@ class CTDbGlifApiQuery:
         dict : {spec_id : model}
           glif neuronal_models
         """
+        if not in_iter:
+            return None
         default_args = {"first": False, "key": None}
         rarg = {**default_args, **params} if params else default_args
         LOGGER.debug("CTDbGlifApiQuery Args : %s", rarg)
@@ -162,7 +173,7 @@ class CTDbGlifApiQuery:
                     "input": x,
                     "glif": self.glif_api.get_neuronal_models(self.key_fn(x)),
                 }
-                for x in input_iter
+                for x in in_iter
                 if x
             )
         else:
@@ -173,13 +184,13 @@ class CTDbGlifApiQuery:
                         iter(self.glif_api.get_neuronal_models(self.key_fn(x))), None
                     ),
                 }
-                for x in input_iter
+                for x in in_iter
                 if x
             )
 
-    @_staticproperty
-    def trait_class():
-        return CTDbGlifApiQueryTraits
+    @classmethod
+    def trait_type(cls):
+        return cls.QryTraits
 
 
 #

@@ -71,6 +71,7 @@ XFORM_REGISTER : ClassRegister[base.OpXFormer] = ClassRegister(
     }
 )
 
+
 def find_type_in_register(register_key):
     reg_type = QUERY_REGISTER.get_type(register_key)
     if reg_type:

@@ -2,101 +2,124 @@ import pathlib
 import typing
 import os
 
-from ..util.io import load, dump
+from ..util import io as cbmio
+from ..util.desc_config import CfgKeys, ModelDescConfig
+from . import structure
+from .. import workflow
 
-# Lookup Keys in Configuration dictionary
-DB_CONFIG_KEY = "config"
-DB_DATA_SRC_KEY = "source_data"
-DB_CONNECT_KEY = "db_connect"
-DB_POSTOP_KEY = "post_ops"
-#
-DB2MODEL_MAP_KEY = "data2model_map"
-TEMPLATES_KEY = "templates"
-LABEL_KEY = "label"
-NAME_KEY = "name"
-WORKFLOW_KEY = "workflow"
-LOCATIONS_KEY = "locations"
-CONNECTIONS_KEY = "connections"
-TYPE_KEY = "type"
-#
-DESC_CFG_KEYS = [
-    DB2MODEL_MAP_KEY,
-    DB_DATA_SRC_KEY
-]
 
-#
 # File paths
-DESCRIPTION_DIR = "description"
+class DescPaths:
+    DESCRIPTION_DIR = "description"
 
 
-#
-#
-class ModelDescConfig:
+class ModelDescription:
     def __init__(
         self,
-        name: str,
-        base_dir: str | pathlib.Path,
-        config_files: typing.Dict[str, str],
-        config_dir: str | pathlib.Path = pathlib.Path("."),
-        create_dir: bool = False
-    ):
-        self.name = name
-        self.base_dir = base_dir
-        self.config_dir = config_dir
-        self.config: typing.Dict[str, typing.Any] = {}
-        if DB_CONFIG_KEY in config_files:
-            self.load_config(config_files[DB_CONFIG_KEY])
-        else:
-            self.load_config_from(config_files, DESC_CFG_KEYS)
-        self.model_dir = pathlib.PurePath(self.base_dir,
-                                          self.name)
-        if create_dir and not os.path.exists(self.model_dir):
-            os.makedirs(self.model_dir)
+        config: ModelDescConfig,
+        region_mapper: typing.Type,
+        neuron_mapper: typing.Type,
+        connection_mapper: typing.Type,
+        network_builder: typing.Type,
+        custom_mod: str | pathlib.Path | None = None,
+        save_flag: bool = True,
+        out_format: typing.Literal["json", "yaml", "yml"] = "json",
+    ) -> None:
+        self.config = config
+        self.region_mapper = region_mapper
+        self.neuron_mapper = neuron_mapper
+        self.connection_mapper = connection_mapper
+        self.network_builder = network_builder
+        self.custom_mod = custom_mod
+        self.save_flag = save_flag
+        self.out_format = out_format
+        self.desc_dir = pathlib.Path(self.config.model_dir,
+                                     DescPaths.DESCRIPTION_DIR)
+        if not os.path.exists(self.desc_dir):
+            os.makedirs(self.desc_dir)
+        self.model_struct = structure.Network(name=self.config.name)
 
-    def location(self, file_name):
-        if self.config_dir:
-            return pathlib.PurePath(self.config_dir, file_name)
-        return file_name
+    def output_location(self, key: str) -> pathlib.Path:
+        file_name = self.config.out_prefix(key)
+        out_path = pathlib.Path(self.desc_dir, file_name)
+        return out_path.with_suffix("." + self.out_format)
 
-    def load_config(self, config_file):
-        cdict = load(self.location(config_file))
-        if cdict:
-            self.config: typing.Dict[str, typing.Any] = cdict
+    def download_db_data(self) -> typing.Dict[str, typing.Any]:
+        db_src_config = self.config.get_config(CfgKeys.SRC_DATA)
+        db_connect_output = workflow.run_db_connect_workflows(db_src_config)
+        if self.save_flag:
+            cbmio.dump(
+                db_connect_output,
+                self.output_location(CfgKeys.DB_CONNECT),
+                indent=4,
+            )
+        return db_connect_output
 
-    def load_config_from(self, config_files, db_cfg_keys):
-        for cfg_key in db_cfg_keys:
-            json_obj = None
-            if cfg_key in config_files:
-                json_obj = load(self.location(config_files[cfg_key]))
-            if json_obj:
-                self.config[cfg_key] = json_obj[cfg_key]
+    def db_post_ops(self):
+        db_connect_key = CfgKeys.DB_CONNECT
+        db_datasrc_key = CfgKeys.SRC_DATA
+        db_connect_data = cbmio.load(self.output_location(db_connect_key))
+        db_src_config = self.config.get_config(CfgKeys.SRC_DATA)
+        db_post_op_data = None
+        if db_connect_data:
+            db_post_op_data = workflow.run_ops_workflows(
+                db_connect_data, db_src_config, CfgKeys.POST_OPS
+            )
+        if self.save_flag and db_post_op_data:
+            cbmio.dump(db_post_op_data, self.output_location(db_datasrc_key), indent=4)
+        return db_post_op_data
 
-    def out_prefix(self, cfg_key: str) -> str:
-        return cfg_key + "_output"
+    def map_source_data(self):
+        db2model_map = self.config.get_config(CfgKeys.DB2MODEL_MAP)
+        db_lox_map = db2model_map[CfgKeys.LOCATIONS]
+        db_conn_map = db2model_map[CfgKeys.CONNECTIONS]
+        db_source_data = cbmio.load(self.output_location(CfgKeys.SRC_DATA))
+        srcdata_map_output = None
+        if db_source_data:
+            db2location_output = workflow.map_srcdata_locations(db_source_data, db_lox_map)
+            db2connect_output = workflow.map_srcdata_connections(db_source_data, db_conn_map)
+            srcdata_map_output = {
+                "locations": db2location_output,
+                "connections": db2connect_output,
+            }
+        if self.save_flag and srcdata_map_output:
+            cbmio.dump(
+                srcdata_map_output,
+                self.output_location(CfgKeys.DB2MODEL_MAP),
+                indent=4,
+            )
+        return srcdata_map_output
 
-    def get_config(self, cfg_key: str) -> typing.Dict[str, typing.Any]:
-        return self.config[cfg_key]
+    def build_net_struct(self):
+        network_desc_output = cbmio.load(self.output_location(CfgKeys.DB2MODEL_MAP))
+        if not network_desc_output:
+            return None
+        self.model_struct = structure.srcdata2network(
+            network_desc_output,
+            self.config.name,
+            self.region_mapper,
+            self.neuron_mapper,
+            self.connection_mapper,
+        )
+        return self.model_struct
 
+    def apply_custom_mod(self):
+        import airavata_cerebrum.model.structure as structure
 
-class ModelConfigTemplate(ModelDescConfig):
+        if self.custom_mod:
+            mod_struct = structure.Network.model_validate(cbmio.load(self.custom_mod))
+            # Update user preference
+            self.model_struct = self.model_struct.apply_mod(mod_struct)
+            # print("----------------------")
+        #
+        # NCells
+        self.model_struct.populate_ncells(30000)
+        return self.model_struct
 
-    def __init__(
-        self,
-        name: str,
-        base_dir: str | pathlib.Path,
-        config_files: typing.Dict[str, str],
-        config_dir: str | pathlib.Path = pathlib.Path("."),
-        create_dir: bool = False,
-    ):
-        super().__init__(name, base_dir, config_files, config_dir, create_dir)
-        if TEMPLATES_KEY in config_files:
-            cdict = load(self.location(config_files[TEMPLATES_KEY]))
-            if cdict:
-                self.config[TEMPLATES_KEY] = cdict[TEMPLATES_KEY]
-
-    def get_template_for(self, cfg_key: str) -> typing.Dict[str, typing.Any]:
-        template_config = self.config[TEMPLATES_KEY]
-        return template_config[cfg_key]
-
-    def get_template(self) -> typing.Dict[str, typing.Any]:
-        return self.config[TEMPLATES_KEY]
+    def build_bmtk(self):
+        #
+        #
+        # Construct model
+        net_builder = self.network_builder(self.model_struct)
+        bmtk_net = net_builder.build()
+        bmtk_net.save(str(self.config.model_dir))

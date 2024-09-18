@@ -27,6 +27,7 @@ dependencies:
       - anndata
       - bmtk
       - allensdk
+      - pytree
       - git+https://github.com/alleninstitute/abc_atlas_access
       - git+https://github.com/alleninstitute/neuroanalysis
       - git+https://github.com/alleninstitute/aisynphys

@@ -3,18 +3,18 @@ import tqdm.contrib.logging as tqdm_log
 
 from . import register, base
 from .util.log.logging import LOGGER
-from .model import desc as cbmdesc
+from .util.desc_config import CfgKeys
 
 
 def run_workflow(
     workflow_steps: typing.List[typing.Dict], wf_stream: typing.Iterable | None = None
 ) -> typing.Iterable | None:
     for wf_stx in workflow_steps:
-        sname = wf_stx[cbmdesc.NAME_KEY]
-        slabel = wf_stx[cbmdesc.LABEL_KEY] if cbmdesc.LABEL_KEY in wf_stx else sname
+        sname = wf_stx[CfgKeys.NAME]
+        slabel = wf_stx[CfgKeys.LABEL] if CfgKeys.LABEL in wf_stx else sname
         iparams: typing.Dict[str, typing.Any] = wf_stx["init_params"]
         eparams: typing.Dict[str, typing.Any] = wf_stx["exec_params"]
-        match wf_stx[cbmdesc.TYPE_KEY]:
+        match wf_stx[CfgKeys.TYPE]:
             case "query":
                 LOGGER.info("Start Query : [%s]",  slabel)
                 qobj: base.DbQuery | None = register.QUERY_REGISTER.object(
@@ -27,7 +27,7 @@ def run_workflow(
                     LOGGER.error("Failed to find Query : [%s]",  sname)
             case "xform":
                 LOGGER.info("Running XFormer : [%s]",  slabel)
-                fobj: typing.Union[base.OpXFormer, None] = (
+                fobj: base.OpXFormer | None = (
                     register.XFORM_REGISTER.object(sname, **iparams)
                 )
                 if fobj and wf_stream:
@@ -45,12 +45,12 @@ def run_db_connect_workflows(
     #
     for db_name, db_cfg in source_data_cfg.items():
         db_label = db_name
-        if cbmdesc.LABEL_KEY in db_cfg:
-            db_label = db_cfg[cbmdesc.LABEL_KEY]
+        if CfgKeys.LABEL in db_cfg:
+            db_label = db_cfg[CfgKeys.LABEL]
         LOGGER.info("Start db_connect workflow for db: [%s]",  db_label)
         with tqdm_log.logging_redirect_tqdm():
             model_itr = run_workflow(
-                db_cfg[cbmdesc.DB_CONNECT_KEY][cbmdesc.WORKFLOW_KEY]
+                db_cfg[CfgKeys.DB_CONNECT][CfgKeys.WORKFLOW]
             )
             if model_itr:
                 db_connect_output[db_name] = list(model_itr)
@@ -70,7 +70,7 @@ def run_ops_workflows(
         wf_input = db_conn_data[src_db]
         op_desc = op_config[ops_key] if ops_key else op_config
         op_output = list(
-            run_workflow(op_desc[cbmdesc.WORKFLOW_KEY], wf_input) # type: ignore
+            run_workflow(op_desc[CfgKeys.WORKFLOW], wf_input) # type: ignore
         )
         LOGGER.debug(
             "WF Desc: [%s]; WF IN: [%s]; Op output: [%s]",
@@ -92,10 +92,10 @@ def map_srcdata_locations(
         neuron_desc_map = {}
         for neuron, neuron_dcfg in location_desc.items():
             LOGGER.info("Processing db connection for neuron [%s]", neuron)
-            ops_dict = neuron_dcfg[cbmdesc.DB_DATA_SRC_KEY]
+            ops_dict = neuron_dcfg[CfgKeys.SRC_DATA]
             neuron_dc_map = run_ops_workflows(source_data, ops_dict)
             for dkey in neuron_dcfg.keys():
-                if dkey != cbmdesc.DB_DATA_SRC_KEY:
+                if dkey != CfgKeys.SRC_DATA:
                     neuron_dc_map[dkey] = neuron_dcfg[dkey]
             neuron_desc_map[neuron] = neuron_dc_map
             LOGGER.info("Completed db connection for neuron [%s]", neuron)
@@ -110,12 +110,11 @@ def map_srcdata_connections(
     for connx, connx_desc in data2con_map.items():
         conn_desc_map = {}
         LOGGER.info("Processing db data for connex [%s]", connx)
-        ops_dict = connx_desc[cbmdesc.DB_DATA_SRC_KEY]
+        ops_dict = connx_desc[CfgKeys.SRC_DATA]
         conn_desc_map = run_ops_workflows(source_data, ops_dict)
         for dkey in connx_desc.keys():
-            if dkey != cbmdesc.DB_DATA_SRC_KEY:
+            if dkey != CfgKeys.SRC_DATA:
                 conn_desc_map[dkey] = connx_desc[dkey]
         LOGGER.info("Completed db data for connex [%s]", connx)
         net_connections[connx] = conn_desc_map
     return net_connections
-

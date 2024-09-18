@@ -1,10 +1,10 @@
+import typing
 import numpy as np
 from bmtk.builder import NetworkBuilder
-from ..model import structure
-from ..operations import netops
+from . import structure
 
 
-def generate_random_pos(N, params):
+def generate_random_pos(N: int, params: typing.Dict) -> np.ndarray:
     # TODO:
     x = np.array(params["dims"])
     y = np.array(params["dims"])
@@ -14,7 +14,7 @@ def generate_random_pos(N, params):
     return positions
 
 
-def add_network_nodes(net_model: structure.Network, out_file: str):
+def add_network_nodes(net_model: structure.Network, out_file: str) -> NetworkBuilder:
     net = NetworkBuilder(net_model.name)
     for location, loc_region in net_model.locations.items():
         for pop_name, pop_neurons in loc_region.neurons.items():
@@ -37,7 +37,8 @@ def add_network_nodes(net_model: structure.Network, out_file: str):
             }
             net.add_nodes(**node_props)
     net.save(out_file)
+    return net
 
 
-def build_model(model_struct):
+def build_model(model_struct: structure.Network) -> None:
     pass

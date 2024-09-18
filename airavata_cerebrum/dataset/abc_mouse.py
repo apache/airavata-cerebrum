@@ -3,7 +3,6 @@ import pathlib
 import subprocess
 import time
 import typing
-from ipywidgets.widgets.widget import _staticproperty
 import pandas as pd
 import anndata
 import matplotlib.pyplot as plt
@@ -945,12 +944,11 @@ def region_cell_type_ratios(region_name, download_base,
     return region_frac_ccf[region_name]
 
 
-class ABCDbMERFISH_CCFQueryTraits(traitlets.HasTraits):
-    download_base = traitlets.Unicode()
-    region = traitlets.List()
+class ABCDbMERFISH_CCFQuery(base.DbQuery):
+    class QryTraits(traitlets.HasTraits):
+        download_base = traitlets.Unicode()
+        region = traitlets.List()
 
-
-class ABCDbMERFISH_CCFQuery:
     def __init__(self, **params):
         """
         Initialize MERFISH Query
@@ -969,7 +967,11 @@ class ABCDbMERFISH_CCFQuery:
             MERFISH_CCF_DATASET_KEY, PARCEL_META_DATA_KEY
         )
 
-    def run(self, in_stream, **params):
+    def run(
+        self,
+        in_iter: typing.Iterable | None,
+        **params: typing.Dict[str, typing.Any],
+    ) -> typing.Iterable | None:
         """
         Get the cell types ratios corresponding to a region
 
@@ -997,9 +999,9 @@ class ABCDbMERFISH_CCFQuery:
             {rx: rdf.to_dict(orient="index") for rx, rdf in region_frac_map.items()}
         ]
 
-    @_staticproperty
-    def trait_class():
-        return ABCDbMERFISH_CCFQueryTraits
+    @classmethod
+    def trait_type(cls):
+        return cls.QryTraits
 
 
 #

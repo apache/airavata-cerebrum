@@ -5,9 +5,8 @@ import json
 #
 #
 import airavata_cerebrum.dataset.abc_mouse as abc_mouse
-import airavata_cerebrum.operations.netops as netops
-import airavata_cerebrum.model.builder as builder
 import airavata_cerebrum.model.structure as structure
+import airavata_cerebrum.model.mousev1 as mousev1
 
 
 LOCATION_CUSTOM_CONFIG = "./net_config/user_location_config.json"
@@ -17,6 +16,27 @@ DOWNLOAD_BASE = "../cache/abc_mouse/"
 def load_json(file_name):
     with open(file_name) as in_fptr:
         return json.load(in_fptr)
+
+
+def atlasdata2regionfractions(
+    region_frac_df: pd.DataFrame, model_name: str
+) -> structure.Network:
+    loc_struct = {}
+    for loc, row in region_frac_df.iterrows():
+        neuron_struct = {}
+        for gx in abc_mouse.GABA_TYPES:
+            frac_col = abc_mouse.FRACTION_COLUMN_FMT.format(gx)
+            neuron_struct[gx] = structure.Neuron(ei="i", fraction=float(row[frac_col]))
+        for gx in abc_mouse.GLUT_TYPES:
+            frac_col = abc_mouse.FRACTION_COLUMN_FMT.format(gx)
+            neuron_struct[gx] = structure.Neuron(ei="e", fraction=float(row[frac_col]))
+        loc_struct[loc] = structure.Region(
+            name=str(loc),
+            inh_fraction=float(row[abc_mouse.INHIBITORY_FRACTION_COLUMN]),
+            region_fraction=float(row[abc_mouse.FRACTION_WI_REGION_COLUMN]),
+            neurons=neuron_struct,
+        )
+    return structure.Network(name=model_name, locations=loc_struct)
 
 
 def main():
@@ -30,26 +50,27 @@ def main():
     print("----------------------")
     #
     # Construt model node fraction struct
-    net_model = netops.atlasdata2regionfractions(v1_ei_df, "v1")
+    net_model : structure.Network = atlasdata2regionfractions(v1_ei_df, "v1")
     pprint.pp(net_model.model_dump())
     print("----------------------")
     #
     # Update user preference
-    net_model = netops.apply_custom_mod(net_model, user_v1_update)
+    net_model.apply_mod(user_v1_update)
     pprint.pp(net_model.model_dump())
     print("----------------------")
     #
     # NCells
-    net_model = netops.fractions2ncells(net_model, 296991)
+    net_model.populate_ncells(296991)
     pprint.pp(net_model.model_dump())
     print("----------------------")
     #
     #
-    net_model = netops.subset_network(net_model, ["VISp1"])
+    net_model = structure.subset_network(net_model, ["VISp1"])
     pprint.pp(net_model.model_dump())
     #
     # Construct model
-    bmtk_net = builder.add_nodes_cylinder(net_model)
+    net_builder = mousev1.V1BMTKNetworkBuilder(net_model)
+    bmtk_net = net_builder.build()
     bmtk_net.save("output")
 
 

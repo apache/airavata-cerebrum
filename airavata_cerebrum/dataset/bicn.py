@@ -1,6 +1,5 @@
 import pathlib
 import pandas as pd
-import numpy as np
 
 BICN_BASE = "airavata-cerebrum/brain_atlases/"
 #

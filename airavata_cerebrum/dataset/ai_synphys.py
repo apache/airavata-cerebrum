@@ -1,4 +1,5 @@
 import collections
+import traitlets
 import aisynphys
 from aisynphys.database import SynphysDatabase
 from aisynphys.cell_class import CellClass, classify_cells, classify_pairs
@@ -54,7 +55,10 @@ CELL_LAYER_SET = set([x.layer for x in CELL_CLASS_SELECT])
 CELL_NEURON_SET = set([x.neuron for x in CELL_CLASS_SELECT])
 
 
-class AISynPhysQuery:
+class AISynPhysQuery(base.DbQuery):
+    class QryTraits(traitlets.HasTraits):
+        layer = traitlets.Unicode()
+
     def __init__(self, **params):
         """
         Initialize AI SynphysDatabase
@@ -88,7 +92,7 @@ class AISynPhysQuery:
             if (cselect.layer in layer_set) and (cselect.neuron in neuron_set)
         }
 
-    def run(self, in_stream, **params):
+    def run(self, in_iter, **params):
         """
         Get the connectivity probabilities for given layter
 
@@ -128,6 +132,10 @@ class AISynPhysQuery:
                 for x, y in results.items()
             }
         ]
+
+    @classmethod
+    def trait_type(cls):
+        return cls.QryTraits
 
 
 #

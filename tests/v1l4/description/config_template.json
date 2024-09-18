@@ -128,7 +128,7 @@
                     "doc": "Key",
                     "default": "ct"
                 },
-                "region": {
+                "layer": {
                     "type": "option",
                     "label": "Selected Region",
                     "doc": "Selected Region",
@@ -142,7 +142,7 @@
                     ],
                     "default": "4"
                 },
-                "layer": {
+                "region": {
                     "type": "option",
                     "label": "Selected Layer",
                     "doc": "Selected Layer",

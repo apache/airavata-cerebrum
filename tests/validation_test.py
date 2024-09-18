@@ -1,5 +1,5 @@
 import pydantic_core
-import airavata_cerebrum.atlas.model.regions as regions
+import airavata_cerebrum.model.structure as structure
 
 V1_NETWORK_JSON = """{
     "name":"v1",
@@ -115,4 +115,4 @@ V1_NETWORK_JSON = """{
     }
 }"""
 
-V1_NETWORK = regions.Network.model_validate(pydantic_core.from_json(V1_NETWORK_JSON))
+V1_NETWORK = structure.Network.model_validate(pydantic_core.from_json(V1_NETWORK_JSON))

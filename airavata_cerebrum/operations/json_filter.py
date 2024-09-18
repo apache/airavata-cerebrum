@@ -1,10 +1,15 @@
 import jsonpath
-
+import traitlets
+#
 from .. import base
 from ..util.log.logging import LOGGER
 
 
-class JPointerFilter:
+class JPointerFilter(base.OpXFormer):
+    class FilterTraits(traitlets.HasTraits):
+        paths = traitlets.List()
+        keys = traitlets.List()
+
     def __init__(self, **init_params):
         self.name = __name__ + ".JPointerFilter"
         self.patch_out = None
@@ -16,7 +21,7 @@ class JPointerFilter:
         else:
             return None
 
-    def xform(self, dctx, **params):
+    def xform(self, in_iter, **params):
         """
         Filter the output only if the destination path is present in dctx.
 
@@ -37,7 +42,11 @@ class JPointerFilter:
         """
         fp_lst = params["paths"]
         key_lst = params["keys"]
-        return [{key: self.resolve(fpath, dctx) for fpath, key in zip(fp_lst, key_lst)}]
+        return [{key: self.resolve(fpath, in_iter) for fpath, key in zip(fp_lst, key_lst)}]
+
+    @classmethod
+    def trait_type(cls):
+        return cls.FilterTraits
 
 
 class IterJPatchFilter:

@@ -1,9 +1,14 @@
 import typing
-from .. import base
+import traitlets
+#
 from ..util.log.logging import LOGGER
+from .. import base
 
 
-class IterAttrMapper:
+class IterAttrMapper(base.OpXFormer):
+    class MapperTraits(traitlets.HasTraits):
+        attribute = traitlets.Unicode()
+
     def __init__(self, **init_params):
         """
         Attribute value mapper
@@ -16,7 +21,11 @@ class IterAttrMapper:
         self.name = __name__ + ".IterAttrMapper"
         self.attr = init_params["attribute"]
 
-    def xform(self, in_iter: typing.Iterable, **params) -> typing.Iterable:
+    def xform(
+        self,
+        in_iter: typing.Iterable | None,
+        **params
+    ) -> typing.Iterable | None:
         """
         Get values from cell type descriptions
 
@@ -32,10 +41,20 @@ class IterAttrMapper:
         value_iter: iterator
            iterator of values from cell type descriptions for given attribute
         """
+        if not in_iter:
+            return None
         return iter(x[self.attr] for x in in_iter)
+
+    @classmethod
+    def trait_type(cls):
+        return cls.MapperTraits
 
 
 class IterAttrFilter:
+    class FilterTraits(traitlets.HasTraits):
+        key = traitlets.Unicode()
+        filters = traitlets.List()
+
     def __init__(self, **init_params):
         self.name = __name__ + ".IterAttrFilter"
         self.key_fn = lambda x: x
@@ -75,6 +94,10 @@ class IterAttrFilter:
                 for attr, bin_op, val in filters_itr
             )
         )
+
+    @classmethod
+    def trait_type(cls):
+        return cls.FilterTraits
 
 
 #

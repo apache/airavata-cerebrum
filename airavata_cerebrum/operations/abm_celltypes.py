@@ -1,38 +1,40 @@
-
-from ipywidgets.widgets.widget import _staticproperty
 import traitlets
+import typing
 from .. import base
-from ..operations.json_filter import IterJPatchFilter, IterJPointerFilter
-from ..operations.dict_filter import IterAttrFilter
-
-class CTModelNameFilterTraits:
-    name = traitlets.Unicode()
+from .json_filter import IterJPatchFilter, IterJPointerFilter
+from .dict_filter import IterAttrFilter
 
 
 class CTModelNameFilter:
+    class FilterTraits(traitlets.HasTraits):
+        name = traitlets.Unicode()
+
     def __init__(self, **init_params):
         self.name = __name__ + ".CTModelNameFilter"
         self.filter_fmt = "$.glif.neuronal_models[?('{}' in @.name)]"
         self.dest_path = "/glif/neuronal_models"
         self.jpatch_filter = IterJPatchFilter(**init_params)
 
-    def xform(self, ct_iter, **params):
+    def xform(
+        self,
+        in_iter: typing.Iterable | None,
+        **params: typing.Any,
+    ) -> typing.Iterable | None:
         model_name = params["name"]
         filter_exp = self.filter_fmt.format(model_name)
-        return self.jpatch_filter.xform(ct_iter,
+        return self.jpatch_filter.xform(in_iter,
                                         filter_exp=filter_exp,
                                         dest_path=self.dest_path)
 
-    @_staticproperty
-    def trait_class():
-        return CTModelNameFilterTraits
+    @classmethod
+    def trait_type(cls):
+        return cls.FilterTraits
 
 
-class CTExplainedRatioFilterTraits:
-    ratio = traitlets.Float()
+class CTExplainedRatioFilter(base.OpXFormer):
+    class FilterTraits(traitlets.HasTraits):
+        ratio = traitlets.Float()
 
-
-class CTExplainedRatioFilter:
     def __init__(self, **init_params):
         self.name = __name__ + ".CTExplainedRatioFilter"
         self.filter_fmt = "$.glif.neuronal_models[0].neuronal_model_runs[?(@.explained_variance_ratio > {})]"
@@ -41,29 +43,28 @@ class CTExplainedRatioFilter:
         self.jpatch_filter = IterJPatchFilter(**init_params)
         self.jptr_filter = IterJPointerFilter(**init_params)
 
-    def xform(self, ct_iter, **params):
+    def xform(self, in_iter, **params):
         ratio_value = params["ratio"]
         filter_exp = self.filter_fmt.format(ratio_value)
-        patch_out = self.jpatch_filter.xform(ct_iter,
+        patch_out = self.jpatch_filter.xform(in_iter,
                                              filter_exp=filter_exp,
                                              dest_path=self.dest_path)
         return self.jptr_filter.xform(patch_out,
                                       path=self.final_path)
 
-    @_staticproperty
-    def trait_class():
-        return CTExplainedRatioFilterTraits
-
-
-class CTPropertyFilterTraits:
-    key = traitlets.Unicode()
-    region = traitlets.Unicode()
-    layer = traitlets.Unicode()
-    line = traitlets.Unicode()
-    reporter_status = traitlets.Unicode()
+    @classmethod
+    def trait_type(cls):
+        return cls.FilterTraits
 
 
 class CTPropertyFilter:
+    class FilterTraits(traitlets.HasTraits):
+        key = traitlets.Unicode()
+        region = traitlets.Unicode()
+        layer = traitlets.Unicode()
+        line = traitlets.Unicode()
+        reporter_status = traitlets.Unicode()
+
     QUERY_FILTER_MAP = {
         "region": ["structure_parent__acronym", "__eq__"],
         "layer": ["structure__layer", "__eq__"],
@@ -86,9 +87,10 @@ class CTPropertyFilter:
                                            key=key,
                                            filters=filters)
 
-    @_staticproperty
-    def trait_class():
-        return CTPropertyFilterTraits
+    @classmethod
+    def trait_type(cls):
+        return cls.FilterTraits
+
 
 #
 base.OpXFormer.register(CTModelNameFilter)

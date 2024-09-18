@@ -250,7 +250,8 @@ class V1BMTKNetworkBuilder:
                     s=nsyn_lognorm_shape, loc=0, scale=nsyn_lognorm_scale
                 ).stats(moments="m")
             )
-        print(pop_name, neuron_model.name, len(target_sizes), nsyn_size_mean)
+        print(pop_name, neuron_model.name,
+              len(target_sizes), nsyn_size_mean)  # type: ignore
         node_props = {
             "N": N,
             "node_type_id": int(neuron_model.name),  # model["node_type_id"],

@@ -7,14 +7,14 @@ from ..base import OpXFormer
 #
 # Basic Transformers
 #
-class IdentityXformer:
-    def xform(self, in_val, **params):
-        return in_val
+class IdentityXformer(OpXFormer):
+    def xform(self, in_iter: typing.Iterable | None, **params):
+        return in_iter
 
 
-class TQDMWrapper:
-    def xform(self, in_lst: typing.List, **params):
-        return tqdm.tqdm(in_lst)
+class TQDMWrapper(OpXFormer):
+    def xform(self, in_iter: typing.Iterable | None, **params):
+        return tqdm.tqdm(in_iter)
 
 
 class DataSlicer:
