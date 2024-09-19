@@ -1,6 +1,8 @@
 import itertools
-import tqdm
 import typing
+import tqdm
+import traitlets
+#
 from ..base import OpXFormer
 
 
@@ -8,30 +10,56 @@ from ..base import OpXFormer
 # Basic Transformers
 #
 class IdentityXformer(OpXFormer):
-    def xform(self, in_iter: typing.Iterable | None, **params):
+    class IdTraits(traitlets.HasTraits):
+        pass
+
+    def xform(
+        self,
+        in_iter: typing.Iterable | None,
+        **params,
+    ) -> typing.Iterable | None:
         return in_iter
+
+    @classmethod
+    def trait_type(cls) -> type[traitlets.HasTraits]:
+        return cls.IdTraits
 
 
 class TQDMWrapper(OpXFormer):
-    def xform(self, in_iter: typing.Iterable | None, **params):
+    class TqTraits(traitlets.HasTraits):
+        pass
+
+    def xform(
+        self,
+        in_iter: typing.Iterable | None,
+        **params,
+    ) -> typing.Iterable | None:
         return tqdm.tqdm(in_iter)
+
+    @classmethod
+    def trait_type(cls) -> type[traitlets.HasTraits]:
+        return cls.TqTraits
 
 
 class DataSlicer:
-    def xform(self, in_iter: typing.Iterable, **params):
+    class SliceTraits(traitlets.HasTraits):
+        stop = traitlets.Int()
+        list = traitlets.Bool()
+
+    def xform(
+        self,
+        in_iter: typing.Iterable | None,
+        **params,
+    ) -> typing.Iterable | None:
         default_args = {"stop": 10, "list": True}
-        rarg = {**default_args, **params} if params is not None else default_args
-        ditr = itertools.islice(in_iter, rarg["stop"])
-        return list(ditr) if bool(rarg["list"]) else ditr
+        rarg = default_args | params if params else default_args
+        if in_iter:
+            ditr = itertools.islice(in_iter, rarg["stop"])
+            return list(ditr) if bool(rarg["list"]) else ditr
 
 
 #
 #
-OpXFormer.register(IdentityXformer)
-OpXFormer.register(TQDMWrapper)
-OpXFormer.register(DataSlicer)
-
-
 def query_register():
     return []
 

@@ -1,12 +1,14 @@
 import collections
+import logging
+import typing
 import traitlets
 import aisynphys
+#
 from aisynphys.database import SynphysDatabase
 from aisynphys.cell_class import CellClass, classify_cells, classify_pairs
 from aisynphys.connectivity import measure_connectivity
-
+#
 from .. import base
-from ..util.log.logging import LOGGER
 
 
 class CellClassSelection(
@@ -55,6 +57,10 @@ CELL_LAYER_SET = set([x.layer for x in CELL_CLASS_SELECT])
 CELL_NEURON_SET = set([x.neuron for x in CELL_CLASS_SELECT])
 
 
+def _log():
+    return logging.getLogger(__name__)
+
+
 class AISynPhysQuery(base.DbQuery):
     class QryTraits(traitlets.HasTraits):
         layer = traitlets.Unicode()
@@ -79,7 +85,11 @@ class AISynPhysQuery(base.DbQuery):
             self.projects = params["projects"]
         self.qpairs = self.sdb.pair_query(project_name=self.projects).all()
 
-    def select_cell_classes(self, layer_list, neuron_list=None):
+    def select_cell_classes(
+        self,
+        layer_list: typing.List[str] | None,
+        neuron_list: typing.List[str] | None = None
+    ) -> typing.Dict[str, CellClass]:
         layer_set = CELL_LAYER_SET
         if layer_list:
             layer_set = set(layer_list)
@@ -92,7 +102,11 @@ class AISynPhysQuery(base.DbQuery):
             if (cselect.layer in layer_set) and (cselect.neuron in neuron_set)
         }
 
-    def run(self, in_iter, **params):
+    def run(
+        self,
+        in_iter: typing.Iterable | None,
+        **params: typing.Any,
+    ) -> typing.Iterable | None:
         """
         Get the connectivity probabilities for given layter
 
@@ -111,7 +125,7 @@ class AISynPhysQuery(base.DbQuery):
         #
         default_args = {}
         rarg = {**default_args, **params} if params is not None else default_args
-        LOGGER.info("AISynPhysQuery Args : %s", rarg)
+        _log().info("AISynPhysQuery Args : %s", rarg)
         layer_list = rarg["layer"]
         cell_classes = self.select_cell_classes(layer_list)
         cell_groups = classify_cells(cell_classes.values(), pairs=self.qpairs)
@@ -119,7 +133,7 @@ class AISynPhysQuery(base.DbQuery):
         results = measure_connectivity(
             pair_groups, sigma=100e-6, dist_measure="lateral_distance"
         )
-        LOGGER.info("AISynPhysQuery Args : %s", rarg)
+        _log().info("AISynPhysQuery Args : %s", rarg)
         #
         return [
             {
@@ -134,20 +148,18 @@ class AISynPhysQuery(base.DbQuery):
         ]
 
     @classmethod
-    def trait_type(cls):
+    def trait_type(cls) -> type[traitlets.HasTraits]:
         return cls.QryTraits
 
 
 #
-#  ----- Registers and Filters ---
-base.DbQuery.register(AISynPhysQuery)
-
-
-def query_register():
+# ------- Query and Xform Registers -----
+#
+def query_register() -> typing.List[type[base.DbQuery]]:
     return [
         AISynPhysQuery,
     ]
 
 
-def xform_register():
+def xform_register() -> typing.List[type[base.OpXFormer]]:
     return []

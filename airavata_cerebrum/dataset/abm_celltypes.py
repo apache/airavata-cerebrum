@@ -1,12 +1,16 @@
 import os
 import typing
+import logging
 import allensdk.core.cell_types_cache
 import allensdk.api.queries.cell_types_api
 import allensdk.api.queries.glif_api
 import traitlets
 
 from .. import base
-from ..util.log.logging import LOGGER
+
+
+def _log():
+    return logging.getLogger(__name__)
 
 
 class CTDbCellCacheQuery(base.DbQuery):
@@ -65,18 +69,18 @@ class CTDbCellCacheQuery(base.DbQuery):
             {**default_args, **params} if params is not None else default_args
         )
         #
-        LOGGER.debug("CTDbCellCacheQuery Args : %s", rarg)
+        _log().debug("CTDbCellCacheQuery Args : %s", rarg)
         self.manifest_file = os.path.join(self.download_base, rarg["mainfest"])
         self.cells_file = os.path.join(self.download_base, rarg["cells"])
         ctc = allensdk.core.cell_types_cache.CellTypesCache(
             manifest_file=self.manifest_file
         )
         ct_list = ctc.get_cells(file_name=self.cells_file, species=rarg["species"])
-        LOGGER.debug("CTDbCellCacheQuery CT List : %d", len(ct_list))
+        _log().debug("CTDbCellCacheQuery CT List : %d", len(ct_list))
         return ct_list
 
     @classmethod
-    def trait_type(cls):
+    def trait_type(cls) -> type[traitlets.HasTraits]:
         return cls.QryTraits
 
 
@@ -116,14 +120,14 @@ class CTDbCellApiQuery(base.DbQuery):
         )
         sp_arg = [rarg["species"]] if rarg["species"] else None
         #
-        LOGGER.debug("CTDbCellApiQuery Args : %s", rarg)
+        _log().debug("CTDbCellApiQuery Args : %s", rarg)
         ctxa = allensdk.api.queries.cell_types_api.CellTypesApi()
         ct_list = ctxa.list_cells_api(species=sp_arg)
-        LOGGER.debug("CTDbCellApiQuery CT List : %d", len(ct_list))
+        _log().debug("CTDbCellApiQuery CT List : %d", len(ct_list))
         return ct_list
 
     @classmethod
-    def trait_type(cls):
+    def trait_type(cls) -> type[traitlets.HasTraits]:
         return cls.QryTraits
 
 
@@ -132,7 +136,7 @@ class CTDbGlifApiQuery(base.DbQuery):
         key = traitlets.Unicode()
         first = traitlets.Bool()
 
-    def __init__(self, **init_params):
+    def __init__(self, **params):
         self.name = "allensdk.api.queries.glif_api.GlifApi"
         self.glif_api = allensdk.api.queries.glif_api.GlifApi()
         self.key_fn = lambda x: x
@@ -164,7 +168,7 @@ class CTDbGlifApiQuery(base.DbQuery):
             return None
         default_args = {"first": False, "key": None}
         rarg = {**default_args, **params} if params else default_args
-        LOGGER.debug("CTDbGlifApiQuery Args : %s", rarg)
+        _log().debug("CTDbGlifApiQuery Args : %s", rarg)
         if rarg["key"]:
             self.key_fn = lambda x: x[rarg["key"]]
         if bool(rarg["first"]) is False:
@@ -189,20 +193,14 @@ class CTDbGlifApiQuery(base.DbQuery):
             )
 
     @classmethod
-    def trait_type(cls):
+    def trait_type(cls) -> type[traitlets.HasTraits]:
         return cls.QryTraits
 
 
 #
-# Query and Xform Registers
+# ------- Query and Xform Registers -----
 #
-base.DbQuery.register(CTDbCellCacheQuery)
-base.DbQuery.register(CTDbGlifApiQuery)
-base.DbQuery.register(CTDbCellApiQuery)
-#
-
-
-def query_register():
+def query_register() -> typing.List[type[base.DbQuery]]:
     return [
         CTDbCellCacheQuery,
         CTDbCellApiQuery,
@@ -210,5 +208,5 @@ def query_register():
     ]
 
 
-def xform_register():
+def xform_register() -> typing.List[type[base.OpXFormer]]:
     return []

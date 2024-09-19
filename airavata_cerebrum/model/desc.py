@@ -1,3 +1,4 @@
+import logging
 import pathlib
 import typing
 import os
@@ -6,6 +7,10 @@ from ..util import io as cbmio
 from ..util.desc_config import CfgKeys, ModelDescConfig
 from . import structure
 from .. import workflow
+
+
+def _log():
+    return logging.getLogger(__name__)
 
 
 # File paths
@@ -117,8 +122,6 @@ class ModelDescription:
         return self.model_struct
 
     def build_bmtk(self):
-        #
-        #
         # Construct model
         net_builder = self.network_builder(self.model_struct)
         bmtk_net = net_builder.build()

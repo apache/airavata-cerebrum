@@ -5,12 +5,13 @@ from . import structure
 
 
 def generate_random_pos(N: int, params: typing.Dict) -> np.ndarray:
-    # TODO:
-    x = np.array(params["dims"])
-    y = np.array(params["dims"])
-    z = np.array(params["dims"])
+    r_scale = 1
+    if "dims" in params and "scale" in params["dims"]:
+        r_scale = params["dims"]["scale"]
+    x = np.random.random([N]) * r_scale
+    y = np.random.random([N]) * r_scale
+    z = np.random.random([N]) * r_scale
     positions = np.column_stack((x, y, z))
-
     return positions
 
 

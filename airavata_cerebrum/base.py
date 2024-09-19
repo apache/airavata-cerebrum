@@ -1,14 +1,26 @@
 import abc
 import typing
+import traitlets
 
 
 #
 # Abstract Base classes
 #
-TraitType = typing.TypeVar('TraitType')
+TraitType = typing.TypeVar(
+    'TraitType',
+    bound=traitlets.HasTraits
+)
 
 
+# Abstract interface for Database Queries
 class DbQuery(abc.ABC):
+    @abc.abstractmethod
+    def __init__(
+        self,
+        **params: typing.Any
+    ):
+        return None
+
     @abc.abstractmethod
     def run(
         self,
@@ -19,10 +31,11 @@ class DbQuery(abc.ABC):
 
     @classmethod
     @abc.abstractmethod
-    def trait_type(cls) -> typing.Type:
+    def trait_type(cls) -> type[traitlets.HasTraits]:
         return TraitType
 
 
+# Abstract interface for XFormer operations
 class OpXFormer(abc.ABC):
     @abc.abstractmethod
     def xform(
@@ -34,5 +47,5 @@ class OpXFormer(abc.ABC):
 
     @classmethod
     @abc.abstractmethod
-    def trait_type(cls) -> typing.Type:
+    def trait_type(cls) -> type[traitlets.HasTraits]:
         return TraitType

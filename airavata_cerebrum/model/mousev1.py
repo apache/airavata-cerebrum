@@ -1,22 +1,25 @@
-import typing
-import jsonpath
 import ast
-
+import logging
+import typing
+#
+import jsonpath
 import numpy as np
 import scipy
 import pandas as pd
 import bmtk.builder
 import bmtk.builder.node_pool
-from ..util.log.logging import LOGGER
+#
 from ..operations import netops
 from ..dataset import abc_mouse
-from . import structure
-
 from ..operations.mousev1 import (
     compute_pair_type_parameters,
     connect_cells,
     syn_weight_by_experimental_distribution
 )
+from . import structure
+
+def _log():
+    return logging.getLogger(__name__)
 
 
 class V1RegionMapper(structure.RegionMapper):
@@ -66,13 +69,13 @@ class V1NeuronMapper(structure.NeuronMapper):
         else:
             self.abc_data = None
         if self.abc_data is None:
-            LOGGER.error("Can not find ABC Pointer in Model Description")
+            _log().error("Can not find ABC Pointer in Model Description")
         if self.ct_ptr.exists(desc):
             self.ct_data = self.ct_ptr.resolve(desc)  # type: ignore
         else:
             self.ct_data = None
         if self.ct_data is None:
-            LOGGER.error("Can not find ABM CT Pointer in Model Description")
+            _log().error("Can not find ABM CT Pointer in Model Description")
 
     def map(self) -> structure.Neuron | None:
         ntype = self.desc["property_map"]["ei"]
@@ -326,7 +329,7 @@ class V1BMTKNetworkBuilder:
         src_trg_params = compute_pair_type_parameters(
             str(src_type),
             str(trg_type),
-            connex_item
+            connex_item.property_map,
         )
         # print(src_trg_params)
 

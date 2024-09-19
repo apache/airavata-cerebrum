@@ -7,6 +7,8 @@ dependencies:
   - pip
 
   # Key dependencies -------
+  - ipywidgets
+  - ipytree
   - jsonpath-python
   - jupyter
   - numba
@@ -20,13 +22,15 @@ dependencies:
   - requests
   - scipy
   - sqlalchemy
+  - traitlets
   - tqdm
 
   - pip:
-      - mpi4py
       - anndata
-      - bmtk
       - allensdk
+      - bmtk
+      - mpi4py
+      - parse
       - pytree
       - git+https://github.com/alleninstitute/abc_atlas_access
       - git+https://github.com/alleninstitute/neuroanalysis

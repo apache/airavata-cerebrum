@@ -19,6 +19,8 @@ dependencies:
 
   # allensdk
   - future
+  - ipywidgets
+  - ipytree
   - jinja2
   - jsonpath-python
   - jupyter
@@ -44,19 +46,21 @@ dependencies:
   - simplejson
   - six
   - sqlalchemy
+  - traitlets
   - tqdm
   - xarray
 
 
   # PIP dependencies
   - pip:
-    - mpi4py
     - anndata
     - allensdk
     - bmtk
+    - mpi4py
+    - parse
     - pylightxl
-    - scanpy
     - pytree
+    - scanpy
     - git+https://github.com/alleninstitute/abc_atlas_access
     - git+https://github.com/alleninstitute/neuroanalysis
     - git+https://github.com/alleninstitute/aisynphys

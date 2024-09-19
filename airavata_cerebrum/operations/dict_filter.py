@@ -1,15 +1,19 @@
+import logging
 import typing
 import traitlets
 #
-from ..util.log.logging import LOGGER
 from .. import base
+
+
+def _log():
+    return logging.getLogger(__name__)
 
 
 class IterAttrMapper(base.OpXFormer):
     class MapperTraits(traitlets.HasTraits):
         attribute = traitlets.Unicode()
 
-    def __init__(self, **init_params):
+    def __init__(self, **params):
         """
         Attribute value mapper
 
@@ -19,7 +23,7 @@ class IterAttrMapper(base.OpXFormer):
            Attribute of the cell type; key of the cell type descr. dict
         """
         self.name = __name__ + ".IterAttrMapper"
-        self.attr = init_params["attribute"]
+        self.attr = params["attribute"]
 
     def xform(
         self,
@@ -50,16 +54,20 @@ class IterAttrMapper(base.OpXFormer):
         return cls.MapperTraits
 
 
-class IterAttrFilter:
+class IterAttrFilter(base.OpXFormer):
     class FilterTraits(traitlets.HasTraits):
         key = traitlets.Unicode()
         filters = traitlets.List()
 
-    def __init__(self, **init_params):
+    def __init__(self, **params):
         self.name = __name__ + ".IterAttrFilter"
         self.key_fn = lambda x: x
 
-    def xform(self, ct_iter, **params):
+    def xform(
+        self,
+        in_iter: typing.Iterable | None,
+        **params: typing.Any,
+    ) -> typing.Iterable | None:
         """
         Filter cell type descriptions matching all the values for the given attrs.
 
@@ -82,35 +90,32 @@ class IterAttrFilter:
         ct_iter: iterator
            iterator of cell type descriptions
         """
-        LOGGER.info("CTDbCellAttrFilter Args : %s", params)
+        _log().info("CTDbCellAttrFilter Args : %s", params)
         filters_itr = params["filters"]
         if params and "key" in params and params["key"]:
             self.key_fn = lambda x: x[params["key"]]
         return iter(
             x
-            for x in ct_iter
+            for x in in_iter
             if x and all(
                 getattr(self.key_fn(x)[attr], bin_op)(val)
                 for attr, bin_op, val in filters_itr
             )
-        )
+        ) if in_iter else None
 
     @classmethod
-    def trait_type(cls):
+    def trait_type(cls) -> type[traitlets.HasTraits]:
         return cls.FilterTraits
 
 
 #
+# ------- Query and Xform Registers -----
 #
-base.OpXFormer.register(IterAttrFilter)
-base.OpXFormer.register(IterAttrMapper)
-
-
-def query_register():
+def query_register() -> typing.List[type[base.DbQuery]]:
     return []
 
 
-def xform_register():
+def xform_register() -> typing.List[type[base.OpXFormer]]:
     return [
         IterAttrMapper,
         IterAttrFilter,

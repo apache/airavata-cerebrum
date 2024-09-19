@@ -1,8 +1,13 @@
+import logging
+import typing
 import jsonpath
 import traitlets
 #
 from .. import base
-from ..util.log.logging import LOGGER
+
+
+def _log():
+    return logging.getLogger(__name__)
 
 
 class JPointerFilter(base.OpXFormer):
@@ -10,7 +15,7 @@ class JPointerFilter(base.OpXFormer):
         paths = traitlets.List()
         keys = traitlets.List()
 
-    def __init__(self, **init_params):
+    def __init__(self, **params):
         self.name = __name__ + ".JPointerFilter"
         self.patch_out = None
 
@@ -21,7 +26,11 @@ class JPointerFilter(base.OpXFormer):
         else:
             return None
 
-    def xform(self, in_iter, **params):
+    def xform(
+        self,
+        in_iter: typing.Iterable | None,
+        **params: typing.Any,
+    ) -> typing.Iterable | None:
         """
         Filter the output only if the destination path is present in dctx.
 
@@ -42,14 +51,20 @@ class JPointerFilter(base.OpXFormer):
         """
         fp_lst = params["paths"]
         key_lst = params["keys"]
-        return [{key: self.resolve(fpath, in_iter) for fpath, key in zip(fp_lst, key_lst)}]
+        return [
+            {key: self.resolve(fpath, in_iter) for fpath, key in zip(fp_lst, key_lst)}
+        ]
 
     @classmethod
-    def trait_type(cls):
+    def trait_type(cls) -> type[traitlets.HasTraits]:
         return cls.FilterTraits
 
 
-class IterJPatchFilter:
+class IterJPatchFilter(base.OpXFormer):
+    class FilterTraits(traitlets.HasTraits):
+        filter_exp = traitlets.Bytes()
+        dest_path = traitlets.Bytes()
+
     def __init__(self, **init_params):
         self.name = __name__ + ".IterJPatchFilter"
         self.patch_out = None
@@ -64,10 +79,20 @@ class IterJPatchFilter:
             else:
                 return None
         except jsonpath.JSONPatchError as jpex:
-            LOGGER.error("JPEX : ", jpex)
+            _log().error("Jpatch error : ", jpex)
+            _log().debug(
+                "Run arguments: Filter [%s]; Dest [%s]; Context [%s] ",
+                filter_exp,
+                dest_path,
+                str(ctx),
+            )
             return None
 
-    def xform(self, ct_iter, **params):
+    def xform(
+        self,
+        in_iter: typing.Iterable | None,
+        **params: typing.Any,
+    ) -> typing.Iterable | None:
         """
         Select the output matching the filter expression and place in
         the destination.
@@ -89,18 +114,33 @@ class IterJPatchFilter:
         """
         filter_exp = params["filter_exp"]
         dest_path = params["dest_path"]
-        return iter(self.patch(x, filter_exp, dest_path) for x in ct_iter if x)
+        return (
+            iter(self.patch(x, filter_exp, dest_path) for x in in_iter if x)
+            if in_iter
+            else None
+        )
+
+    @classmethod
+    def trait_type(cls) -> type[traitlets.HasTraits]:
+        return cls.FilterTraits
 
 
-class IterJPointerFilter:
-    def __init__(self, **init_params):
+class IterJPointerFilter(base.OpXFormer):
+    class FilterTraits(traitlets.HasTraits):
+        path = traitlets.Unicode()
+
+    def __init__(self, **params):
         self.name = __name__ + ".IterJPointerFilter"
         self.patch_out = None
 
     def exists(self, ctx, fpath):
         return jsonpath.JSONPointer(fpath).exists(ctx)
 
-    def xform(self, ct_iter, **params):
+    def xform(
+        self,
+        in_iter: typing.Iterable | None,
+        **params: typing.Any,
+    ) -> typing.Iterable | None:
         """
         Filter the output only if the destination path is present.
 
@@ -119,17 +159,17 @@ class IterJPointerFilter:
            iterator of cell type descriptions
         """
         fpath = params["path"]
-        return iter(x for x in ct_iter if x and self.exists(x, fpath))
+        return (
+            iter(x for x in in_iter if x and self.exists(x, fpath)) if in_iter else None
+        )
 
+    @classmethod
+    def trait_type(cls) -> type[traitlets.HasTraits]:
+        return cls.FilterTraits
 
 #
 # ----- Mapper, Filter and Query Registers ------
 #
-base.OpXFormer.register(JPointerFilter)
-base.OpXFormer.register(IterJPointerFilter)
-base.OpXFormer.register(IterJPatchFilter)
-
-
 def query_register():
     return []
 

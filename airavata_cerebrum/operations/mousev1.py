@@ -1,5 +1,5 @@
 #
-# Code is obtained from V1 Model
+# Code copied as it is from V1 Model
 #
 #
 import typing
@@ -7,8 +7,6 @@ import numpy as np
 from math import sqrt, exp, log
 from scipy.stats import multivariate_normal
 from scipy.special import erfinv
-
-import airavata_cerebrum.model.structure as structure
 
 
 def lognorm_ppf(x, shape, loc=0, scale=1.0):
@@ -38,7 +36,7 @@ def delta_theta_cdf(intercept, d_theta):
 def compute_pair_type_parameters(
     source_type: str,
     target_type: str,
-    cx_conn: structure.Connection
+    cc_props: typing.Dict[str, typing.Any] 
 ):
     """Takes in two strings for the source and target type. It determined the connectivity parameters needed based on
     distance dependence and orientation tuning dependence and returns a dictionary of these parameters. A description
@@ -69,7 +67,6 @@ def compute_pair_type_parameters(
     #     trg_tmp = trg_new[0:2] + trg_new[3]
 
     # cc_props = cc_prob_dict[src_tmp + "-" + trg_tmp]
-    cc_props = cx_conn.property_map
     # ### For distance dependence which is modeled as a Gaussian ####
     # P = A * exp(-r^2 / sigma^2)
     # Since papers reported probabilities of connection having measured from 50um to 100um intersomatic distance

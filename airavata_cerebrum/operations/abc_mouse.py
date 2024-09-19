@@ -1,7 +1,8 @@
 import traitlets
 import typing
-from .json_filter import JPointerFilter
+#
 from .. import base
+from .json_filter import JPointerFilter
 
 
 class ABCDbMERFISH_CCFLayerRegionFilter(base.OpXFormer):
@@ -9,11 +10,11 @@ class ABCDbMERFISH_CCFLayerRegionFilter(base.OpXFormer):
         region = traitlets.Unicode()
         sub_region = traitlets.Unicode()
 
-    def __init__(self, **init_params):
-        self.jptr_filter = JPointerFilter(**init_params)
+    def __init__(self, **params):
+        self.jptr_filter = JPointerFilter(**params)
         self.path_fmt = "/0/{}/{}"
 
-    def xform(self, in_iter: typing.Iterable | None, **params):
+    def xform(self, in_iter: typing.Iterable | None, **params) -> typing.Iterable | None:
         region = params["region"]
         sub_region = params["sub_region"]
         rpath = self.path_fmt.format(region, sub_region)
@@ -24,7 +25,7 @@ class ABCDbMERFISH_CCFLayerRegionFilter(base.OpXFormer):
         )
 
     @classmethod
-    def trait_type(cls):
+    def trait_type(cls) -> type[traitlets.HasTraits]:
         return cls.FilterTraits
 
 
@@ -33,13 +34,13 @@ class ABCDbMERFISH_CCFFractionFilter(base.OpXFormer):
         region = traitlets.Unicode()
         cell_type = traitlets.Unicode()
 
-    def __init__(self, **init_params):
-        self.jptr_filter = JPointerFilter(**init_params)
+    def __init__(self, **params):
+        self.jptr_filter = JPointerFilter(**params)
         self.ifrac_fmt = "/0/{}/inhibitory fraction"
         self.fwr_fmt = "/0/{}/fraction wi. region"
         self.frac_fmt = "/0/{}/{} fraction"
 
-    def xform(self, in_iter, **params):
+    def xform(self, in_iter: typing.Iterable | None, **params) -> typing.Iterable | None:
         region = params["region"]
         frac_paths = [
             self.ifrac_fmt.format(region),
@@ -57,21 +58,18 @@ class ABCDbMERFISH_CCFFractionFilter(base.OpXFormer):
         )
 
     @classmethod
-    def trait_type(cls):
+    def trait_type(cls) -> type[traitlets.HasTraits]:
         return cls.FilterTraits
 
 
 #
-base.OpXFormer.register(ABCDbMERFISH_CCFLayerRegionFilter)
-base.OpXFormer.register(ABCDbMERFISH_CCFFractionFilter)
-
-
+# ------- Query and Xform Registers -----
 #
-def query_register():
+def query_register() -> typing.List[type[base.DbQuery]]:
     return []
 
 
-def xform_register():
+def xform_register() -> typing.List[type[base.OpXFormer]]:
     return [
         ABCDbMERFISH_CCFLayerRegionFilter,
         ABCDbMERFISH_CCFFractionFilter,

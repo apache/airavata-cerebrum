@@ -1,3 +1,4 @@
+import logging
 import os
 import pathlib
 import subprocess
@@ -9,7 +10,6 @@ import matplotlib.pyplot as plt
 import abc_atlas_access.abc_atlas_cache.abc_project_cache as abc_cache
 import traitlets
 
-from ..util.log.logging import LOGGER
 from .. import base
 
 PARCEL_META_DATA_KEY = "cell_metadata_with_parcellation_annotation"
@@ -73,6 +73,10 @@ INHIBITORY_FRACTION_COLUMN = "inhibitory fraction"
 FRACTION_WI_REGION_COLUMN = "fraction wi. region"
 
 
+def _log():
+    return logging.getLogger(__name__)
+
+
 def abc_cache_download_meta(download_base: str | pathlib.Path,
                             abc_data_key: str,
                             meta_key: str | None) -> str | pathlib.Path | None:
@@ -102,7 +106,7 @@ def abc_cache_download_meta(download_base: str | pathlib.Path,
     pcache = abc_cache.AbcProjectCache.from_s3_cache(download_base)
     pcache.load_manifest()
     if abc_data_key not in pcache.list_directories:
-        LOGGER.error(
+        _log().error(
             "Meta data directory not one of valid dirs %s ", pcache.list_directories
         )
         return None
@@ -112,7 +116,7 @@ def abc_cache_download_meta(download_base: str | pathlib.Path,
             metadata_path = pcache.get_metadata_path(abc_data_key, meta_key)
         return metadata_path
     except Exception as ex:
-        LOGGER.error("Exception occurred in download %s ", ex)
+        _log().error("Exception occurred in download %s ", ex)
     return None
 
 
@@ -145,7 +149,7 @@ def abc_cache_download_exp_mat(download_base: str | pathlib.Path,
     pcache = abc_cache.AbcProjectCache.from_s3_cache(download_base)
     pcache.load_manifest()
     if abc_data_key not in pcache.list_directories:
-        LOGGER.error(
+        _log().error(
             "Meta data directory not one of valid dirs %s ", pcache.list_directories
         )
         return None
@@ -155,7 +159,7 @@ def abc_cache_download_exp_mat(download_base: str | pathlib.Path,
             data_path = pcache.get_data_path(abc_data_key, gex_key)
         return data_path
     except Exception as ex:
-        LOGGER.error("Exception occurred in download %s ", ex)
+        _log().error("Exception occurred in download %s ", ex)
     return None
 
 
@@ -990,7 +994,7 @@ class ABCDbMERFISH_CCFQuery(base.DbQuery):
         #
         default_args = {}
         rarg = {**default_args, **params} if params is not None else default_args
-        LOGGER.info("ABCDbMERFISH_CCFQuery Args : %s", rarg)
+        _log().info("ABCDbMERFISH_CCFQuery Args : %s", rarg)
         region_list = rarg["region"]
         #
         mfish_ccf_df = pd.read_csv(self.ccf_meta_file)
@@ -1000,21 +1004,18 @@ class ABCDbMERFISH_CCFQuery(base.DbQuery):
         ]
 
     @classmethod
-    def trait_type(cls):
+    def trait_type(cls) -> type[traitlets.HasTraits]:
         return cls.QryTraits
 
 
 #
-# ------- Registers -----
+# ------- Query and Xform Registers -----
 #
-base.DbQuery.register(ABCDbMERFISH_CCFQuery)
-
-
-def query_register() -> typing.List[typing.Type]:
+def query_register() -> typing.List[type[base.DbQuery]]:
     return [
         ABCDbMERFISH_CCFQuery,
     ]
 
 
-def xform_register():
+def xform_register() -> typing.List[type[base.OpXFormer]]:
     return []

@@ -1,10 +1,12 @@
+from ipywidgets.widgets.widget import typing
 import traitlets
 import types
 import ipywidgets as iwidgets
 import ipytree as itree
+from airavata_cerebrum import base
 from airavata_cerebrum.util.desc_config import ModelDescConfigTemplate
 from airavata_cerebrum.util import class_qual_name
-from airavata_cerebrum.register import find_type_in_register
+from airavata_cerebrum.register import find_type
 
 
 class CfgTreeNode(itree.Node):
@@ -240,8 +242,8 @@ for clx in NON_QRY_XFORM_CLASSES:
     NON_QRY_XFORM_NODE_MAP[clx.source()] = clx
 
 
-def get_config_tree_node(node_key, init_args):
-    src_class = find_type_in_register(node_key)
+def get_config_tree_node(node_key: str, init_params: typing.Dict) -> itree.Node | None:
+    src_class: type[base.DbQuery] | type[base.OpXFormer] | None = find_type(node_key)
     if src_class:
         tnode_class = types.new_class(
             src_class.__name__ + "Node",
@@ -252,7 +254,7 @@ def get_config_tree_node(node_key, init_args):
             tnode_class = NON_QRY_XFORM_NODE_MAP[node_key]
         else:
             return None
-    return tnode_class(**init_args)
+    return tnode_class(**init_params)
 
 
 def get_cfg_tree_node(query_key, query_dict):

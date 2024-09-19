@@ -7,35 +7,36 @@ from .util.desc_config import CfgKeys
 
 
 def run_workflow(
-    workflow_steps: typing.List[typing.Dict], wf_stream: typing.Iterable | None = None
+    workflow_steps: typing.List[typing.Dict],
+    wf_iter: typing.Iterable | None = None
 ) -> typing.Iterable | None:
-    for wf_stx in workflow_steps:
-        sname = wf_stx[CfgKeys.NAME]
-        slabel = wf_stx[CfgKeys.LABEL] if CfgKeys.LABEL in wf_stx else sname
-        iparams: typing.Dict[str, typing.Any] = wf_stx["init_params"]
-        eparams: typing.Dict[str, typing.Any] = wf_stx["exec_params"]
-        match wf_stx[CfgKeys.TYPE]:
+    for wf_step in workflow_steps:
+        sname = wf_step[CfgKeys.NAME]
+        slabel = wf_step[CfgKeys.LABEL] if CfgKeys.LABEL in wf_step else sname
+        iparams: typing.Dict[str, typing.Any] = wf_step["init_params"]
+        eparams: typing.Dict[str, typing.Any] = wf_step["exec_params"]
+        match wf_step[CfgKeys.TYPE]:
             case "query":
                 LOGGER.info("Start Query : [%s]",  slabel)
-                qobj: base.DbQuery | None = register.QUERY_REGISTER.object(
+                qobj: base.DbQuery | None = register.get_query_object(
                     sname, **iparams
                 )
                 if qobj:
-                    wf_stream = qobj.run(wf_stream, **eparams)
+                    wf_iter = qobj.run(wf_iter, **eparams)
                     LOGGER.info("Complete Query : [%s]", slabel)
                 else:
                     LOGGER.error("Failed to find Query : [%s]",  sname)
             case "xform":
                 LOGGER.info("Running XFormer : [%s]",  slabel)
-                fobj: base.OpXFormer | None = (
-                    register.XFORM_REGISTER.object(sname, **iparams)
+                fobj: base.OpXFormer | None = register.get_xform_op_object(
+                    sname, **iparams
                 )
-                if fobj and wf_stream:
-                    wf_stream = fobj.xform(wf_stream, **eparams)
+                if fobj and wf_iter:
+                    wf_iter = fobj.xform(wf_iter, **eparams)
                     LOGGER.info("Complete XForm : [%s]", slabel)
                 else:
                     LOGGER.error("Failed to find XFormer : [%s]", sname)
-    return wf_stream
+    return wf_iter
 
 
 def run_db_connect_workflows(
@@ -43,14 +44,14 @@ def run_db_connect_workflows(
 ) -> typing.Dict[str, typing.Any]:
     db_connect_output = {}
     #
-    for db_name, db_cfg in source_data_cfg.items():
+    for db_name, db_wcfg in source_data_cfg.items():
         db_label = db_name
-        if CfgKeys.LABEL in db_cfg:
-            db_label = db_cfg[CfgKeys.LABEL]
+        if CfgKeys.LABEL in db_wcfg:
+            db_label = db_wcfg[CfgKeys.LABEL]
         LOGGER.info("Start db_connect workflow for db: [%s]",  db_label)
         with tqdm_log.logging_redirect_tqdm():
             model_itr = run_workflow(
-                db_cfg[CfgKeys.DB_CONNECT][CfgKeys.WORKFLOW]
+                db_wcfg[CfgKeys.DB_CONNECT][CfgKeys.WORKFLOW]
             )
             if model_itr:
                 db_connect_output[db_name] = list(model_itr)
