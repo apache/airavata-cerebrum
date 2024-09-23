@@ -6,10 +6,8 @@ import traitlets
 #
 # Abstract Base classes
 #
-TraitType = typing.TypeVar(
-    'TraitType',
-    bound=traitlets.HasTraits
-)
+class EmptyTraits(traitlets.HasTraits):
+    pass
 
 
 # Abstract interface for Database Queries
@@ -32,7 +30,7 @@ class DbQuery(abc.ABC):
     @classmethod
     @abc.abstractmethod
     def trait_type(cls) -> type[traitlets.HasTraits]:
-        return TraitType
+        return EmptyTraits
 
 
 # Abstract interface for XFormer operations
@@ -48,4 +46,4 @@ class OpXFormer(abc.ABC):
     @classmethod
     @abc.abstractmethod
     def trait_type(cls) -> type[traitlets.HasTraits]:
-        return TraitType
+        return EmptyTraits

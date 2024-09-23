@@ -43,6 +43,7 @@ allensdk = "^2.16"
 anndata = "^0.10"
 airavata-python-sdk = "^1.1.6"
 bmtk = "^1.1"
+flake8 = "^7.1"
 intervaltree = "^3.1.0"
 ipywidgets = "^8.1"
 ipytree = "^0.2"
@@ -65,3 +66,20 @@ pillow = "^10.4"
 
 [tool.setuptools.packages.find]
 include = ["airavata_cerebrum"]
+
+[tool.pyright]
+include = [
+    "airavata_cerebrum",
+    "tests",
+    "resources"
+]
+exclude = [
+    "**/__pycache__"
+]
+# reportOptionalMemberAccess = false,
+# reportOptionalSubscript = false,
+# reportGeneralTypeIssues = false,
+
+[tool.black]
+line-length = 88
+target-version = ["py310"]

@@ -63,7 +63,8 @@ def _log():
 
 class AISynPhysQuery(base.DbQuery):
     class QryTraits(traitlets.HasTraits):
-        layer = traitlets.Unicode()
+        download_base = traitlets.Unicode()
+        layer = traitlets.List()
 
     def __init__(self, **params):
         """

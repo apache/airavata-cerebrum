@@ -8,7 +8,7 @@ from .dict_filter import IterAttrFilter
 
 class CTModelNameFilter(base.OpXFormer):
     class FilterTraits(traitlets.HasTraits):
-        name = traitlets.Unicode()
+        model_name = traitlets.Unicode()
 
     def __init__(self, **params):
         self.name = __name__ + ".CTModelNameFilter"
@@ -21,7 +21,7 @@ class CTModelNameFilter(base.OpXFormer):
         in_iter: typing.Iterable | None,
         **params: typing.Any,
     ) -> typing.Iterable | None:
-        model_name = params["name"]
+        model_name = params["model_name"]
         filter_exp = self.filter_fmt.format(model_name)
         return self.jpatch_filter.xform(in_iter,
                                         filter_exp=filter_exp,

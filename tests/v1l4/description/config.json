@@ -223,9 +223,11 @@
             "(('4', 'Pvalb'), ('4', 'Pvalb'))": {
                 "source_data": {
                     "airavata_cerebrum.dataset.ai_synphys" : {
+                        "label": "AI Syn Phys",
                         "workflow": [
                             {
                                 "type": "xform",
+                                "label": "Filter by Pair",
                                 "name": "airavata_cerebrum.operations.ai_synphys.AISynPhysPairFilter",
                                 "init_params": {},
                                 "exec_params": {
@@ -240,9 +242,11 @@
             "(('4', 'Pvalb'), ('4', 'Sst'))": {
                 "source_data": {
                     "airavata_cerebrum.dataset.ai_synphys" : {
+                        "label": "AI Syn Phys",
                         "workflow": [
                             {
                                 "type": "xform",
+                                "label": "Filter by Pair",
                                 "name": "airavata_cerebrum.operations.ai_synphys.AISynPhysPairFilter",
                                 "init_params": {},
                                 "exec_params": {
@@ -257,9 +261,11 @@
             "(('4', 'Pvalb'), ('4', 'Vip'))": {
                 "source_data": {
                     "airavata_cerebrum.dataset.ai_synphys" : {
+                        "label": "AI Syn Phys",
                         "workflow": [
                             {
                                 "type": "xform",
+                                "label": "Filter by Pair",
                                 "name": "airavata_cerebrum.operations.ai_synphys.AISynPhysPairFilter",
                                 "init_params": {},
                                 "exec_params": {
@@ -274,9 +280,11 @@
             "(('4', 'Sst'), ('4', 'Pvalb'))": {
                  "source_data": {
                     "airavata_cerebrum.dataset.ai_synphys" : {
+                        "label": "AI Syn Phys",
                         "workflow": [
                             {
                                 "type": "xform",
+                                "label": "Filter by Pair",
                                 "name": "airavata_cerebrum.operations.ai_synphys.AISynPhysPairFilter",
                                 "init_params": {},
                                 "exec_params": {
@@ -291,9 +299,11 @@
             "(('4', 'Sst'), ('4', 'Sst'))": {
                 "source_data": {
                     "airavata_cerebrum.dataset.ai_synphys" : {
+                        "label": "AI Syn Phys",
                         "workflow": [
                             {
                                 "type": "xform",
+                                "label": "Filter by Pair",
                                 "name": "airavata_cerebrum.operations.ai_synphys.AISynPhysPairFilter",
                                 "init_params": {},
                                 "exec_params": {
@@ -308,9 +318,11 @@
             "(('4', 'Sst'), ('4', 'Vip'))": {
                 "source_data": {
                     "airavata_cerebrum.dataset.ai_synphys" : {
+                        "label": "AI Syn Phys",
                         "workflow": [
                             {
                                 "type": "xform",
+                                "label": "Filter by Pair",
                                 "name": "airavata_cerebrum.operations.ai_synphys.AISynPhysPairFilter",
                                 "init_params": {},
                                 "exec_params": {
@@ -325,9 +337,11 @@
             "(('4', 'Vip'), ('4', 'Pvalb'))": {
                 "source_data": {
                     "airavata_cerebrum.dataset.ai_synphys" : {
+                        "label": "AI Syn Phys",
                         "workflow": [
                             {
                                 "type": "xform",
+                                "label": "Filter by Pair",
                                 "name": "airavata_cerebrum.operations.ai_synphys.AISynPhysPairFilter",
                                 "init_params": {},
                                 "exec_params": {
@@ -342,9 +356,11 @@
             "(('4', 'Vip'), ('4', 'Sst'))": {
                 "source_data": {
                     "airavata_cerebrum.dataset.ai_synphys" : {
+                        "label": "AI Syn Phys",
                         "workflow": [
                             {
                                 "type": "xform",
+                                "label": "Filter by Pair",
                                 "name": "airavata_cerebrum.operations.ai_synphys.AISynPhysPairFilter",
                                 "init_params": {},
                                 "exec_params": {
@@ -359,10 +375,12 @@
             "(('4', 'Vip'), ('4', 'Vip'))": {
                 "source_data": {
                     "airavata_cerebrum.dataset.ai_synphys" : {
+                        "label": "AI Syn Phys",
                         "workflow": [
                             {
                                 "type": "xform",
                                 "name": "airavata_cerebrum.operations.ai_synphys.AISynPhysPairFilter",
+                                "label": "Filter by Pair",
                                 "init_params": {},
                                 "exec_params": {
                                     "pre": "L4-Vip",
@@ -395,7 +413,9 @@
                         "label": "Progress Bar",
                         "name": "airavata_cerebrum.operations.xform.TQDMWrapper",
                         "init_params": {},
-                        "exec_params": {}
+                        "exec_params": {
+                            "jupyter": true,
+                        }
                     },
                     {
                         "type": "xform",
@@ -428,7 +448,7 @@
                         "name": "airavata_cerebrum.operations.abm_celltypes.CTModelNameFilter",
                         "init_params": {},
                         "exec_params": {
-                            "name": "3 LIF + Afterspike Currents"
+                            "model_name": "3 LIF + Afterspike Currents"
                         }
                     },
                     {

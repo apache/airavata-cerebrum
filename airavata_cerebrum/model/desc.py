@@ -51,6 +51,7 @@ class ModelDescription:
 
     def download_db_data(self) -> typing.Dict[str, typing.Any]:
         db_src_config = self.config.get_config(CfgKeys.SRC_DATA)
+        _log().info("Start Query and Download Data")
         db_connect_output = workflow.run_db_connect_workflows(db_src_config)
         if self.save_flag:
             cbmio.dump(
@@ -58,6 +59,7 @@ class ModelDescription:
                 self.output_location(CfgKeys.DB_CONNECT),
                 indent=4,
             )
+        _log().info("Completed Query and Download Data")
         return db_connect_output
 
     def db_post_ops(self):
@@ -115,9 +117,7 @@ class ModelDescription:
             mod_struct = structure.Network.model_validate(cbmio.load(self.custom_mod))
             # Update user preference
             self.model_struct = self.model_struct.apply_mod(mod_struct)
-            # print("----------------------")
-        #
-        # NCells
+        # Estimate NCells from the fractions
         self.model_struct.populate_ncells(30000)
         return self.model_struct
 

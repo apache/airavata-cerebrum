@@ -27,13 +27,15 @@ class IdentityXformer(OpXFormer):
 
 class TQDMWrapper(OpXFormer):
     class TqTraits(traitlets.HasTraits):
-        pass
+        jupyter = traitlets.Bool()
 
     def xform(
         self,
         in_iter: typing.Iterable | None,
         **params,
     ) -> typing.Iterable | None:
+        if "jupyter" in params and params["jupyter"]:
+            return tqdm.notebook.tqdm(in_iter)
         return tqdm.tqdm(in_iter)
 
     @classmethod

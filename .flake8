@@ -1,3 +1,7 @@
 [flake8]
-ignore = E261, E262, W504, W503
+extend-ignore = 
+    E261,  # at least two spaces before inline comment
+    E262,  # inline comment should start with '# '
+    W503,  # line break before binary operator
+    W504   # line break after binary operator
 max-line-length = 120
