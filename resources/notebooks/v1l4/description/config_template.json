@@ -102,8 +102,8 @@
         "exec_params": {
             "jupyter": {
                 "type": "check",
-                "label": "Select only the first",
-                "doc": "Select only the first",
+                "label": "Running in a Jupyter notebook",
+                "doc": "Running in a Jupyter notebook",
                 "default": false
             }
         }

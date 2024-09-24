@@ -414,7 +414,7 @@
                         "name": "airavata_cerebrum.operations.xform.TQDMWrapper",
                         "init_params": {},
                         "exec_params": {
-                            "jupyter": true,
+                            "jupyter": true
                         }
                     },
                     {
