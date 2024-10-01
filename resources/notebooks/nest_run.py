@@ -1,6 +1,5 @@
 import argparse
 import nest
-import nest.SonataNetwork
 
 
 
@@ -37,14 +36,14 @@ if __name__ == "__main__":
         "-o",
         "--output_dir",
         type=str,
-        default="./v1l4/config_nest.json",
+        default="./v1l4/output_bkg/",
         help="This option will override the output directory specified in the config file.",
     )
     parser.add_argument(
         "config_file",
         type=str,
         nargs="?",
-        default="config.json",
+        default="./v1l4/config_nest.json",
         help="The config file to use for the simulation.",
     )
     parser.add_argument(
