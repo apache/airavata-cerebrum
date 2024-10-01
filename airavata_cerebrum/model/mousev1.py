@@ -1,6 +1,7 @@
 import ast
 import logging
 import typing
+
 #
 import jsonpath
 import numpy as np
@@ -8,15 +9,21 @@ import scipy
 import pandas as pd
 import bmtk.builder
 import bmtk.builder.node_pool
+
 #
 from ..operations import netops
 from ..dataset import abc_mouse
 from ..operations.mousev1 import (
     compute_pair_type_parameters,
     connect_cells,
-    syn_weight_by_experimental_distribution
+    syn_weight_by_experimental_distribution,
+    generate_positions_grids,
+    get_filter_spatial_size,
+    select_bkg_sources,
+    lgn_synaptic_weight_rule
 )
 from . import structure
+
 
 def _log():
     return logging.getLogger(__name__)
@@ -27,9 +34,7 @@ class V1RegionMapper(structure.RegionMapper):
         self.name = name
         self.region_desc = region_desc
         self.property_map = self.region_desc["property_map"]
-        self.src_data = self.property_map[
-            "airavata_cerebrum.dataset.abc_mouse"
-        ][0]
+        self.src_data = self.property_map["airavata_cerebrum.dataset.abc_mouse"][0]
 
     def neuron_names(self) -> typing.List[str]:
         return self.property_map["neurons"]
@@ -40,7 +45,9 @@ class V1RegionMapper(structure.RegionMapper):
     def region_fraction(self):
         return float(self.src_data["region_fraction"])
 
-    def map(self, region_neurons: typing.Dict[str, structure.Neuron]) -> structure.Region:
+    def map(
+        self, region_neurons: typing.Dict[str, structure.Neuron]
+    ) -> structure.Region | None:
         return structure.Region(
             name=self.name,
             inh_fraction=self.inh_fraction(),
@@ -58,6 +65,7 @@ class V1NeuronMapper(structure.NeuronMapper):
     ev_ptr = jsonpath.JSONPointer(
         "/glif/neuronal_models/0/neuronal_model_runs/0/explained_variance_ratio"
     )
+    id_ptr = jsonpath.JSONPointer("/glif/neuronal_models/0/neuronal_model_runs/0/id")
 
     def __init__(self, name: str, desc: typing.Dict[str, typing.Dict]):
         self.name = name
@@ -90,9 +98,14 @@ class V1NeuronMapper(structure.NeuronMapper):
             m_type = "point_process"
             m_template = "nrn:IntFire1"
             params_file = str(spec_id) + "_glif_lif_asc_config.json"
-            property_map = {"explained_variance_ratio": self.ev_ptr.resolve(mdesc)}
+            m_id = self.id_ptr.resolve(mdesc)
+            property_map = {
+                "id": str(self.id_ptr.resolve(mdesc)),
+                "explained_variance_ratio": self.ev_ptr.resolve(mdesc),
+            }
             nmodel = structure.NeuronModel(
                 name=str(spec_id),
+                id=str(m_id),
                 m_type=m_type,
                 template=m_template,
                 dynamics_params=params_file,
@@ -111,7 +124,6 @@ structure.NeuronMapper.register(V1NeuronMapper)
 
 
 class V1ConnectionMapper(structure.ConnectionMapper):
-
     def __init__(self, name: str, desc: typing.Dict[str, typing.Dict]):
         self.name = name
         self.pre, self.post = ast.literal_eval(self.name)
@@ -119,7 +131,9 @@ class V1ConnectionMapper(structure.ConnectionMapper):
 
     def map(self) -> structure.Connection | None:
         if "airavata_cerebrum.dataset.ai_synphys" in self.desc:
-            conn_prob = self.desc["airavata_cerebrum.dataset.ai_synphys"][0]["probability"]
+            conn_prob = self.desc["airavata_cerebrum.dataset.ai_synphys"][0][
+                "probability"
+            ]
             return structure.Connection(
                 name=self.name,
                 pre=self.pre,
@@ -138,16 +152,19 @@ structure.ConnectionMapper.register(V1ConnectionMapper)
 
 
 class ABCRegionMapper:
-    def __init__(self, name: str,
-                 region_desc: typing.Dict):
+    def __init__(self, name: str, region_desc: typing.Dict):
         self.name = name
         self.region_desc = region_desc
 
-    def map(self, neuron_struct: typing.Dict[str, structure.Neuron]) -> structure.Region:
+    def map(
+        self, neuron_struct: typing.Dict[str, structure.Neuron]
+    ) -> structure.Region:
         return structure.Region(
             name=self.name,
             inh_fraction=float(self.region_desc[abc_mouse.INHIBITORY_FRACTION_COLUMN]),
-            region_fraction=float(self.region_desc[abc_mouse.FRACTION_WI_REGION_COLUMN]),
+            region_fraction=float(
+                self.region_desc[abc_mouse.FRACTION_WI_REGION_COLUMN]
+            ),
             neurons=neuron_struct,
         )
 
@@ -160,8 +177,8 @@ class ABCNeuronMapper:
 
     def map(self) -> structure.Neuron | None:
         frac_col = abc_mouse.FRACTION_COLUMN_FMT.format(self.name)
-        return structure.Neuron(ei=self.ei_type,
-                                fraction=float(self.desc[frac_col]))
+        return structure.Neuron(ei=self.ei_type, fraction=float(self.desc[frac_col]))
+
 
 # def atlasdata2regionfractions(
 #     region_frac_df: pd.DataFrame, model_name: str
@@ -201,14 +218,16 @@ class V1BMTKNetworkBuilder:
         self.min_radius: float = 1.0  # to avoid diverging density near 0
         self.radius: float = self.net_struct.dims["radius"] * np.sqrt(self.fraction)
         self.radial_range: typing.List[float] = [self.min_radius, self.radius]
-        self.net: bmtk.builder.NetworkBuilder = bmtk.builder.NetworkBuilder(self.net_struct.name)
+        self.net: bmtk.builder.NetworkBuilder = bmtk.builder.NetworkBuilder(
+            self.net_struct.name
+        )
 
     def add_model_nodes(
         self,
         location: str,
         loc_dims: typing.Dict,
         pop_neuron: structure.Neuron,
-        neuron_model: structure.NeuronModel
+        neuron_model: structure.NeuronModel,
     ):
         pop_name = pop_neuron.name
         pop_size = pop_neuron.N
@@ -253,13 +272,15 @@ class V1BMTKNetworkBuilder:
                     s=nsyn_lognorm_shape, loc=0, scale=nsyn_lognorm_scale
                 ).stats(moments="m")
             )
-        print(pop_name, neuron_model.name,
-              len(target_sizes), nsyn_size_mean)  # type: ignore
+        print(
+            pop_name, neuron_model.name, len(target_sizes), nsyn_size_mean  # type: ignore
+        )
         node_props = {
             "N": N,
             "node_type_id": int(neuron_model.name),  # model["node_type_id"],
             "model_type": neuron_model.m_type,  # model["model_type"],  #  "model_type": "point_process",
             "model_template": neuron_model.template,  # model["model_template"],
+            "model_id": neuron_model.id,
             "dynamics_params": neuron_model.dynamics_params,
             "ei": ei,
             "location": location,
@@ -315,8 +336,9 @@ class V1BMTKNetworkBuilder:
                     continue
                 # --- Neuron Model ---
                 for _, neuron_model in pop_neuron.neuron_models.items():
-                    self.add_model_nodes(location, loc_region.dims,
-                                         pop_neuron, neuron_model)
+                    self.add_model_nodes(
+                        location, loc_region.dims, pop_neuron, neuron_model
+                    )
 
     def add_connection_edges(
         self,
@@ -324,20 +346,18 @@ class V1BMTKNetworkBuilder:
         connex_md: structure.ConnectionModel,
     ) -> None:
         node_type_id = int(connex_md.target_model_id)
-        src_type = connex_item.pre   # row["source_label"]
+        src_type = connex_item.pre  # row["source_label"]
         trg_type = connex_item.post  # row["target_label"]
         src_trg_params = compute_pair_type_parameters(
             str(src_type),
             str(trg_type),
             connex_item.property_map,
         )
-        # print(src_trg_params)
 
         prop_query = ["x", "z", "tuning_angle"]
         src_criteria = {"pop_name": repr(src_type)}
         self.net.nodes()  # this line is necessary to activate nodes... (I don't know why.)
-        source_nodes = bmtk.builder.node_pool.NodePool(self.net,
-                                                       **src_criteria)
+        source_nodes = bmtk.builder.node_pool.NodePool(self.net, **src_criteria)
         print(src_type, trg_type, len(source_nodes), src_trg_params)
         source_nodes_df = pd.DataFrame(
             [{q: s[q] for q in prop_query} for s in source_nodes]
@@ -430,11 +450,185 @@ class V1BMTKNetworkBuilder:
                 dtypes=[float, np.int64],
             )
 
+    def add_nodes_lgn(self, X_grids=15, Y_grids=10, x_block=8.0, y_block=8.0):
+        self.lgn_net = bmtk.builder.NetworkBuilder("lgn")
+        X_len = x_block * X_grids  # default is 120 degrees
+        Y_len = y_block * Y_grids  # default is 80 degrees
+        xcoords = []
+        ycoords = []
+        lgn_region = self.net_struct.ext_networks["lgn"].locations["lgn"]
+        for lgn_name, lgn_neuron in lgn_region.neurons.items():
+            lgn_model = lgn_neuron.neuron_models[lgn_name]
+            # Get position of lgn cells and keep track of the averaged location
+            # For now, use randomly generated values
+            total_N = lgn_neuron.N * X_grids * Y_grids
+            # Get positional coordinates of cells
+            positions = generate_positions_grids(
+                lgn_neuron.N, X_grids, Y_grids, X_len, Y_len
+            )
+            xcoords += [p[0] for p in positions]
+            ycoords += [p[1] for p in positions]
+            # Get spatial filter size of cells
+            filter_sizes = get_filter_spatial_size(
+                lgn_neuron.N, X_grids, Y_grids,
+                lgn_neuron.dims["size_range"]
+            )
+            # TODO: Get filter temporal parameters
+            filter_params = get_filter_temporal_params(
+                lgn_neuron.N, X_grids, Y_grids, lgn_name
+            )
+            # Get tuning angle for LGN cells
+            # tuning_angles = get_tuning_angles(params['N'], X_grids, Y_grids, model)
+            self.lgn_net.add_nodes(
+                N=total_N,
+                pop_name=lgn_model.name,
+                model_type="virtual",
+                ei="e",
+                location="LGN",
+                x=positions[:, 0],
+                y=positions[:, 1],
+                spatial_size=filter_sizes,
+                kpeaks_dom_0=filter_params[:, 0],
+                kpeaks_dom_1=filter_params[:, 1],
+                weight_dom_0=filter_params[:, 2],
+                weight_dom_1=filter_params[:, 3],
+                delay_dom_0=filter_params[:, 4],
+                delay_dom_1=filter_params[:, 5],
+                kpeaks_non_dom_0=filter_params[:, 6],
+                kpeaks_non_dom_1=filter_params[:, 7],
+                weight_non_dom_0=filter_params[:, 8],
+                weight_non_dom_1=filter_params[:, 9],
+                delay_non_dom_0=filter_params[:, 10],
+                delay_non_dom_1=filter_params[:, 11],
+                tuning_angle=filter_params[:, 12],
+                sf_sep=filter_params[:, 13],
+            )
+        return self.lgn_net
+
+    def add_lgn_v1_edges(self, x_len=240.0, y_len=120.0, miniature=False):
+        # skipping the 'locations' (e.g. VisL1) key and make a population-based
+        # (e.g. i1Htr3a) dictionary
+        # in this file, the values are specified for each target model
+        lgn_mean = (x_len / 2.0, y_len / 2.0)
+        prop_query = ["node_id", "x", "y", "pop_name", "tuning_angle"]
+        lgn_nodes = pd.DataFrame(
+            [{q: s[q] for q in prop_query} for s in self.lgn_net.nodes()]
+        )
+        # this regular expression is picking up a number after TF
+        lgn_nodes["temporal_freq"] = lgn_nodes["pop_name"].str.extract("TF(\d+)")
+        # make a complex version beforehand for easy shift/rotation
+        lgn_nodes["xy_complex"] = lgn_nodes["x"] + 1j * lgn_nodes["y"]
+        for lgn_cname, lgn_conn in self.net_struct.connections.items():
+            v1_neuron: structure.Neuron | None = self.net_struct.find_neuron(lgn_cname)
+            if v1_neuron is None:
+                continue
+            lgs_neuron: structure.Neuron | None = self.net_struct.find_neuron(lgn_cname)
+            if lgs_neuron is None:
+                continue
+            for _, lgn_conn_model in lgn_conn.connect_models.items():
+                # target_pop_name = row["population"]
+                target_model_id = int(lgn_conn_model.target_model_id)
+                e_or_i = v1_neuron.ei
+                if e_or_i == "e":
+                    sigma = [0.0, 150.0]
+                elif e_or_i == "i":
+                    sigma = [0.0, 1e20]
+                else:
+                    # Additional care for LIF will be necessary if applied for Biophysical
+                    raise BaseException(
+                        f"Unknown e_or_i value: {e_or_i} from {v1_neuron.name}"
+                    )
+                # LGN is configured based on e4 response. Here we use the mean target sizes of
+                # the e4 neurons and normalize all the cells using these values. By doing this,
+                # we can avoid injecting too much current to the populations with large target
+                # sizes.
+                lognorm_shape = lgs_neuron.dims["nsyn_lognorm_shape"]
+                lognorm_scale = lgs_neuron.dims["nsyn_lognorm_scale"]
+                e4_mean_size = np.exp(np.log(lognorm_scale) + (lognorm_shape**2) / 2)
+                edge_params = {
+                    "source": self.lgn_net.nodes(),
+                    "target": self.net.nodes(node_type_id=target_model_id),
+                    "iterator": "all_to_one",
+                    # TODO: 
+                    "connection_rule": select_lgn_sources_powerlaw,
+                    "connection_params": {"lgn_mean": lgn_mean, "lgn_nodes": lgn_nodes},
+                    "dynamics_params": lgn_conn_model.dynamics_params,
+                    "delay": 1.7,
+                    # "weight_function": "ConstantMultiplier_LGN",
+                    "weight_function": "weight_function_lgn",
+                    "weight_sigma": sigma,
+                    "model_template": "static_synapse",
+                }
+                cm = self.lgn_net.add_edges(**edge_params)
+                cm.add_properties(
+                    "syn_weight",
+                    rule=lgn_synaptic_weight_rule,
+                    rule_params={
+                        "base_weight": lgn_conn_model.property_map["syn_weight_psp"],
+                        "mean_size": e4_mean_size,
+                    },
+                    dtypes=float,
+                )
+        return self.lgn_net
+
+    def add_bkg_nodes(self):
+        bkg_struct = self.net_struct.ext_networks["bkg"]
+        bkg_region = bkg_struct.locations["bkg"]
+        bkg_neuron = bkg_region.neurons["bkg"]
+        n_bkg = bkg_struct.ncells
+        self.bkg_net = bmtk.builder.NetworkBuilder(bkg_struct.name)
+        self.bkg_net.add_nodes(
+            # N=1,
+            N=n_bkg,
+            pop_name=bkg_neuron.name,
+            ei=bkg_neuron.ei,
+            location=bkg_region.name,
+            model_type=bkg_neuron.neuron_models["bkg"].m_type,
+            x=np.zeros(n_bkg),
+            y=np.zeros(n_bkg),  # are these necessary?
+            # x=[-91.23767151810344],
+            # y=[233.43548226294524],
+        )
+        return self.bkg_net
+
+    def add_bkg_edges(self):
+        bkg_struct: structure.ExtNetwork = self.net_struct.ext_networks["bkg"]
+        # this file should contain the following parameters:
+        # model_id (of targets), syn_weight_psp, dynamics_params, nsyns
+        bkg_net_nodes = self.bkg_net.nodes()
+        for _, bkg_connect in bkg_struct.connections.items():
+            for _, bkg_model in bkg_connect.connect_models.items():
+                nmodel_id = int(bkg_model.target_model_id)
+                target_nodes = self.net.nodes(node_type_id=nmodel_id)
+                print("bkg", bkg_connect.name, nmodel_id, bkg_model.property_map, len(bkg_net_nodes), len(target_nodes))
+                edge_params = {
+                    "source": bkg_net_nodes,
+                    "target": target_nodes,
+                    # "connection_rule": lambda s, t, n: n,
+                    "connection_rule": select_bkg_sources,
+                    "iterator": "all_to_one",
+                    "connection_params": {
+                        "n_syns": bkg_model.property_map["nsyns"],
+                        "n_conn": bkg_connect.property_map["n_conn"],
+                    },
+                    "dynamics_params": bkg_model.dynamics_params,  # row["dynamics_params"],
+                    # "syn_weight": row["syn_weight_psp"],
+                    "syn_weight": bkg_model.property_map[
+                        "syn_weight"
+                    ],  # row["syn_weight"],
+                    "delay": 1.0,
+                    "model_template": "static_synapse",
+                    # "weight_function": "ConstantMultiplier_BKG",
+                    "weight_function": "weight_function_bkg",
+                }
+                self.bkg_net.add_edges(**edge_params)
+        return self.bkg_net
+
     def add_edges(
         self,
     ):
         for _, connex_item in self.net_struct.connections.items():
-            for _, connex_md in connex_item.models.items():
+            for _, connex_md in connex_item.connect_models.items():
                 # Build model from connection information
                 self.add_connection_edges(connex_item, connex_md)
 
@@ -443,4 +637,6 @@ class V1BMTKNetworkBuilder:
     ) -> bmtk.builder.NetworkBuilder:
         self.add_nodes()
         self.add_edges()
+        self.add_bkg_nodes()
+        self.add_bkg_edges()
         return self.net

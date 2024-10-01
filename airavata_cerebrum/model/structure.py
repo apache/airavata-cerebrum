@@ -1,14 +1,84 @@
+import json
 import pydantic
+import traitlets
 import typing
 import abc
 
 
-class DataLink(pydantic.BaseModel):
+class StructBase(pydantic.BaseModel, abc.ABC):
     name: str = ""
+
+    class StructBaseTrait(traitlets.HasTraits):
+        name = traitlets.Unicode()
+
+    @classmethod
+    def trait_type(cls) -> type[traitlets.HasTraits]:
+        return cls.StructBaseTrait
+
+    @abc.abstractmethod
+    def exclude(self) -> typing.Set[str]:
+        return set([])
+
+    @classmethod
+    def trait_ui(cls) -> typing.Dict[str, typing.Dict[str, typing.Any]]:
+        return {}
+
+
+class DataLink(StructBase):
     property_map: typing.Dict = {}
 
+    class DataTrait(StructBase.StructBaseTrait):
+        # property_map = traitlets.Dict()
+        property_map = traitlets.Unicode()
 
-class NeuronModel(pydantic.BaseModel):
+
+    def exclude(self) -> typing.Set[str]:
+        return set([])
+
+    @classmethod
+    def trait_ui(cls) -> typing.Dict[str, typing.Dict[str, typing.Any]]:
+        return {
+            "name": {"type": "text", "label": "Name", "default": ""},
+            "property_map": {"type": "textarea", "label": "Property Map", "default": "{}"},
+        }
+
+    @classmethod
+    def trait_type(cls) -> type[traitlets.HasTraits]:
+        return cls.DataTrait
+
+
+class ComponentModel(StructBase):
+    property_map: typing.Dict = {}
+
+    class DataTrait(StructBase.StructBaseTrait):
+        property_map = traitlets.Dict()
+
+        def __init__(self, property_map={}, **kwargs):
+            super().__init__(
+                property_map=json.dumps(property_map, indent=4),
+                **kwargs,
+            )
+
+    def exclude(self) -> typing.Set[str]:
+        return set([])
+
+    @classmethod
+    def trait_ui(cls) -> typing.Dict[str, typing.Dict[str, typing.Any]]:
+        return {
+            "name": {"type": "text", "label": "Name", "default": ""},
+            "property_map": {
+                "type": "textarea",
+                "label": "Property Map",
+                "default": "{}",
+            },
+        }
+
+    @classmethod
+    def trait_type(cls) -> type[traitlets.HasTraits]:
+        return cls.DataTrait
+
+
+class NeuronModel(StructBase):
     N: int = 0
     id: str = ""
     proportion: float = 0.0
@@ -18,6 +88,46 @@ class NeuronModel(pydantic.BaseModel):
     dynamics_params: str = ""
     property_map: typing.Dict = {}
     data_connect: DataLink = DataLink()
+
+    class DataTrait(StructBase.StructBaseTrait):
+        N = traitlets.Int()
+        id = traitlets.Unicode()
+        proportion = traitlets.Float(0.0)
+        m_type = traitlets.Unicode()
+        template = traitlets.Unicode()
+        dynamics_params = traitlets.Unicode()
+        # property_map = traitlets.Dict()
+        property_map = traitlets.Unicode()
+
+        def __init__(self, property_map={}, **kwargs):
+            super().__init__(
+                property_map=json.dumps(property_map, indent=4),
+                **kwargs,
+            )
+
+    def exclude(self) -> typing.Set[str]:
+        return set(["data_connect"])
+
+    @classmethod
+    def trait_ui(cls) -> typing.Dict[str, typing.Dict[str, typing.Any]]:
+        return {
+            "N": {"type": "int", "label": "N", "default": 0},
+            "id": {"type": "text", "label": "id", "default": ""},
+            "proportion": {"type": "float", "label": "Proportion", "default": 0.0},
+            "name": {"type": "text", "label": "Name", "default": ""},
+            "m_type": {"type": "text", "label": "Model Type", "default": ""},
+            "template": {"type": "text", "label": "Template", "default": ""},
+            "dynamics_params": {
+                "type": "text",
+                "label": "Dynamis Parameters",
+                "default": "",
+            },
+            "property_map": {
+                "type": "textarea",
+                "label": "Property Map",
+                "default": "{\n}",
+            },
+        }
 
     def apply_mod(self, mod_model: "NeuronModel") -> "NeuronModel":
         if mod_model.name is not None:
@@ -37,15 +147,47 @@ class NeuronModel(pydantic.BaseModel):
                 self.property_map[pkey] = pvalue
         return self
 
+    @classmethod
+    def trait_type(cls) -> type[traitlets.HasTraits]:
+        return cls.DataTrait
 
-class Neuron(pydantic.BaseModel):
-    name: str = ""
+
+class Neuron(StructBase):
     N: int = 0
     fraction: float = 0.0
     ei: typing.Literal["e", "i"]  # Either e or i
     dims: typing.Dict[str, typing.Any] = {}
     neuron_models: typing.Dict[str, NeuronModel] = {}
-    data_connect: DataLink = DataLink()
+
+    class DataTrait(StructBase.StructBaseTrait):
+        N = traitlets.Int()
+        fraction = traitlets.Float(0.0)
+        ei = traitlets.Unicode()
+        # dims = traitlets.Dict(key_trait=traitlets.Unicode())
+        dims = traitlets.Unicode()
+
+        def __init__(self, dims={}, **kwargs):
+            super().__init__(
+                dims=json.dumps(dims, indent=4),
+                **kwargs,
+            )
+
+    def exclude(self) -> typing.Set[str]:
+        return set(["neuron_models"])
+
+    @classmethod
+    def trait_ui(cls) -> typing.Dict[str, typing.Dict[str, typing.Any]]:
+        return {
+            "name": {"type": "text", "label": "Name", "default": ""},
+            "N": {"type": "int", "label": "N", "default": 0},
+            "fraction": {"type": "float", "label": "Proportion", "default": 0.0},
+            "ei": {"type": "text", "label": "E/I", "default": ""},
+            "dims": {"type": "textarea", "label": "Property Map", "default": "{\n}"},
+        }
+
+    @classmethod
+    def trait_type(cls) -> type[traitlets.HasTraits]:
+        return cls.DataTrait
 
     def apply_mod(self, mod_neuron: "Neuron") -> "Neuron":
         # Fraction and counts
@@ -67,9 +209,11 @@ class Neuron(pydantic.BaseModel):
                 self.neuron_models[mx_name].apply_mod(neuron_mx)
         return self
 
+    def exclude_set(self) -> typing.Set[str]:
+        return set(["neuron_models"])
 
-class Region(pydantic.BaseModel):
-    name: str
+
+class Region(StructBase):
     inh_fraction: float = 0.0
     region_fraction: float = 0.0
     ncells: int = 0
@@ -77,6 +221,44 @@ class Region(pydantic.BaseModel):
     exc_ncells: int = 0
     dims: typing.Dict[str, typing.Any] = {}
     neurons: typing.Dict[str, Neuron] = {}
+
+    class DataTrait(StructBase.StructBaseTrait):
+        inh_fraction = traitlets.Float(0.0)
+        region_fraction = traitlets.Float(0.0)
+        ncells = traitlets.Int()
+        inh_ncells = traitlets.Int()
+        exc_ncells = traitlets.Int()
+        # dims = traitlets.Dict(key_trait=traitlets.Unicode())
+        dims = traitlets.Unicode()
+
+        def __init__(self, dims={}, **kwargs):
+            super().__init__(
+                dims=json.dumps(dims, indent=4),
+                **kwargs,
+            )
+
+    def exclude(self) -> typing.Set[str]:
+        return set(["neurons"])
+
+    @classmethod
+    def trait_ui(cls) -> typing.Dict[str, typing.Dict[str, typing.Any]]:
+        return {
+            "name": {"type": "text", "label": "Name", "default": ""},
+            "ncells": {"type": "int", "label": "No. Cells", "default": 0},
+            "inh_ncells": {"type": "int", "label": "No. Inh. Cells", "default": 0},
+            "exc_ncells": {"type": "int", "label": "No. Exc. Cells", "default": 0},
+            "inh_fraction": {"type": "float", "label": "Inh. Fraction", "default": 0.0},
+            "region_fraction": {
+                "type": "float",
+                "label": "Region Fraction",
+                "default": 0.0,
+            },
+            "dims": {"type": "textarea", "label": "Dimensions", "default": "{\n}"},
+        }
+
+    @classmethod
+    def trait_type(cls) -> type[traitlets.HasTraits]:
+        return cls.DataTrait
 
     def apply_mod(self, mod_region: "Region") -> "Region":
         # update fractions
@@ -103,14 +285,55 @@ class Region(pydantic.BaseModel):
                 self.neurons[nx_name].apply_mod(nx_obj)
         return self
 
+    def find_neuron(self, neuron_name) -> Neuron | None:
+        if neuron_name in self.neurons:
+            return self.neurons[neuron_name]
+        return None
 
-class ConnectionModel(pydantic.BaseModel):
-    name: str
+
+class ConnectionModel(StructBase):
     target_model_id: str = ""
     source_model_id: str = ""
     weight_max: float = 0.0
     delay: float = 0.0
+    dynamics_params: str = ""
     property_map: typing.Dict = {}
+
+    class DataTrait(StructBase.StructBaseTrait):
+        target_model_id = traitlets.Unicode()
+        source_model_id = traitlets.Unicode()
+        weight_max = traitlets.Float(0.0)
+        delay = traitlets.Float(0.0)
+        # property_map = traitlets.Dict(key_trait=traitlets.Unicode())
+        property_map = traitlets.Unicode()
+
+        def __init__(self, property_map={}, **kwargs):
+            super().__init__(
+                dims=json.dumps(property_map, indent=4),
+                **kwargs,
+            )
+
+    def exclude(self) -> typing.Set[str]:
+        return set([])
+
+    @classmethod
+    def trait_ui(cls) -> typing.Dict[str, typing.Dict[str, typing.Any]]:
+        return {
+            "name": {"type": "text", "label": "Name", "default": ""},
+            "source_model_id": {"type": "text", "label": "Source Id.", "default": ""},
+            "target_model_id": {"type": "text", "label": "Target Id.", "default": ""},
+            "weight_max": {"type": "float", "label": "Max. Weight", "default": 0.0},
+            "delay": {"type": "float", "label": "Delay", "default": 0.0},
+            "property_map": {
+                "type": "textarea",
+                "label": "Property Map",
+                "default": "{\n}",
+            },
+        }
+
+    @classmethod
+    def trait_type(cls) -> type[traitlets.HasTraits]:
+        return cls.DataTrait
 
     def apply_mod(self, mod_cmd: "ConnectionModel") -> "ConnectionModel":
         # Apply modification
@@ -131,13 +354,50 @@ class ConnectionModel(pydantic.BaseModel):
         return self
 
 
-class Connection(pydantic.BaseModel):
-    name: str
+class Connection(StructBase):
     pre: typing.Tuple[str, str]
     post: typing.Tuple[str, str]
     probability: float = 0.0
-    models: typing.Dict[str, ConnectionModel] = {}
+    connect_models: typing.Dict[str, ConnectionModel] = {}
     property_map: typing.Dict = {}
+
+    class DataTrait(StructBase.StructBaseTrait):
+        # pre = traitlets.Tuple(traitlets.Unicode(), traitlets.Unicode())
+        # post = traitlets.Tuple(traitlets.Unicode(), traitlets.Unicode())
+        # property_map = traitlets.Dict(key_trait=traitlets.Unicode())
+        pre = traitlets.Unicode()
+        post = traitlets.Unicode()
+        probability = traitlets.Float(0.0)
+        property_map = traitlets.Unicode()
+
+        def __init__(self, pre=(), post=(), property_map={}, **kwargs):
+            super().__init__(
+                pre=repr(pre),
+                post=repr(post),
+                property_map=json.dumps(property_map, indent=4),
+                **kwargs,
+            )
+
+    def exclude(self) -> typing.Set[str]:
+        return set(["connect_models"])
+
+    @classmethod
+    def trait_ui(cls) -> typing.Dict[str, typing.Dict[str, typing.Any]]:
+        return {
+            "name": {"type": "text", "label": "Name", "default": ""},
+            "pre": {"type": "textarea", "label": "Pre-Synapse", "default": "()"},
+            "post": {"type": "textarea", "label": "Post-Synapse", "default": "()"},
+            "probability": {"type": "float", "label": "Inh. Fraction", "default": 0.0},
+            "property_map": {
+                "type": "textarea",
+                "label": "Property Map",
+                "default": "{\n}",
+            },
+        }
+
+    @classmethod
+    def trait_type(cls) -> type[traitlets.HasTraits]:
+        return cls.DataTrait
 
     def apply_mod(self, mod_con: "Connection") -> "Connection":
         if mod_con.pre[0] and mod_con.pre[1]:
@@ -153,20 +413,86 @@ class Connection(pydantic.BaseModel):
             elif pvalue:
                 self.property_map[pkey] = pvalue
         # Models
-        for mx_name, mx_obj in mod_con.models.items():
-            if mx_name not in self.models:
-                self.models[mx_name] = mx_obj
+        for mx_name, mx_obj in mod_con.connect_models.items():
+            if mx_name not in self.connect_models:
+                self.connect_models[mx_name] = mx_obj
             else:
-                self.models[mx_name].apply_mod(mx_obj)
+                self.connect_models[mx_name].apply_mod(mx_obj)
         return self
 
 
-class Network(pydantic.BaseModel):
-    name: str
+class ExtNetwork(StructBase):
+    ncells: int = 0
+    locations: typing.Dict[str, Region] = {}
+    connections: typing.Dict[str, Connection] = {}
+
+    class DataTrait(StructBase.StructBaseTrait):
+        ncells = traitlets.Int(0)
+
+    def exclude(self) -> typing.Set[str]:
+        return set(["locations", "connections"])
+
+    @classmethod
+    def trait_ui(cls) -> typing.Dict[str, typing.Dict[str, typing.Any]]:
+        return {
+            "name": {"type": "text", "label": "Name", "default": ""},
+            "ncells": {"type": "int", "label": "No. Cells", "default": 0},
+        }
+
+    @classmethod
+    def trait_type(cls) -> type[traitlets.HasTraits]:
+        return cls.DataTrait
+
+    def apply_mod(self, mod_net: "ExtNetwork") -> "ExtNetwork":
+        if mod_net.ncells > 0:
+            self.ncells = mod_net.ncells
+        # Locations
+        for c_name, o_cnx in mod_net.locations.items():
+            if c_name not in self.locations:
+                self.locations[c_name] = o_cnx
+                continue
+            self.locations[c_name].apply_mod(o_cnx)
+        # Connections
+        for c_name, o_cnx in mod_net.connections.items():
+            if c_name not in self.connections:
+                self.connections[c_name] = o_cnx
+                continue
+            self.connections[c_name].apply_mod(o_cnx)
+        return self
+
+
+class Network(StructBase):
     ncells: int = 0
     locations: typing.Dict[str, Region] = {}
     connections: typing.Dict[str, Connection] = {}
     dims: typing.Dict[str, typing.Any] = {}
+    ext_networks: typing.Dict[str, ExtNetwork] = {}
+
+    class DataTrait(StructBase.StructBaseTrait):
+        ncells = traitlets.Int(0)
+        # dims = traitlets.Dict(key_trait=traitlets.Unicode())
+        dims = traitlets.Unicode()
+
+        def __init__(self, dims={}, **kwargs):
+            super().__init__(
+                dims=json.dumps(dims, indent=4),
+                **kwargs,
+            )
+
+    def exclude(self) -> typing.Set[str]:
+        return set(["locations", "connections", "ext_networks"])
+
+    @classmethod
+    def trait_ui(cls) -> typing.Dict[str, typing.Dict[str, typing.Any]]:
+        return {
+            "name": {"type": "text", "label": "Name", "default": ""},
+            "ncells": {"type": "int", "label": "No. Cells", "default": 0},
+            "dims": {"type": "textarea", "label": "Dimensions", "default": "{\n}"},
+        }
+
+    @classmethod
+    def trait_type(cls) -> type[traitlets.HasTraits]:
+        return cls.DataTrait
 
     def apply_mod(self, mod_net: "Network") -> "Network":
         # Update dims
@@ -185,6 +511,12 @@ class Network(pydantic.BaseModel):
                 self.connections[c_name] = o_cnx
                 continue
             self.connections[c_name].apply_mod(o_cnx)
+        # ExtNetwork
+        for e_name, e_net in mod_net.ext_networks.items():
+            if e_name not in self.ext_networks:
+                self.ext_networks[e_name] = e_net
+                continue
+            self.ext_networks[e_name].apply_mod(e_net)
         return self
 
     def populate_ncells(self, N: int) -> "Network":
@@ -208,6 +540,13 @@ class Network(pydantic.BaseModel):
                 self.locations[lx].neurons[nx].N = ncells
         return self
 
+    def find_neuron(self, neuron_name) -> Neuron | None:
+        for lx, lrx in self.locations.items():
+            neuron_obj = lrx.find_neuron(neuron_name)
+            if neuron_obj:
+                return neuron_obj
+        return None
+
 
 #
 # Mapper Abstract Classes
@@ -222,7 +561,7 @@ class RegionMapper(abc.ABC):
         return []
 
     @abc.abstractmethod
-    def map(self, region_neurons: typing.Dict[str, Neuron]) -> Region:
+    def map(self, region_neurons: typing.Dict[str, Neuron]) -> Region | None:
         return None
 
 
@@ -253,7 +592,7 @@ def srcdata2network(
     model_name: str,
     desc2region_mapper: type[RegionMapper],
     desc2neuron_mapper: type[NeuronMapper],
-    desc2connection_mapper: type[ConnectionMapper]
+    desc2connection_mapper: type[ConnectionMapper],
 ) -> Network:
     loc_struct = {}
     for region, region_desc in network_desc["locations"].items():
@@ -277,13 +616,9 @@ def srcdata2network(
     )
 
 
-def subset_network(
-        net_stats: Network,
-        region_list: typing.List[str]
-) -> Network:
+def subset_network(net_stats: Network, region_list: typing.List[str]) -> Network:
     sub_locs = {k: v for k, v in net_stats.locations.items() if k in region_list}
-    return Network(name=net_stats.name, dims=net_stats.dims,
-                   locations=sub_locs)
+    return Network(name=net_stats.name, dims=net_stats.dims, locations=sub_locs)
 
 
 def map_node_paramas(model_struct, node_map):

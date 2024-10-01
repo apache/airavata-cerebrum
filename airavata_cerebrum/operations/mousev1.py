@@ -496,3 +496,78 @@ def syn_weight_by_experimental_distribution(
         / (PSP_correction * target["target_sizes"])
     )
     return syn_weight, n_syns_
+
+
+def generate_random_positions(N, layer_range, radial_range):
+    radius_outer = radial_range[1]
+    radius_inner = radial_range[0]
+
+    phi = 2.0 * np.pi * np.random.random([N])
+    r = np.sqrt(
+        (radius_outer ** 2 - radius_inner ** 2) * np.random.random([N])
+        + radius_inner ** 2
+    )
+    x = r * np.cos(phi)
+    z = r * np.sin(phi)
+
+    layer_start = layer_range[0]
+    layer_end = layer_range[1]
+    # Generate N random z values.
+    y = (layer_end - layer_start) * np.random.random([N]) + layer_start
+
+    positions = np.column_stack((x, y, z))
+
+    return positions
+
+
+def generate_positions_grids(N, x_grids, y_grids, x_len, y_len):
+    widthPerTile = x_len / x_grids
+    heightPerTile = y_len / y_grids
+
+    X = np.zeros(N * x_grids * y_grids)
+    Y = np.zeros(N * x_grids * y_grids)
+
+    counter = 0
+    for i in range(x_grids):
+        for j in range(y_grids):
+            x_tile = np.random.uniform(i * widthPerTile, (i + 1) * widthPerTile, N)
+            y_tile = np.random.uniform(j * heightPerTile, (j + 1) * heightPerTile, N)
+            X[counter * N : (counter + 1) * N] = x_tile
+            Y[counter * N : (counter + 1) * N] = y_tile
+            counter = counter + 1
+    return np.column_stack((X, Y))
+
+
+def get_filter_spatial_size(N, X_grids, Y_grids, size_range):
+    spatial_sizes = np.zeros(N * X_grids * Y_grids)
+    counter = 0
+    for i in range(X_grids):
+        for j in range(Y_grids):
+            if len(size_range) == 1:
+                sizes = np.ones(N) * size_range[0]
+            else:
+                sizes = np.random.triangular(
+                    size_range[0], size_range[0] + 1, size_range[1], N
+                )
+            spatial_sizes[counter * N : (counter + 1) * N] = sizes
+            counter = counter + 1
+    return spatial_sizes
+
+
+def select_bkg_sources(sources, target, n_syns, n_conn):
+    # draw n_conn connections randomly from the background sources.
+    # n_syns is the number of synapses per connection
+    # n_conn is the number of connections to draw
+    n_unit = len(sources)
+    # select n_conn units randomly
+    selected_units = np.random.choice(n_unit, size=n_conn, replace=False)
+    nsyns_ret = np.zeros(n_unit, dtype=int)
+    nsyns_ret[selected_units] = n_syns
+    nsyns_ret = list(nsyns_ret)
+    # getting back to list
+    nsyns_ret = [None if n == 0 else n for n in nsyns_ret]
+    return nsyns_ret
+
+
+def lgn_synaptic_weight_rule(source, target, base_weight, mean_size):
+    return base_weight * mean_size / target["target_sizes"]

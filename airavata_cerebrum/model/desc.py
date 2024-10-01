@@ -3,6 +3,8 @@ import pathlib
 import typing
 import os
 
+import pydantic
+
 from ..util import io as cbmio
 from ..util.desc_config import CfgKeys, ModelDescConfig
 from . import structure
@@ -18,35 +20,22 @@ class DescPaths:
     DESCRIPTION_DIR = "description"
 
 
-class ModelDescription:
-    def __init__(
-        self,
-        config: ModelDescConfig,
-        region_mapper: typing.Type,
-        neuron_mapper: typing.Type,
-        connection_mapper: typing.Type,
-        network_builder: typing.Type,
-        custom_mod: str | pathlib.Path | None = None,
-        save_flag: bool = True,
-        out_format: typing.Literal["json", "yaml", "yml"] = "json",
-    ) -> None:
-        self.config = config
-        self.region_mapper = region_mapper
-        self.neuron_mapper = neuron_mapper
-        self.connection_mapper = connection_mapper
-        self.network_builder = network_builder
-        self.custom_mod = custom_mod
-        self.save_flag = save_flag
-        self.out_format = out_format
-        self.desc_dir = pathlib.Path(self.config.model_dir,
-                                     DescPaths.DESCRIPTION_DIR)
-        if not os.path.exists(self.desc_dir):
-            os.makedirs(self.desc_dir)
-        self.model_struct = structure.Network(name=self.config.name)
+class ModelDescription(pydantic.BaseModel):
+    config: ModelDescConfig
+    region_mapper: typing.Type[structure.RegionMapper]
+    neuron_mapper: typing.Type[structure.NeuronMapper]
+    connection_mapper: typing.Type[structure.ConnectionMapper]
+    network_builder: typing.Type
+    custom_mod: str | pathlib.Path | None = None
+    save_flag: bool = True
+    out_format: typing.Literal["json", "yaml", "yml"] = "json"
+    network_struct: structure.Network = structure.Network(name="empty")
 
     def output_location(self, key: str) -> pathlib.Path:
         file_name = self.config.out_prefix(key)
-        out_path = pathlib.Path(self.desc_dir, file_name)
+        out_path = pathlib.Path(self.config.model_dir, DescPaths.DESCRIPTION_DIR, file_name)
+        if not os.path.exists(out_path.parent):
+            os.makedirs(out_path.parent)
         return out_path.with_suffix("." + self.out_format)
 
     def download_db_data(self) -> typing.Dict[str, typing.Any]:
@@ -83,8 +72,12 @@ class ModelDescription:
         db_source_data = cbmio.load(self.output_location(CfgKeys.SRC_DATA))
         srcdata_map_output = None
         if db_source_data:
-            db2location_output = workflow.map_srcdata_locations(db_source_data, db_lox_map)
-            db2connect_output = workflow.map_srcdata_connections(db_source_data, db_conn_map)
+            db2location_output = workflow.map_srcdata_locations(
+                db_source_data, db_lox_map
+            )
+            db2connect_output = workflow.map_srcdata_connections(
+                db_source_data, db_conn_map
+            )
             srcdata_map_output = {
                 "locations": db2location_output,
                 "connections": db2connect_output,
@@ -101,28 +94,37 @@ class ModelDescription:
         network_desc_output = cbmio.load(self.output_location(CfgKeys.DB2MODEL_MAP))
         if not network_desc_output:
             return None
-        self.model_struct = structure.srcdata2network(
+        self.network_struct = structure.srcdata2network(
             network_desc_output,
             self.config.name,
             self.region_mapper,
             self.neuron_mapper,
             self.connection_mapper,
         )
-        return self.model_struct
+        return self.network_struct
+
+    def custom_mod_struct(self):
+        if self.custom_mod:
+            return structure.Network.model_validate(cbmio.load(self.custom_mod))
+        return None
 
     def apply_custom_mod(self):
-        import airavata_cerebrum.model.structure as structure
-
-        if self.custom_mod:
-            mod_struct = structure.Network.model_validate(cbmio.load(self.custom_mod))
+        mod_struct = self.custom_mod_struct()
+        if mod_struct:
             # Update user preference
-            self.model_struct = self.model_struct.apply_mod(mod_struct)
+            self.network_struct = self.network_struct.apply_mod(mod_struct)
         # Estimate NCells from the fractions
-        self.model_struct.populate_ncells(30000)
-        return self.model_struct
+        self.network_struct.populate_ncells(30000)
+        if self.save_flag and self.network_struct:
+            cbmio.dump(
+                self.network_struct.model_dump(),
+                self.output_location(CfgKeys.NETWORK_STRUCT),
+                indent=4,
+            )
+        return self.network_struct
 
     def build_bmtk(self):
         # Construct model
-        net_builder = self.network_builder(self.model_struct)
+        net_builder = self.network_builder(self.network_struct)
         bmtk_net = net_builder.build()
         bmtk_net.save(str(self.config.model_dir))

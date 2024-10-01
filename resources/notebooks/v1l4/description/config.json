@@ -459,6 +459,16 @@
                         "exec_params": {
                             "ratio": 0.7
                         }
+                    },
+                    {
+                        "type": "query",
+                        "label": "ABM Model Download",
+                        "name": "airavata_cerebrum.dataset.abm_celltypes.CTDbGlifApiModelConfigQry",
+                        "init_params": {},
+                        "exec_params": {
+                            "suffix": "_glif_lif_asc_config.json",
+                            "output_dir": "v1l4/components/point_neuron_models/"
+                        }
                     }
                 ]
             }

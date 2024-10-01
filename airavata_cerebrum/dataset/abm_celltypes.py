@@ -1,9 +1,11 @@
+import json
 import os
 import typing
 import logging
 import allensdk.core.cell_types_cache
 import allensdk.api.queries.cell_types_api
 import allensdk.api.queries.glif_api
+from numba.cuda.cudadrv.driver import pathlib
 import traitlets
 
 from .. import base
@@ -65,9 +67,7 @@ class CTDbCellCacheQuery(base.DbQuery):
             "mainfest": "manifest.json",
             "cells": "cells.json",
         }
-        rarg = (
-            {**default_args, **params} if params is not None else default_args
-        )
+        rarg = {**default_args, **params} if params is not None else default_args
         #
         _log().debug("CTDbCellCacheQuery Args : %s", rarg)
         self.manifest_file = os.path.join(self.download_base, rarg["mainfest"])
@@ -91,11 +91,7 @@ class CTDbCellApiQuery(base.DbQuery):
     def __init__(self, **params):
         self.name = "allensdk.api.queries.cell_types_api.CellTypesApi"
 
-    def run(
-        self,
-        in_iter: typing.Iterable | None,
-        **run_params
-    ) -> typing.Iterable:
+    def run(self, in_iter: typing.Iterable | None, **run_params) -> typing.Iterable:
         """
         Get the cell types information from allensdk.api.queries.cell_types_api.CellTypesApi
 
@@ -115,9 +111,7 @@ class CTDbCellApiQuery(base.DbQuery):
         """
         #
         default_args = {"species": None}
-        rarg = (
-            {**default_args, **run_params} if run_params else default_args
-        )
+        rarg = {**default_args, **run_params} if run_params else default_args
         sp_arg = [rarg["species"]] if rarg["species"] else None
         #
         _log().debug("CTDbCellApiQuery Args : %s", rarg)
@@ -141,12 +135,7 @@ class CTDbGlifApiQuery(base.DbQuery):
         self.glif_api = allensdk.api.queries.glif_api.GlifApi()
         self.key_fn = lambda x: x
 
-    def run(
-        self,
-        in_iter: typing.Iterable | None,
-        **params
-    ) -> typing.Iterable | None:
-
+    def run(self, in_iter: typing.Iterable | None, **params) -> typing.Iterable | None:
         """
         Get neuronal models using GlifApi for a given iterator of specimen ids
 
@@ -174,7 +163,7 @@ class CTDbGlifApiQuery(base.DbQuery):
         if bool(rarg["first"]) is False:
             return iter(
                 {
-                    "input": x,
+                    "ct": x,
                     "glif": self.glif_api.get_neuronal_models(self.key_fn(x)),
                 }
                 for x in in_iter
@@ -197,6 +186,43 @@ class CTDbGlifApiQuery(base.DbQuery):
         return cls.QryTraits
 
 
+class CTDbGlifApiModelConfigQry(base.DbQuery):
+    class QryTraits(traitlets.HasTraits):
+        suffix = traitlets.Unicode()
+        output_dir = traitlets.Unicode()
+
+    def __init__(self, **params):
+        self.name = "allensdk.api.queries.glif_api.GlifApi"
+        self.glif_api = allensdk.api.queries.glif_api.GlifApi()
+
+    def download_model_config(self, rcd_dict):
+        neuronal_model_id = rcd_dict["glif"]["neuronal_models"][0]["id"]
+        spec_id = rcd_dict["ct"]["specimen__id"]
+        neuron_config = self.glif_api.get_neuron_configs([neuronal_model_id])
+        if neuron_config:
+            cfg_fname = pathlib.Path(
+                self.output_dir, "{}{}".format(spec_id, self.suffix)
+            )
+            with open(cfg_fname, "w") as cfg_fx:
+                json.dump(neuron_config[neuronal_model_id], cfg_fx, indent=4)
+        return rcd_dict
+
+    def run(self, in_iter: typing.Iterable | None, **params) -> typing.Iterable | None:
+        if not in_iter:
+            return None
+        self.suffix = params["suffix"]
+        self.output_dir = params["output_dir"]
+        _log().debug("CTDbGlifApiQuery Args : %s", params)
+        # Create Config
+        if not os.path.exists(self.output_dir):
+            os.makedirs(self.output_dir)
+        return iter(self.download_model_config(rcx) for rcx in in_iter if rcx)
+
+    @classmethod
+    def trait_type(cls) -> type[traitlets.HasTraits]:
+        return cls.QryTraits
+
+
 #
 # ------- Query and Xform Registers -----
 #
@@ -205,6 +231,7 @@ def query_register() -> typing.List[type[base.DbQuery]]:
         CTDbCellCacheQuery,
         CTDbCellApiQuery,
         CTDbGlifApiQuery,
+        CTDbGlifApiModelConfigQry,
     ]
 
 

@@ -200,6 +200,26 @@
             }
         }
     },
+    "airavata_cerebrum.dataset.abm_celltypes.CTDbGlifApiModelConfigQry":{
+        "type": "query",
+        "label": "Acquire GLIF Models",
+        "doc": "Acquire GLIF Models",
+        "init_params": {},
+        "exec_params": {
+            "suffix": {
+                "type": "text",
+                "label": "File Name Suffix",
+                "doc": "File Name Suffix",
+                "default": "_glif_lif_asc_config.json"
+            },
+            "output_dir": {
+                "type": "text",
+                "label": "Output Directory",
+                "doct": "Output Directory",
+                "default": "v1l4/components/point_neuron_models/"
+            }
+        }
+    },
     "airavata_cerebrum.operations.abc_mouse.ABCDbMERFISH_CCFLayerRegionFilter": {
         "type": "xform",
         "label": "Filter Model by Layer/Region",

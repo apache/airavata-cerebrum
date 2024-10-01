@@ -1,4 +1,8 @@
 import logging
+import pathlib
+import typing
+import pydantic
+import matplotlib
 import airavata_cerebrum.model.mousev1 as mousev1
 from airavata_cerebrum.util.desc_config import ModelDescConfig
 from airavata_cerebrum.model.desc import ModelDescription
@@ -6,42 +10,42 @@ from airavata_cerebrum.model.desc import ModelDescription
 logging.basicConfig(level=logging.INFO)
 
 
-def v1_model_desc_config(
-    name="v1l4",
-    base_dir="./",
-    config_files={"config": "config.json"},
-    config_dir="./v1l4/description/",
-):
-    return ModelDescConfig(name, base_dir, config_files, config_dir, True)
+class CfgSettings(pydantic.BaseModel):
+    name: str = "v1l4"
+    base_dir: pathlib.Path = pathlib.Path("./")
+    config_files: typing.Dict[str, typing.List[str | pathlib.Path]] = {"config": ["config.json"]}
+    config_dir: pathlib.Path = pathlib.Path("./v1l4/description/")
+    custom_mod: pathlib.Path = pathlib.Path("./v1l4/description/custom_mod.json")
+    save_flag: bool = False
 
 
-def v1l4_model_desc(
-    name="v1l4",
-    base_dir="./",
-    config_files={"config": "config.json"},
-    config_dir="./v1l4/description/",
-    save_output=False,
-):
-    model_custom_mod = "./v1l4/description/custom_mod.json"
+def m_desc(cfg_set: CfgSettings):
+    md_config = ModelDescConfig(
+        name=cfg_set.name,
+        base_dir=cfg_set.base_dir,
+        config_files=cfg_set.config_files,
+        config_dir=cfg_set.config_dir,
+        create_model_dir=True,
+    )
     return ModelDescription(
-        v1_model_desc_config(name, base_dir, config_files, config_dir),
-        mousev1.V1RegionMapper,
-        mousev1.V1NeuronMapper,
-        mousev1.V1ConnectionMapper,
-        mousev1.V1BMTKNetworkBuilder,
-        model_custom_mod,
-        save_output,
+        config=md_config,
+        region_mapper=mousev1.V1RegionMapper,
+        neuron_mapper=mousev1.V1NeuronMapper,
+        connection_mapper=mousev1.V1ConnectionMapper,
+        network_builder=mousev1.V1BMTKNetworkBuilder,
+        custom_mod=cfg_set.custom_mod,
+        save_flag=cfg_set.save_flag,
     )
 
 
-def main():
-    model_dex = v1l4_model_desc()
-    model_dex.download_db_data()
-    model_dex.db_post_ops()
-    model_dex.map_source_data()
-    model_dex.build_net_struct()
-    model_dex.apply_custom_mod()
-    model_dex.build_bmtk()
+def build_bmtk():
+    md_dex = m_desc(CfgSettings())
+    md_dex.download_db_data()
+    md_dex.db_post_ops()
+    md_dex.map_source_data()
+    md_dex.build_net_struct()
+    md_dex.apply_custom_mod()
+    md_dex.build_bmtk()
 
 
 # if __name__ == "__main__":

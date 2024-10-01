@@ -2,6 +2,7 @@ import pathlib
 import typing
 import os
 import logging
+import pydantic
 
 from . import io as cbmio
 
@@ -28,19 +29,16 @@ class CfgKeys:
     EXEC_PARAMS = "exec_params"
     TEMPLATES = "templates"
     NODE_KEY = "node_key"
+    NETWORK_STRUCT = "network_structure"
+    NETWORK = "network"
     #
     DESCRIPTION_CFG = [DB2MODEL_MAP, SRC_DATA]
 
 
-class ModelDescConfigBase:
-    def __init__(
-        self,
-        config_files: typing.Dict[str, typing.List[str | pathlib.Path]],
-        config_dir: str | pathlib.Path = pathlib.Path("."),
-    ) -> None:
-        self.config_files = config_files
-        self.config_dir = config_dir
-        self.config: typing.Dict[str, typing.Any] = {}
+class ModelDescConfigBase(pydantic.BaseModel):
+    config_files: typing.Dict[str, typing.List[str | pathlib.Path]]
+    config_dir: str | pathlib.Path = pathlib.Path(".")
+    config: typing.Dict[str, typing.Any] = {}
 
     def location(self, file_name: str | pathlib.Path) -> str | pathlib.Path:
         if self.config_dir:
@@ -70,19 +68,13 @@ class ModelDescConfigBase:
 #
 # Configuration for Model Description
 class ModelDescConfig(ModelDescConfigBase):
-    def __init__(
-        self,
-        name: str,
-        base_dir: str | pathlib.Path,
-        config_files: typing.Dict[str, typing.List[str | pathlib.Path]],
-        config_dir: str | pathlib.Path = pathlib.Path("."),
-        create_model_dir: bool = False,
-    ):
-        super().__init__(config_files, config_dir)
-        self.name = name
-        self.base_dir = base_dir
-        self.model_dir = pathlib.Path(self.base_dir, self.name)
-        if CfgKeys.CONFIG in config_files:
+    name: str
+    base_dir: str | pathlib.Path
+    create_model_dir: bool = False
+
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+        if CfgKeys.CONFIG in self.config_files:
             self.load_config()
         else:
             try:
@@ -92,8 +84,16 @@ class ModelDescConfig(ModelDescConfigBase):
                     "Failed to find one of two keys: [%s]", str(CfgKeys.DESCRIPTION_CFG)
                 )
         # Create Config
-        if create_model_dir and not os.path.exists(self.model_dir):
+        if self.create_model_dir and not os.path.exists(self.model_dir):
             os.makedirs(self.model_dir)
+
+    @property
+    def model_dir(self) -> pathlib.Path:
+        return pathlib.Path(self.base_dir, self.name)
+
+    @property
+    def network_dir(self) -> pathlib.Path:
+        return pathlib.Path(self.base_dir, self.name, CfgKeys.NETWORK)
 
     def load_config(self) -> None:
         for cfg_file in self.config_files[CfgKeys.CONFIG]:
@@ -117,18 +117,13 @@ class ModelDescConfig(ModelDescConfigBase):
 #
 # Template Configuration
 class ModelDescConfigTemplate(ModelDescConfigBase):
-
-    def __init__(
-        self,
-        config_files: typing.Dict[str, typing.List[str | pathlib.Path]],
-        config_dir: str | pathlib.Path = pathlib.Path("."),
-    ) -> None:
-        super().__init__(config_files, config_dir)
-        if CfgKeys.TEMPLATES in config_files:
-            for cfg_file in config_files[CfgKeys.TEMPLATES]:
-                cdict = cbmio.load(self.location(cfg_file))
-                if cdict:
-                    self.update_config(cdict, CfgKeys.TEMPLATES)
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+        if CfgKeys.TEMPLATES in self.config_files:
+            for cfg_file in self.config_files[CfgKeys.TEMPLATES]:
+                cfg_dict = cbmio.load(self.location(cfg_file))
+                if cfg_dict:
+                    self.update_config(cfg_dict, CfgKeys.TEMPLATES)
 
     def get_template_for(self, reg_key: str) -> typing.Dict[str, typing.Any]:
         return self.config[CfgKeys.TEMPLATES][reg_key]

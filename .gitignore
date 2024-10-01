@@ -165,5 +165,7 @@ cython_debug/
 # Data directories
 brain_atlases/
 V1/
-./data/
+/data/
 cache/
+/resources/notebooks/airavata_cerebrum
+/tests/airavata_cerebrum
