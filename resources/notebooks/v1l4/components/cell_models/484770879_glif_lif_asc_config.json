@@ -6,7 +6,25 @@
     "C_m": 93.09487005503819,
     "t_ref": 3.8,
     "V_reset": -76.25764719645184,
+    "asc_init": [
+        0.0,
+        0.0
+    ],
+    "asc_decay": [
+        0.01,
+        0.3
+    ],
+    "asc_amps": [
+        -16.455291029983886,
+        -684.3371482079572
+    ],
+    "tau_syn": [
+        5.5,
+        8.5,
+        2.8,
+        5.8
+    ],
     "spike_dependent_threshold": false,
-    "after_spike_currents": false,
+    "after_spike_currents": true,
     "adapting_threshold": false
 }
