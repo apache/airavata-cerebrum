@@ -13,9 +13,9 @@
     "block_size": 1000.0
   },
   "inputs": {
-    "BKG_spikes": {
+    "bkg_spikes": {
       "input_type": "spikes",
-      "module": "h5",
+      "module": "sonata",
       "input_file": "$BKGINPUT_DIR/bkg_spikes_250Hz_3s.h5",
       "node_set": "bkg"
     }

@@ -11,6 +11,7 @@ dependencies:
   - ipytree=0.2
   - python-jsonpath
   - jupyter
+  - numba=0.60
   - numpy=1.23
   - matplotlib=3.7
   - openpyxl=3.1

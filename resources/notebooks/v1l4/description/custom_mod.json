@@ -5175,7 +5175,7 @@
                             "neuron_models": {
                                 "bkg": {
                                     "proportion": 1.0,
-                                    "m_type": "virutal",
+                                    "m_type": "virtual",
                                     "property_map": {}
                                 }
                             }

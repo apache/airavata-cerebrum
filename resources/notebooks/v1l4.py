@@ -37,6 +37,11 @@ def m_desc(cfg_set: CfgSettings):
         save_flag=cfg_set.save_flag,
     )
 
+def struct_bmtk():
+    md_dex = m_desc(CfgSettings())
+    md_dex.build_net_struct()
+    md_dex.apply_custom_mod()
+    md_dex.build_bmtk()
 
 def build_bmtk():
     md_dex = m_desc(CfgSettings())
@@ -48,8 +53,8 @@ def build_bmtk():
     md_dex.build_bmtk()
 
 
-# if __name__ == "__main__":
-#     main()
+if __name__ == "__main__":
+     struct_bmtk()
 
 # model_dex = abm_ct_model()
 # network_desc_output = model_dex.map_db_data_locations()
