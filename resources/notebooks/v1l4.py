@@ -3,7 +3,7 @@ import pathlib
 import typing
 import pydantic
 import matplotlib
-import airavata_cerebrum.model.mousev1 as mousev1
+import mousev1.model as mousev1
 from airavata_cerebrum.util.desc_config import ModelDescConfig
 from airavata_cerebrum.model.desc import ModelDescription
 

@@ -11,9 +11,9 @@ import bmtk.builder
 import bmtk.builder.node_pool
 
 #
-from ..operations import netops
-from ..dataset import abc_mouse
-from ..operations.mousev1 import (
+from airavata_cerebrum.operations import netops
+from airavata_cerebrum.dataset import abc_mouse
+from mousev1.operations import (
     compute_pair_type_parameters,
     connect_cells,
     syn_weight_by_experimental_distribution,
@@ -22,7 +22,7 @@ from ..operations.mousev1 import (
     select_bkg_sources,
     lgn_synaptic_weight_rule
 )
-from . import structure
+from airavata_cerebrum.model import structure
 
 
 def _log():
