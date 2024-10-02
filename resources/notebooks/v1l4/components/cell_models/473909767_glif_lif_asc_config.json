@@ -1,0 +1,12 @@
+{
+    "V_m": -77.44477462768556,
+    "V_th": -46.7339495163125,
+    "g": 5.110977023785321,
+    "E_L": -77.44477462768556,
+    "C_m": 66.66174352655864,
+    "t_ref": 2.65,
+    "V_reset": -77.44477462768556,
+    "spike_dependent_threshold": false,
+    "after_spike_currents": false,
+    "adapting_threshold": false
+}

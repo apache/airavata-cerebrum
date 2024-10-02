@@ -22,7 +22,7 @@ dependencies:
   - ipywidgets
   - ipytree
   - jinja2
-  - jsonpath-python
+  - python-jsonpath
   - jupyter
   - numpy
   - matplotlib

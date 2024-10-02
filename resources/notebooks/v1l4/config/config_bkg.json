@@ -30,7 +30,7 @@
   },
   "target_simulator": "NEST",
   "components": {
-    "point_neuron_models_dir": "$MODELS_DIR/point_neuron_models",
+    "point_neuron_models_dir": "$MODELS_DIR/cell_models",
     "synaptic_models_dir": "$MODELS_DIR/synapse_models"
   },
   "networks": {
