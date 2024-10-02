@@ -127,4 +127,6 @@ class ModelDescription(pydantic.BaseModel):
         # Construct model
         net_builder = self.network_builder(self.network_struct)
         bmtk_net = net_builder.build()
-        bmtk_net.save(str(self.config.model_dir))
+        bmtk_net.save(str(self.config.network_dir))
+        net_builder.bkg_net.save(str(self.config.network_dir))
+        return net_builder

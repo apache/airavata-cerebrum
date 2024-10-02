@@ -96,7 +96,7 @@ class V1NeuronMapper(structure.NeuronMapper):
         for mdesc in self.ct_data:
             spec_id = mdesc["ct"]["specimen__id"]
             m_type = "point_process"
-            m_template = "nrn:IntFire1"
+            m_template = "nest:glif_psc_double_alpha"
             params_file = str(spec_id) + "_glif_lif_asc_config.json"
             m_id = self.id_ptr.resolve(mdesc)
             property_map = {
