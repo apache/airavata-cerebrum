@@ -5,7 +5,11 @@
 import typing
 import numpy as np
 import h5py
+import json
+import os
 import pathlib
+import numpy as np
+import bmtk.simulator.pointnet.glif_utils as glif_utils
 from math import sqrt, exp, log
 from scipy.stats import multivariate_normal
 from scipy.special import erfinv
@@ -687,3 +691,22 @@ def generate_bkg_spikes(base_dir, bkg_file, bkg_dir="bkg"):
             write_bkg(pathlib.Path(dirname, "bkg_spikes_250Hz_3s.h5"), n_neu, rate=250, seed=seed)
             # write_bkg(pathlib.Path(dirname, "bkg_spikes_2kHz_3s.h5"), n_neu, rate=2000, seed=seed)
             # write_bkg(pathlib.Path(dirname, "bkg_spikes_full_3s.h5"), n_neu, rate=4000, seed=seed)
+
+
+def convert_ctdb_models_to_nest(input_dir, output_dir):
+    cfg_fnames = os.listdir(input_dir)
+    for fxname in cfg_fnames:
+        in_fxname = pathlib.Path(input_dir, fxname)
+        with open(in_fxname) as ifx:
+            cfg_db = json.load(ifx)
+        cvtx = glif_utils.converter_builtin("nest:glif_lif_asc_psc", cfg_db)
+        if not cvtx:
+            continue
+        n_dict = cvtx[1]
+        #del n_dict["tau_syn"]
+        for kx, valx in n_dict.items():
+            if valx.__class__ == np.ndarray:
+                n_dict[kx] = list(valx)
+        out_fname = pathlib.Path(output_dir, fxname)
+        with open(out_fname, "w") as ofx:
+            json.dump(n_dict, ofx, indent=4)

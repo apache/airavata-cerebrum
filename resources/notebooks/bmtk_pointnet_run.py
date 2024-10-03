@@ -1,32 +1,38 @@
 import argparse
+from bmtk.simulator import pointnet
+from bmtk.simulator.pointnet.pyfunction_cache import synaptic_weight
 import nest
 
 
+# try:
+#     nest.Install("glifmodule")
+# except Exception as e:
+#     print("GLIF Module Install Fail", e)
+#     pass
+# 
+# try:
+#     nest.Install("glif_psc_double_alpha_module")
+# except Exception as e:
+#     print("GLIF DOUBLE ALPHA Module Install Fail", e)
+#     pass
+# 
 
-#@synaptic_weight
+@synaptic_weight
 def weight_function_recurrent(edges, src_nodes, trg_nodes):
     return edges["syn_weight"].values
 
 
-#@synaptic_weight
+@synaptic_weight
 def weight_function_bkg(edges, src_nodes, trg_nodes):
     return weight_function_recurrent(edges, src_nodes, trg_nodes)
 
 
 def main(config_file, output_dir, n_thread):
-    # Instantiate SonataNetwork
-    sonata_net = nest.SonataNetwork(config_file)
-
-    # Create and connect nodes
-    node_collections = sonata_net.BuildNetwork()
-
-    print(node_collections.keys())
-    # Connect spike recorder to a population
-    s_rec = nest.Create("spike_recorder")
-    nest.Connect(node_collections["v1l4"], s_rec)
-
-    # Simulate the network
-    sonata_net.Simulate()
+    configure = pointnet.Config.from_json(config_file)
+    configure.build_env()
+    graph = pointnet.PointNetwork.from_config(configure)
+    sim = pointnet.PointSimulator.from_config(configure, graph, n_thread=n_thread)
+    sim.run()
 
 
 if __name__ == "__main__":
@@ -37,14 +43,14 @@ if __name__ == "__main__":
         "-o",
         "--output_dir",
         type=str,
-        default="./v1l4/output_bkg/",
+        default=None,
         help="This option will override the output directory specified in the config file.",
     )
     parser.add_argument(
         "config_file",
         type=str,
         nargs="?",
-        default="./v1l4/config_nest.json",
+        default="config.json",
         help="The config file to use for the simulation.",
     )
     parser.add_argument(
