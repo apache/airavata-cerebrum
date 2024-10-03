@@ -1,0 +1,212 @@
+{
+    "name": "v1",
+    "dims": {"core_radius": 400.0, "radius": 845.0},
+    "locations": {
+        "VISp1": {
+            "name": "VISp1",
+            "inh_fraction": 1.0,
+            "dims": {"depth_range": [50, 169]},
+            "neurons": {
+                "Sst": {
+                    "ei": "i",
+                    "fraction": 0.0,
+                    "dims": {
+                        "nsyn_lognorm_shape": 0.856,
+                        "nsyn_lognorm_scale": 2808.682
+                    }
+                },
+                "Lamp5": {
+                    "ei": "i",
+                    "fraction": 0.0,
+                    "dims": {
+                        "nsyn_lognorm_shape": 0.856,
+                        "nsyn_lognorm_scale": 2808.682
+                    }
+                },
+                "Sst-Chodl": {
+                    "ei": "i",
+                    "fraction": 0.0,
+                    "dims": {
+                        "nsyn_lognorm_shape": 0.856,
+                        "nsyn_lognorm_scale": 2808.682
+                    }
+                },
+                "Pvalb": {
+                    "ei": "i",
+                    "fraction": 0.0,
+                    "dims": {
+                        "nsyn_lognorm_shape": 0.856,
+                        "nsyn_lognorm_scale": 2808.682
+                    }
+                },
+                "Vip": {
+                    "ei": "i",
+                    "fraction": 0.0,
+                    "dims": {
+                        "nsyn_lognorm_shape": 0.856,
+                        "nsyn_lognorm_scale": 2808.682
+                    }
+                },
+                "GABA-Other": {
+                    "ei": "i",
+                    "fraction": 0.0,
+                    "dims": {
+                        "nsyn_lognorm_shape": 0.856,
+                        "nsyn_lognorm_scale": 2808.682
+                    }
+                }
+            }
+        },
+        "VISp2/3": {
+            "name": "VISp2/3",
+            "dims": {"depth_range": [169, 357]},
+            "neurons": {
+                "Sst": {
+                    "ei": "i",
+                    "fraction": 0.0,
+                    "dims": {
+                        "nsyn_lognorm_shape": 0.55,
+                        "nsyn_lognorm_scale": 5305.151
+                    }
+                },
+                "Lamp5": {
+                    "ei": "i",
+                    "fraction": 0.0,
+                    "dims": {
+                        "nsyn_lognorm_shape": 0.55,
+                        "nsyn_lognorm_scale": 5305.151
+                    }
+                },
+                "Sst-Chodl": {
+                    "ei": "i",
+                    "fraction": 0.0,
+                    "dims": {
+                        "nsyn_lognorm_shape": 0.55,
+                        "nsyn_lognorm_scale": 5305.151
+                    }
+                },
+                "Pvalb": {
+                    "ei": "i",
+                    "fraction": 0.0,
+                    "dims": {
+                        "nsyn_lognorm_shape": 0.433,
+                        "nsyn_lognorm_scale": 7432.587
+                    }
+                },
+                "Vip": {
+                    "ei": "i",
+                    "fraction": 0.0,
+                    "dims": {
+                        "nsyn_lognorm_shape": 0.537,
+                        "nsyn_lognorm_scale": 2355.279
+                    }
+                },
+                "GABA-Other": {
+                    "ei": "i",
+                    "fraction": 0.0,
+                    "dims": {
+                        "nsyn_lognorm_shape": 0.537,
+                        "nsyn_lognorm_scale": 2355.279
+                    }
+                },
+                "IT": {
+                    "ei": "e",
+                    "fraction": 0.0,
+                    "dims": {
+                        "nsyn_lognorm_shape": 0.363,
+                        "nsyn_lognorm_scale": 3815.682
+                    }
+                }
+            }
+        },
+        "VISp4": {
+            "name": "VISp4",
+            "dims": {"depth_range": [357, 505]},
+            "neurons": {
+                "Sst": {
+                    "ei": "i",
+                    "fraction": 0.0,
+                    "dims": {
+                        "nsyn_lognorm_shape": 0.55,
+                        "nsyn_lognorm_scale": 5305.151
+                    }
+                },
+                "Lamp5": {
+                    "ei": "i",
+                    "fraction": 0.0,
+                    "dims": {
+                        "nsyn_lognorm_shape": 0.55,
+                        "nsyn_lognorm_scale": 5305.151
+                    }
+                },
+                "Pvalb": {
+                    "ei": "i",
+                    "fraction": 0.0,
+                    "dims": {
+                        "nsyn_lognorm_shape": 0.433,
+                        "nsyn_lognorm_scale": 7432.587
+                    }
+                },
+                "Vip": {
+                    "ei": "i",
+                    "fraction": 0.0,
+                    "dims": {
+                        "nsyn_lognorm_shape": 0.537,
+                        "nsyn_lognorm_scale": 2355.279
+                    }
+                },
+                "GABA-Other": {
+                    "ei": "i",
+                    "fraction": 0.0,
+                    "dims": {
+                        "nsyn_lognorm_shape": 0.55,
+                        "nsyn_lognorm_scale": 5305.151
+                    }
+                },
+                "IT": {
+                    "ei": "e",
+                    "fraction": 0.0,
+                    "dims": {
+                        "nsyn_lognorm_shape": 0.345,
+                        "nsyn_lognorm_scale": 2188.765
+                    }
+                },
+                "ET": {
+                    "ei": "e",
+                    "fraction": 0.0,
+                    "dims": {
+                        "nsyn_lognorm_shape": 0.345,
+                        "nsyn_lognorm_scale": 2188.765
+                    }
+                },
+                "CT": {
+                    "ei": "e",
+                    "fraction": 0.0,
+                    "dims": {
+                        "nsyn_lognorm_shape": 0.345,
+                        "nsyn_lognorm_scale": 2188.765
+                    }
+                },
+                "NP": {
+                    "ei":"e",
+                    "fraction":0.0,
+                    "dims": {
+                        "nsyn_lognorm_shape": 0.345,
+                        "nsyn_lognorm_scale": 2188.765
+                    }
+                },
+                "Glut-Other": {
+                    "ei": "e",
+                    "fraction": 0.0,
+                    "dims": {
+                        "nsyn_lognorm_shape": 0.345,
+                        "nsyn_lognorm_scale": 2188.765
+                    }
+                }
+            }
+        },
+        "VISp5":  {"name": "VISp5",  "dims": {"depth_range": [505, 665]}},
+        "VISp6a": {"name": "VISp6a", "dims": {"depth_range": [665, 829]}},
+        "VISp6b": {"name": "VISp6b", "dims": {"depth_range": [665, 829]}}
+    }
+}

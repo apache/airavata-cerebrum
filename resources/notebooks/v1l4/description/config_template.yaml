@@ -1,0 +1,385 @@
+db_connect:
+  airavata_cerebrum.atlas.data.abc_mouse:
+    label: Allen BM Databse
+    workflow:
+    - exec_params:
+        region:
+        - VISp
+      init_params:
+        download_base: ./cache/abc_mouse/
+      label: MERFISH Query
+      name: airavata_cerebrum.atlas.data.abc_mouse.ABCDbMERFISH_CCFQuery
+      type: query
+  airavata_cerebrum.atlas.data.abm_celltypes:
+    db_name: airavata_cerebrum.atlas.data.abm_celltypes
+    label: Allen Cell Types Databse
+    workflow:
+    - exec_params:
+        species: Mus musculus
+      init_params: {}
+      label: Query w. CT API
+      name: airavata_cerebrum.atlas.data.abm_celltypes.CTDbCellApiQuery
+      type: query
+    - exec_params: {}
+      init_params: {}
+      label: TQDM
+      name: airavata_cerebrum.atlas.data.base.TQDMWrapper
+      type: xform
+    - exec_params:
+        layer: '4'
+        region: VISp
+      init_params: {}
+      label: Layer Filter
+      name: airavata_cerebrum.atlas.data.abm_celltypes.CTPropertyFilter
+      type: xform
+    - exec_params:
+        first: true
+        key: specimen__id
+      init_params: {}
+      label: GLIF Query Params
+      name: airavata_cerebrum.atlas.data.abm_celltypes.CTDbGlifApiQuery
+      type: query
+  airavata_cerebrum.atlas.data.ai_synphys:
+    label: Allen AI Syn Phys Databse
+    workflow:
+    - exec_params:
+        layer:
+        - L4
+      init_params:
+        download_base: ./cache/ai_synphys/
+      label: AI Syn. Phys. Query
+      name: airavata_cerebrum.atlas.data.ai_synphys.AISynPhysQuery
+      type: query
+db_location_map:
+  locations:
+    VISp4:
+      Pvalb:
+        db_connections:
+          airavata_cerebrum.atlas.data.abc_mouse:
+            workflow:
+            - exec_params:
+                cell_type: Pvalb
+                region: VISp4
+              init_params: {}
+              name: airavata_cerebrum.atlas.data.abc_mouse.ABCDbMERFISH_CCFFractionFilter
+              type: xform
+          airavata_cerebrum.atlas.data.abm_celltypes:
+            workflow:
+            - exec_params:
+                key: ct
+                line: Pvalb-IRES
+                reporter_status: positive
+              init_params: {}
+              name: airavata_cerebrum.atlas.data.abm_celltypes.CTPropertyFilter
+              type: xform
+        property_map:
+          ei: i
+      Rorb:
+        db_connections:
+          airavata_cerebrum.atlas.data.abc_mouse:
+            workflow:
+            - exec_params:
+                cell_type: IT
+                region: VISp4
+              init_params: {}
+              name: airavata_cerebrum.atlas.data.abc_mouse.ABCDbMERFISH_CCFFractionFilter
+              type: xform
+          airavata_cerebrum.atlas.data.abm_celltypes:
+            workflow:
+            - exec_params:
+                key: ct
+                line: Rorb
+                reporter_status: positive
+              init_params: {}
+              name: airavata_cerebrum.atlas.data.abm_celltypes.CTPropertyFilter
+              type: xform
+        property_map:
+          ei: e
+      Scnn1a:
+        db_connections:
+          airavata_cerebrum.atlas.data.abc_mouse:
+            workflow:
+            - exec_params:
+                cell_type: IT
+                region: VISp4
+              init_params: {}
+              name: airavata_cerebrum.atlas.data.abc_mouse.ABCDbMERFISH_CCFFractionFilter
+              type: xform
+          airavata_cerebrum.atlas.data.abm_celltypes:
+            workflow:
+            - exec_params:
+                key: ct
+                line: Scnn1a
+                reporter_status: positive
+              init_params: {}
+              name: airavata_cerebrum.atlas.data.abm_celltypes.CTPropertyFilter
+              type: xform
+        property_map:
+          ei: e
+      Sst:
+        db_connections:
+          airavata_cerebrum.atlas.data.abc_mouse:
+            workflow:
+            - exec_params:
+                cell_type: Pvalb
+                region: VISp4
+              init_params: {}
+              name: airavata_cerebrum.atlas.data.abc_mouse.ABCDbMERFISH_CCFFractionFilter
+              type: xform
+          airavata_cerebrum.atlas.data.abm_celltypes:
+            workflow:
+            - exec_params:
+                key: ct
+                line: Sst
+                reporter_status: positive
+              init_params: {}
+              name: airavata_cerebrum.atlas.data.abm_celltypes.CTPropertyFilter
+              type: xform
+        property_map:
+          ei: i
+      Vip:
+        db_connections:
+          airavata_cerebrum.atlas.data.abc_mouse:
+            workflow:
+            - exec_params:
+                cell_type: Vip
+                region: VISp4
+              init_params: {}
+              name: airavata_cerebrum.atlas.data.abc_mouse.ABCDbMERFISH_CCFFractionFilter
+              type: xform
+          airavata_cerebrum.atlas.data.abm_celltypes:
+            workflow:
+            - exec_params:
+                key: ct
+                line: Vip-
+                reporter_status: positive
+              init_params: {}
+              name: airavata_cerebrum.atlas.data.abm_celltypes.CTPropertyFilter
+              type: xform
+        property_map:
+          ei: i
+      region_meta:
+        db_connections:
+          airavata_cerebrum.atlas.data.abc_mouse:
+            workflow:
+            - exec_params:
+                region: VISp4
+              init_params: {}
+              name: airavata_cerebrum.atlas.data.abc_mouse.ABCDbMERFISH_CCFFractionFilter
+              type: xform
+        property_map:
+          neurons:
+          - Scnn1a
+          - Rorb
+          - Vip
+          - Pvalb
+          - Sst
+db_xform:
+  airavata_cerebrum.atlas.data.abc_mouse:
+    db_name: airavata_cerebrum.atlas.data.abc_mouse
+    workflow:
+    - exec_params:
+        region: VISp
+        sub_region: VISp4
+      init_params: {}
+      name: airavata_cerebrum.atlas.data.abc_mouse.ABCDbMERFISH_CCFLayerRegionFilter
+      type: xform
+  airavata_cerebrum.atlas.data.abm_celltypes:
+    db_name: airavata_cerebrum.atlas.data.abm_celltypes
+    workflow:
+    - exec_params:
+        name: 3 LIF + Afterspike Currents
+      init_params: {}
+      name: airavata_cerebrum.atlas.data.abm_celltypes.CTModelNameFilter
+      type: xform
+    - exec_params:
+        ratio: '0.7'
+      init_params: {}
+      name: airavata_cerebrum.atlas.data.abm_celltypes.CTExplainedRatioFilter
+      type: xform
+template:
+  airavata_cerebrum.atlas.data.abc_mouse.ABCDbMERFISH_CCFFractionFilter:
+    doc: Fraction by Region/Cell Type
+    exec_params:
+      cell_type:
+        default: Vip
+        doc: Cell Type
+        label: Cell Type
+        type: text
+      region:
+        default: VISp4
+        doc: Region
+        label: Region
+        type: text
+    init_params: {}
+    label: Fraction by Region/Cell Type
+    type: xform
+  airavata_cerebrum.atlas.data.abc_mouse.ABCDbMERFISH_CCFLayerRegionFilter:
+    doc: Filter Model by Layer/Region
+    exec_params:
+      region:
+        default: VISp
+        doc: Region
+        label: Region
+        type: text
+      sub_region:
+        default: VISp4
+        doc: Sub Region
+        label: Sub Region
+        type: text
+    init_params: {}
+    label: Filter Model by Layer/Region
+    type: xform
+  airavata_cerebrum.atlas.data.abc_mouse.ABCDbMERFISH_CCFQuery:
+    exec_params:
+      region:
+        allowed:
+        - VISp
+        - AUDp
+        - MOp
+        default:
+        - VISp
+        doc: Selected Region of interest
+        label: Regions of Interest
+        type: tags
+    init_params:
+      download_base:
+        default: ./cache/abc_mouse/
+        doc: Download Directory
+        label: Download Directory
+        type: text
+    label: Allen Brain Cell Atlas CCF Query
+    type: query
+  airavata_cerebrum.atlas.data.abm_celltypes.CTDbCellApiQuery:
+    exec_params:
+      species:
+        default: Mus musculus
+        doc: Species
+        label: Species
+        options:
+        - Homo sapiens
+        - Mus musculus
+        type: option
+    init_params: {}
+    label: Allen DB Cell Types Query
+    type: query
+  airavata_cerebrum.atlas.data.abm_celltypes.CTDbGlifApiQuery:
+    exec_params:
+      first:
+        default: true
+        doc: Select only the first
+        label: Select only the first
+        type: check
+      key:
+        default: specimen__id
+        doc: Field to be used as the Output Key
+        label: Index Key
+        options:
+        - specimen__id
+        type: option
+    init_params: {}
+    label: Allen DB Cell Types GLIF API Query
+    type: query
+  airavata_cerebrum.atlas.data.abm_celltypes.CTExplainedRatioFilter:
+    doc: Cell Type Explained Ratio Filter
+    exec_params:
+      ratio:
+        default: '0.7'
+        doc: Explained Ratio
+        label: Explained Ratio
+        type: text
+    init_params: {}
+    label: Cell Type Explained Ratio Filter
+    type: xform
+  airavata_cerebrum.atlas.data.abm_celltypes.CTModelNameFilter:
+    doc: Filter CT by Model Name
+    exec_params:
+      name:
+        default: 3 LIF + Afterspike Currents
+        doc: Name
+        label: Name
+        type: text
+    init_params: {}
+    label: Filter CT by Model Name
+    type: xform
+  airavata_cerebrum.atlas.data.abm_celltypes.CTPropertyFilter:
+    doc: Filter CT by Region and Layer
+    exec_params:
+      key:
+        default: ct
+        doc: Key
+        label: Key
+        type: text
+      layer:
+        default:
+        - VISp
+        doc: Selected Layer
+        label: Selected Layer
+        options:
+        - VISp
+        - AUDp
+        type: option
+      line:
+        default:
+        - ''
+        doc: Line
+        label: Line
+        options:
+        - ''
+        - Scnn1a
+        - Rorb
+        - Vip-
+        - Pvalb-IRES
+        - Sst
+        type: option
+      region:
+        default: '4'
+        doc: Selected Region
+        label: Selected Region
+        options:
+        - '4'
+        - '3'
+        - '5'
+        - 2/3
+        - '6'
+        type: option
+      reporter_status:
+        default:
+        - ''
+        doc: Reporter Status
+        label: Reporter Status
+        options:
+        - ''
+        - positive
+        - negative
+        type: option
+    init_params: {}
+    label: Filter CT by Region and Layer
+    type: xform
+  airavata_cerebrum.atlas.data.ai_synphys.AISynPhysQuery:
+    exec_params:
+      layer:
+        allowed:
+        - L23
+        - L5
+        - L6
+        - L4
+        default:
+        - L4
+        doc: Layers of interest
+        label: Layers of Interest
+        type: tags
+    init_params:
+      download_base:
+        default: ./cache/abc_mouse/
+        doc: Download Directory
+        label: Download Directory
+        type: text
+    label: Allen Brain Cell Atlas Syn Phys Query
+    type: query
+  airavata_cerebrum.atlas.data.base.TQDMWrapper:
+    doc: TQDM Wrapper
+    exec_params: {}
+    init_params: {}
+    label: TQDM Wrapper
+    type: xform

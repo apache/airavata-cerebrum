@@ -1,0 +1,356 @@
+{
+    "data2model_map": {
+        "locations": {
+            "VISp4": {
+                "property_map": {
+                    "neurons": [
+                        "('4', 'Scnn1a')",
+                        "('4', 'Rorb')",
+                        "('4', 'Vip')",
+                        "('4', 'Pvalb')",
+                        "('4', 'Sst')"
+                    ],
+                    "source_data": {
+                        "airavata_cerebrum.dataset.abc_mouse": {
+                            "workflow": [
+                                {
+                                    "type": "xform",
+                                    "name": "airavata_cerebrum.operations.abc_mouse.ABCDbMERFISH_CCFFractionFilter",
+                                    "init_params": {},
+                                    "exec_params": {
+                                        "region": "VISp4"
+                                    }
+                                }
+                            ]
+                        }
+                    }
+                },
+                "('4', 'Scnn1a')": {
+                    "property_map": {
+                        "ei": "e"
+                    },
+                    "source_data": {
+                        "airavata_cerebrum.dataset.abm_celltypes": {
+                            "workflow": [
+                                {
+                                    "type": "xform",
+                                    "name": "airavata_cerebrum.operations.abm_celltypes.CTPropertyFilter",
+                                    "init_params": {},
+                                    "exec_params": {
+                                        "key": "ct",
+                                        "line": "Scnn1a",
+                                        "reporter_status": "positive"
+                                    }
+                                }
+                            ]
+                        },
+                        "airavata_cerebrum.dataset.abc_mouse": {
+                            "workflow": [
+                                {
+                                    "type": "xform",
+                                    "name": "airavata_cerebrum.operations.abc_mouse.ABCDbMERFISH_CCFFractionFilter",
+                                    "init_params": {},
+                                    "exec_params": {
+                                        "region": "VISp4",
+                                        "cell_type": "IT"
+                                    }
+                                }
+                            ]
+                        }
+                    }
+                },
+                "('4', 'Rorb')": {
+                    "property_map": {
+                        "ei": "e"
+                    },
+                    "source_data": {
+                        "airavata_cerebrum.dataset.abm_celltypes": {
+                            "workflow": [
+                                {
+                                    "type": "xform",
+                                    "name": "airavata_cerebrum.operations.abm_celltypes.CTPropertyFilter",
+                                    "init_params": {},
+                                    "exec_params": {
+                                        "key": "ct",
+                                        "line": "Rorb",
+                                        "reporter_status": "positive"
+                                    }
+                                }
+                            ]
+                        },
+                        "airavata_cerebrum.dataset.abc_mouse": {
+                            "workflow": [
+                                {
+                                    "type": "xform",
+                                    "name": "airavata_cerebrum.operations.abc_mouse.ABCDbMERFISH_CCFFractionFilter",
+                                    "init_params": {},
+                                    "exec_params": {
+                                        "region": "VISp4",
+                                        "cell_type": "IT"
+                                    }
+                                }
+                            ]
+                        }
+                    }
+                },
+                "('4', 'Vip')": {
+                    "property_map": {
+                        "ei": "i"
+                    },
+                    "source_data": {
+                        "airavata_cerebrum.dataset.abm_celltypes": {
+                            "workflow": [
+                                {
+                                    "type": "xform",
+                                    "name": "airavata_cerebrum.operations.abm_celltypes.CTPropertyFilter",
+                                    "init_params": {},
+                                    "exec_params": {
+                                        "key": "ct",
+                                        "line": "Vip-",
+                                        "reporter_status": "positive"
+                                    }
+                                }
+                            ]
+                        },
+                        "airavata_cerebrum.dataset.abc_mouse": {
+                            "workflow": [
+                                {
+                                    "type": "xform",
+                                    "name": "airavata_cerebrum.operations.abc_mouse.ABCDbMERFISH_CCFFractionFilter",
+                                    "init_params": {},
+                                    "exec_params": {
+                                        "region": "VISp4",
+                                        "cell_type": "Vip"
+                                    }
+                                }
+                            ]
+                        }
+                    }
+                },
+                "('4', 'Pvalb')": {
+                    "property_map": {
+                        "ei": "i"
+                    },
+                    "source_data": {
+                        "airavata_cerebrum.dataset.abm_celltypes": {
+                            "workflow": [
+                                {
+                                    "type": "xform",
+                                    "name": "airavata_cerebrum.operations.abm_celltypes.CTPropertyFilter",
+                                    "init_params": {},
+                                    "exec_params": {
+                                        "key": "ct",
+                                        "line": "Pvalb-IRES",
+                                        "reporter_status": "positive"
+                                    }
+                                }
+                            ]
+                        },
+                        "airavata_cerebrum.dataset.abc_mouse": {
+                            "workflow": [
+                                {
+                                    "type": "xform",
+                                    "name": "airavata_cerebrum.operations.abc_mouse.ABCDbMERFISH_CCFFractionFilter",
+                                    "init_params": {},
+                                    "exec_params": {
+                                        "region": "VISp4",
+                                        "cell_type": "Pvalb"
+                                    }
+                                }
+                            ]
+                        }
+                    }
+                },
+                "('4', 'Sst')": {
+                    "property_map": {
+                        "ei": "i"
+                    },
+                    "source_data": {
+                        "airavata_cerebrum.dataset.abm_celltypes": {
+                            "workflow": [
+                                {
+                                    "type": "xform",
+                                    "name": "airavata_cerebrum.operations.abm_celltypes.CTPropertyFilter",
+                                    "init_params": {},
+                                    "exec_params": {
+                                        "key": "ct",
+                                        "line": "Sst",
+                                        "reporter_status": "positive"
+                                    }
+                                }
+                            ]
+                        },
+                        "airavata_cerebrum.dataset.abc_mouse": {
+                            "workflow": [
+                                {
+                                    "type": "xform",
+                                    "name": "airavata_cerebrum.operations.abc_mouse.ABCDbMERFISH_CCFFractionFilter",
+                                    "init_params": {},
+                                    "exec_params": {
+                                        "region": "VISp4",
+                                        "cell_type": "Pvalb"
+                                    }
+                                }
+                            ]
+                        }
+                    }
+                }
+            }
+        },
+        "connections": {
+            "(('4', 'Pvalb'), ('4', 'Pvalb'))": {
+                "source_data": {
+                    "airavata_cerebrum.dataset.ai_synphys" : {
+                        "workflow": [
+                            {
+                                "type": "xform",
+                                "name": "airavata_cerebrum.operations.ai_synphys.AISynPhysPairFilter",
+                                "init_params": {},
+                                "exec_params": {
+                                    "pre": "L4-Pvalb",
+                                    "post": "L4-Pvalb"
+                                }
+                            }
+                        ]
+                    }
+                }
+            },
+            "(('4', 'Pvalb'), ('4', 'Sst'))": {
+                "source_data": {
+                    "airavata_cerebrum.dataset.ai_synphys" : {
+                        "workflow": [
+                            {
+                                "type": "xform",
+                                "name": "airavata_cerebrum.operations.ai_synphys.AISynPhysPairFilter",
+                                "init_params": {},
+                                "exec_params": {
+                                    "pre": "L4-Pvalb",
+                                    "post": "L4-Sst"
+                                }
+                            }
+                        ]
+                    }
+                }
+            },
+            "(('4', 'Pvalb'), ('4', 'Vip'))": {
+                "source_data": {
+                    "airavata_cerebrum.dataset.ai_synphys" : {
+                        "workflow": [
+                            {
+                                "type": "xform",
+                                "name": "airavata_cerebrum.operations.ai_synphys.AISynPhysPairFilter",
+                                "init_params": {},
+                                "exec_params": {
+                                    "pre": "L4-Pvalb",
+                                    "post": "L4-Vip"
+                                }
+                            }
+                        ]
+                    }
+                }
+            },
+            "(('4', 'Sst'), ('4', 'Pvalb'))": {
+                 "source_data": {
+                    "airavata_cerebrum.dataset.ai_synphys" : {
+                        "workflow": [
+                            {
+                                "type": "xform",
+                                "name": "airavata_cerebrum.operations.ai_synphys.AISynPhysPairFilter",
+                                "init_params": {},
+                                "exec_params": {
+                                    "pre": "L4-Sst",
+                                    "post": "L4-Pvalb"
+                                }
+                            }
+                        ]
+                    }
+                }
+            },
+            "(('4', 'Sst'), ('4', 'Sst'))": {
+                "source_data": {
+                    "airavata_cerebrum.dataset.ai_synphys" : {
+                        "workflow": [
+                            {
+                                "type": "xform",
+                                "name": "airavata_cerebrum.operations.ai_synphys.AISynPhysPairFilter",
+                                "init_params": {},
+                                "exec_params": {
+                                    "pre": "L4-Sst",
+                                    "post": "L4-Sst"
+                                }
+                            }
+                        ]
+                    }
+                }
+            },
+            "(('4', 'Sst'), ('4', 'Vip'))": {
+                "source_data": {
+                    "airavata_cerebrum.dataset.ai_synphys" : {
+                        "workflow": [
+                            {
+                                "type": "xform",
+                                "name": "airavata_cerebrum.operations.ai_synphys.AISynPhysPairFilter",
+                                "init_params": {},
+                                "exec_params": {
+                                    "pre": "L4-Sst",
+                                    "post": "L4-Vip"
+                                }
+                            }
+                        ]
+                    }
+                }
+            },
+            "(('4', 'Vip'), ('4', 'Pvalb'))": {
+                "source_data": {
+                    "airavata_cerebrum.dataset.ai_synphys" : {
+                        "workflow": [
+                            {
+                                "type": "xform",
+                                "name": "airavata_cerebrum.operations.ai_synphys.AISynPhysPairFilter",
+                                "init_params": {},
+                                "exec_params": {
+                                    "pre": "L4-Vip",
+                                    "post": "L4-Pvalb"
+                                }
+                            }
+                        ]
+                    }
+                }
+            },
+            "(('4', 'Vip'), ('4', 'Sst'))": {
+                "source_data": {
+                    "airavata_cerebrum.dataset.ai_synphys" : {
+                        "workflow": [
+                            {
+                                "type": "xform",
+                                "name": "airavata_cerebrum.operations.ai_synphys.AISynPhysPairFilter",
+                                "init_params": {},
+                                "exec_params": {
+                                    "pre": "L4-Vip",
+                                    "post": "L4-Sst"
+                                }
+                            }
+                        ]
+                    }
+                }
+            },
+            "(('4', 'Vip'), ('4', 'Vip'))": {
+                "source_data": {
+                    "airavata_cerebrum.dataset.ai_synphys" : {
+                        "workflow": [
+                            {
+                                "type": "xform",
+                                "name": "airavata_cerebrum.operations.ai_synphys.AISynPhysPairFilter",
+                                "init_params": {},
+                                "exec_params": {
+                                    "pre": "L4-Vip",
+                                    "post": "L4-Vip"
+                                }
+                            }
+                        ]
+                    }
+                }
+            }
+        }
+    }
+}
