@@ -3,6 +3,7 @@ import typing
 import os
 import logging
 import pydantic
+import collections
 
 from . import io as cbmio
 
@@ -130,3 +131,28 @@ class ModelDescConfigTemplate(ModelDescConfigBase):
 
     def get_templates(self) -> typing.Dict[str, typing.Any]:
         return self.config[CfgKeys.TEMPLATES]
+
+
+class ModelDescCfgTuple(typing.NamedTuple):
+    config: ModelDescConfig
+    templates: ModelDescConfigTemplate
+
+
+def init_model_desc_config(
+    name,
+    base_dir,
+    config_files,
+    config_dir,
+) -> ModelDescCfgTuple:
+    return ModelDescCfgTuple(
+        config=ModelDescConfig(
+            name=name,
+            base_dir=base_dir,
+            config_files=config_files,
+            config_dir=config_dir,
+        ),
+        templates=ModelDescConfigTemplate(
+            config_files=config_files,
+            config_dir=config_dir,
+        ),
+    )

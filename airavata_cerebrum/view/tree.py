@@ -9,7 +9,7 @@ import traitlets
 
 from .. import base
 from ..register import find_type
-from ..util.desc_config import CfgKeys, ModelDescConfig, ModelDescConfigTemplate
+from ..util.desc_config import CfgKeys, ModelDescConfig, ModelDescConfigTemplate, ModelDescCfgTuple
 from ..model import structure as structure
 
 def _log():
@@ -224,14 +224,13 @@ class TreeBase(abc.ABC):
 class ConfigTreeBase(TreeBase):
     def __init__(
         self,
-        md_cfg: ModelDescConfig,
-        md_cfg_template: ModelDescConfigTemplate,
+        md_cfg_tuple: ModelDescCfgTuple,
         left_width: str,
         **kwargs,
     ):
         super().__init__(left_width, **kwargs)
-        self.md_cfg: ModelDescConfig = md_cfg
-        self.md_cfg_template: ModelDescConfigTemplate = md_cfg_template
+        self.md_cfg: ModelDescConfig = md_cfg_tuple.config
+        self.md_cfg_template: ModelDescConfigTemplate = md_cfg_tuple.templates
 
     def init_db_node(
         self, db_key: str, db_desc: typing.Dict[str, typing.Any]
@@ -268,13 +267,12 @@ class ConfigTreeBase(TreeBase):
 class SourceDataTreeView(ConfigTreeBase):
     def __init__(
         self,
-        md_cfg: ModelDescConfig,
-        md_cfg_template: ModelDescConfigTemplate,
+        md_cfg_tuple: ModelDescCfgTuple,
         left_width="40%",
         **kwargs,
     ) -> None:
-        super().__init__(md_cfg, md_cfg_template, left_width, **kwargs)
-        self.src_data_desc = md_cfg.config[CfgKeys.SRC_DATA]
+        super().__init__(md_cfg_tuple, left_width, **kwargs)
+        self.src_data_desc = md_cfg_tuple.config.config[CfgKeys.SRC_DATA]
 
     def init_tree(self) -> itree.Tree:
         root_node = CBTreeNode(name=CfgTreeNames.SRC_DATA, node_key="root")
@@ -299,13 +297,12 @@ class SourceDataTreeView(ConfigTreeBase):
 class D2MLocationsTreeView(ConfigTreeBase):
     def __init__(
         self,
-        md_cfg: ModelDescConfig,
-        md_cfg_template: ModelDescConfigTemplate,
+        md_cfg_tuple: ModelDescCfgTuple,
         left_width="40%",
         **kwargs,
     ) -> None:
-        super().__init__(md_cfg, md_cfg_template, left_width, **kwargs)
-        self.d2m_map_desc = md_cfg.config[CfgKeys.DB2MODEL_MAP]
+        super().__init__(md_cfg_tuple, left_width, **kwargs)
+        self.d2m_map_desc = md_cfg_tuple.config.config[CfgKeys.DB2MODEL_MAP]
 
     def init_neuron_node(
         self, neuron_name: str, neuron_desc: typing.Dict[str, typing.Any]
@@ -332,13 +329,12 @@ class D2MLocationsTreeView(ConfigTreeBase):
 class D2MConnectionsTreeView(ConfigTreeBase):
     def __init__(
         self,
-        md_cfg: ModelDescConfig,
-        md_cfg_template: ModelDescConfigTemplate,
+        md_cfg_tuple: ModelDescCfgTuple,
         left_width="40%",
         **kwargs,
     ) -> None:
-        super().__init__(md_cfg, md_cfg_template, left_width, **kwargs)
-        self.d2m_map_desc = md_cfg.config[CfgKeys.DB2MODEL_MAP]
+        super().__init__(md_cfg_tuple, left_width, **kwargs)
+        self.d2m_map_desc = md_cfg_tuple.config.config[CfgKeys.DB2MODEL_MAP]
 
     def init_conncection_node(
         self, connect_name: str, connect_desc: typing.Dict[str, typing.Any]

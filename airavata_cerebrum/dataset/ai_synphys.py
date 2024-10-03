@@ -131,10 +131,16 @@ class AISynPhysQuery(base.DbQuery):
         cell_classes = self.select_cell_classes(layer_list)
         cell_groups = classify_cells(cell_classes.values(), pairs=self.qpairs)
         pair_groups = classify_pairs(self.qpairs, cell_groups)
-        results = measure_connectivity(
-            pair_groups, sigma=100e-6, dist_measure="lateral_distance"
-        )
-        _log().info("AISynPhysQuery Args : %s", rarg)
+        nwarnings = 0
+        try:
+            results = measure_connectivity(
+                pair_groups, sigma=100e-6, dist_measure="lateral_distance"
+            ) 
+        except RuntimeWarning:
+            nwarnings += 1
+            results = {}
+            pass
+        _log().info("AISynPhysQuery Args : [%s] ; N warnings [%d]", rarg, nwarnings)
         #
         return [
             {
