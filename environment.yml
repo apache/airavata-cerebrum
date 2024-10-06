@@ -11,7 +11,6 @@ dependencies:
   - ipytree=0.2
   - python-jsonpath
   - jupyter
-  - nest=3.8
   - numba=0.60
   - numpy=1.23
   - matplotlib=3.7
@@ -31,6 +30,7 @@ dependencies:
       - allensdk
       - bmtk
       - mpi4py
+      - nest-simulator
       - parse
       - pytree
       - git+https://github.com/alleninstitute/abc_atlas_access
