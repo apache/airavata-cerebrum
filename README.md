@@ -23,7 +23,7 @@ conda activate cerebrum
 
 Following command will download Airavata Cerebrum into your environment. 
 ```
-pip3 install git+https://github.com/airavata-cerebrum/airavata-cerebrum.git
+pip3 install git+https://github.com/apache/airavata-cerebrum.git
 ```
 
 Check the `resources/notebooks` folder for examples of usage.
