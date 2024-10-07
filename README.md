@@ -15,15 +15,17 @@ Welcome to the Apache Airavata Cerebrum repository for the Integrated Neuroscien
 Airavata Cerebrum requires python3.10+ environment. It is currently tested only in Linux operating system.
 We recommend create a virtual environment using conda as below:
 ```
-conda create -n cerebrum python=3.10
+conda create -n cerebrum python=3.10 nest-simulator
 conda activate cerebrum
 ```
 
-### Download and Install
-
-Following command will download Airavata Cerebrum into your environment. 
+The following pip command will download and install Airavata Cerebrum into 
+the environment created above. 
 ```
 pip3 install git+https://github.com/apache/airavata-cerebrum.git
 ```
 
-Check the `resources/notebooks` folder for examples of usage.
+Check the `resources/notebooks/V1L4-Notebook.ipynb` folder for examples of usage.
+
+See [INSTALL.md](INSTALL.md) for details about how to install for a 
+development environment and other issues.
