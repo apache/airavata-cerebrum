@@ -34,7 +34,7 @@ the environment created above.
 pip3 install git+https://github.com/apache/airavata-cerebrum.git
 ```
 
-Check the `resources/notebooks/V1L4-Notebook.ipynb` folder for examples of usage.
+Check the `resources/notebooks/V1L4-Notebook.ipynb` notebook for an example usage.
 
 See [INSTALL.md](INSTALL.md) for details about how to install for a 
 development environment and other issues.
