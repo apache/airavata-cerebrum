@@ -12,8 +12,17 @@ Welcome to the Apache Airavata Cerebrum repository for the Integrated Neuroscien
 - **Streamlined Environment**: Ensuring a lightweight, efficient framework for both beginners and advanced users.
 
 # Try Airavata Cerebrum
-Airavata Cerebrum requires python3.10+ environment. It is currently tested only in Linux operating system.
-We recommend create a virtual environment using conda as below:
+Airavata Cerebrum requires python3.10+ environment.
+It is currently tested only in Linux operating system.
+Cerebrum depends upon NEST and BMTK, which  depends upon MPI. 
+Since conda's MPI causes conflicts, we recommend 
+that MPI is installed from the OS. 
+In case of Ubuntu, this can be accomplished by
+```
+sudo apt install openmpi-bin  libopenmpi-dev
+```
+
+Further, we recommend create a virtual environment using conda as below:
 ```
 conda create -n cerebrum python=3.10 nest-simulator
 conda activate cerebrum

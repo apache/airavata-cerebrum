@@ -1,3 +1,10 @@
+## OS Depenencies
+
+NEST and BMTK depends upon MPI. Since conda's MPI causes conflicts, we recommend 
+that MPI is installed from the OS. In case of Ubuntu, this can be accomplished by
+```
+sudo apt install openmpi-bin  libopenmpi-dev
+```
 
 ## Quick Install with pip
 
@@ -17,11 +24,6 @@ pip3 install git+https://github.com/apache/airavata-cerebrum.git
 ## Environment For Development
 
 The development environment Airavata Cerebrum requires python3.10+ environment. 
-NEST and BMTK depends upon MPI. Since conda's MPI causes conflicts, we recommend 
-that MPI is installed from the OS. In case of Ubuntu, this can be accomplished by
-```
-sudo apt install openmpi-bin  libopenmpi-dev
-```
 
 Now we can create a virtual environment in conda
 ```
