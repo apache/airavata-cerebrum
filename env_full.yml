@@ -24,7 +24,7 @@ dependencies:
   - jinja2
   - python-jsonpath
   - jupyter
-  - nest
+  - nest-simulator
   - numpy
   - matplotlib
   # - nest-asyncio
