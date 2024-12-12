@@ -23,7 +23,7 @@ numpy==1.24.3
 oauthlib==3.2.2
 packaging==23.1
 pandas==2.0.2
-paramiko==3.2.0
+paramiko==3.4.0
 Pillow==9.5.0
 pycparser==2.21
 PyJWT==2.7.0
