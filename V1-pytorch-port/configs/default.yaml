@@ -1,0 +1,6 @@
+# Default simulation config
+n_neurons:   230
+n_timesteps: 500
+dt:          0.0005    # 0.5 ms
+tau_syn:     0.005     # 5 ms
+amplitude:   1.0       # external current amplitude
