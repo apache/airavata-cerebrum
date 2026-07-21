@@ -19,7 +19,10 @@ dependencies:
 
   # PIP dependencies
   - pip:
+      - airavata-cerebrum
       - bmtk
       - parse
       - psutil
-      #- https://test-files.pythonhosted.org/packages/c1/67/3ed99ff1afcd2f39c167a1519d4f8d1ce885ea1a6048dc8af1f42d05c896/airavata_cerebrum-0.1.0-py3-none-any.whl
+      - sonata
+      - sqlglot
+      - quak

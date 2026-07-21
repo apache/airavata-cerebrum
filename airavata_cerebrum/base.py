@@ -11,10 +11,9 @@ from pydantic import BaseModel, Field
 class CerebrumBaseModel(BaseModel):
     name : t.Annotated[str, Field(title="Name")] = ""
 
-    @override
     def exclude(self) -> set[str]:
         return set(["name"])
- 
+
     def is_valid_field(self, field: str) -> bool:
         return field in type(self).model_fields
 
@@ -38,16 +37,17 @@ ExecParamsT = t.TypeVar(
     covariant=True,
 )
 
+
 # pydantic-based BaseModel for Query and Transform paramters
 class BaseParams(CerebrumBaseModel, t.Generic[InitParamsT, ExecParamsT]):
     init_params: t.Annotated[InitParamsT, Field(title="Init. Params")]
     exec_params: t.Annotated[ExecParamsT, Field(title="Exec. Params")]
-   
+
     @override
     def is_valid_field(self, field: str) -> bool:
         return (
             (field in type(self.init_params).model_fields) or
-            (field in type(self.exec_params).model_fields) or 
+            (field in type(self.exec_params).model_fields) or
             (field in type(self).model_fields)
         )
 
@@ -55,11 +55,12 @@ class BaseParams(CerebrumBaseModel, t.Generic[InitParamsT, ExecParamsT]):
     def get(self, field: str, val_not_found: t.Any = None) -> t.Any:
         ivalue = self.init_params.get(field)
         if ivalue is not None:
-            return ivalue 
+            return ivalue
         evalue = self.exec_params.get(field)
         if evalue is not None:
-            return evalue 
+            return evalue
         return super().get(field, val_not_found)
+
 
 # Base Parameters with CerebrumBaseModel as init and exec parameters
 BaseParamsCBT : t.TypeAlias = BaseParams[CerebrumBaseModel, CerebrumBaseModel]
@@ -68,6 +69,7 @@ BaseParamsCBT : t.TypeAlias = BaseParams[CerebrumBaseModel, CerebrumBaseModel]
 # pydantic-based model for no paramters
 class NoneParams(CerebrumBaseModel):
     pass
+
 
 # Abstract Base class for parameter interface
 class ParamsInterface(ABC, t.Generic[InitParamsT, ExecParamsT]):
@@ -88,7 +90,7 @@ class ParamsInterface(ABC, t.Generic[InitParamsT, ExecParamsT]):
 
 
 XformElt : t.TypeAlias = dict[str, t.Any]
-XformItr : t.TypeAlias = Iterable[XformElt] 
+XformItr : t.TypeAlias = Iterable[XformElt]
 XformSeq : t.TypeAlias = Sequence[XformElt]
 QryElt   : t.TypeAlias = dict[str, t.Any]
 QryItr   : t.TypeAlias = Iterable[QryElt]
@@ -153,6 +155,7 @@ class QryDBWriter(ABC):
 
 
 BaseStructType = t.TypeVar('BaseStructType')
+
 
 # Abstract Base class for network structure components
 class BaseStruct(CerebrumBaseModel, metaclass=ABCMeta):

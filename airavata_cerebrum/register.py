@@ -3,7 +3,7 @@ import typing as t
 from collections.abc import Iterable
 
 from .base import (
-    CerebrumBaseModel, 
+    CerebrumBaseModel,
     OpXFormer, DbQuery, QryDBWriter,
     BaseParamsCBT, DbQueryCBT, OpXFormerCBT
 )
@@ -37,7 +37,7 @@ class TypeRegister(t.Generic[RCType]):
             for clsx in register_lst
             if issubclass(clsx, base_class)
         }
-    
+
     def qual_name(
         self,
         clsx: type,
@@ -151,6 +151,7 @@ def get_xformer_instance(
         xformer_type(init_params, **params)
         if xformer_type else None
     )
+
 
 def get_db_writer_instance(
     register_key: str,

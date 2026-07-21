@@ -9,6 +9,7 @@ from pathlib import Path
 # Type to indicate the dict data loaded from the serialized files
 SerialDict : t.TypeAlias = dict[str, t.Any]
 
+
 def load_json(file_name: str | Path) -> SerialDict:
     with open(file_name) as in_fptr:
         return json.load(in_fptr)
@@ -21,6 +22,7 @@ def dump_json(
 ):
     with open(file_name, "w") as out_fptr:
         json.dump(json_obj, out_fptr, indent=indent)
+
 
 # ----- yaml files load/save ----------
 #
@@ -38,7 +40,7 @@ def dump_yaml(
         yaml.dump(json_obj, out_fptr, indent=indent)
 
 
-# 
+#
 def load(file_name: str | Path) -> SerialDict | None:
     fp_suffix = Path(file_name).suffix
     match fp_suffix:
@@ -63,6 +65,7 @@ def dump(
             return dump_json(json_obj, file_name, indent=indent)
         case _:
             return None
+
 
 # Pickle
 def dump_pickle(fname: str, pyobject: object):

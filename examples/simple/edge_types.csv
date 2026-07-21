@@ -1,0 +1,5 @@
+edge_type_id population model_template dynamics_params connection_type
+10 default_to_default Exp2Syn AMPA_ExcToExc.json ExcToExc
+11 default_to_default Exp2Syn AMPA_ExcToInh.json ExcToInh
+20 default_to_default Exp2Syn GABA_InhToExc.json InhToExc
+21 default_to_default Exp2Syn GABA_InhToInh.json InhToInh

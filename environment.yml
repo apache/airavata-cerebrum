@@ -42,6 +42,6 @@ dependencies:
       - allensdk
       - awitree
       - neuroanalysis
-      - psycopg2
+      - psycopg2-binary
       - pyqtgraph
       - typing-extensions

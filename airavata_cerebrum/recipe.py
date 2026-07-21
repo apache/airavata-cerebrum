@@ -107,7 +107,7 @@ class RecipeSetup(pydantic.BaseModel):
                     merge_dict_inplace(
                         self.recipe_sections,
                         {rcp_key: rcp_dict}
-                    )  
+                    )
                 elif rcp_dict:
                     self.recipe_sections[rcp_key] = rcp_dict
 
@@ -153,7 +153,7 @@ class ModelRecipe(pydantic.BaseModel):
         db_out_loc: str | Path,
         write_duck: bool,
     ) -> None:
-        if db_connect_output is None: 
+        if db_connect_output is None:
             return
         if self.save_flag:
             cbmio.dump(
@@ -278,29 +278,31 @@ class ModelUpdateRecipe(pydantic.BaseModel):
     mod_structure: structure.Network
 
     def apply_mod(self, ncells: int=30000):
-        #TODO:: work in the future
+        # TODO:: work in the future
         return None
 
     def update_network(self, save_flag: bool=True, **kwargs: t.Any):
-        #TODO::
-        updater = self.network_updater(self.prior_net, self.mod_structure) 
+        # TODO::
+        updater = self.network_updater(self.prior_net, self.mod_structure)
         updater.edit()
         if save_flag:
             updater.save(self.recipe_setup.network_dir)
         return updater
 
+
 def init_recipe_setup(
     name: str,
-    base_dir: str| Path,
+    base_dir: str | Path,
     recipe_files: dict[str, list[str | Path]],
-    recipe_dir: str| Path,
+    recipe_dir: str | Path,
 ) -> RecipeSetup:
     return RecipeSetup(
-            name=name,
-            base_dir=base_dir,
-            recipe_files=recipe_files,
-            recipe_dir=recipe_dir,
+        name=name,
+        base_dir=base_dir,
+        recipe_files=recipe_files,
+        recipe_dir=recipe_dir,
     )
+
 
 def netstruct_from_file(struct_file: Path) -> structure.Network | None:
     network_struct = cbmio.load(struct_file)

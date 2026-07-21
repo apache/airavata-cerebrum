@@ -33,28 +33,28 @@ def run_workflow(
         sname : str = wf_step[RecipeKeys.NAME]
         slabel : str = (
             wf_step[RecipeKeys.LABEL]
-            if RecipeKeys.LABEL in wf_step else sname 
+            if RecipeKeys.LABEL in wf_step else sname
         )
         match wf_step[RecipeKeys.TYPE]:
             case "query":
-                _log().info("Start Query : [%s]",  slabel)
-                qparam: BaseParamsCBT | None  = get_query_params(sname, wf_step)
+                _log().info("Start Query : [%s]", slabel)
+                qparam: BaseParamsCBT | None = get_query_params(sname, wf_step)
                 if qparam is None:
-                    _log().error("Failed to find Params for Qry: [%s]",  sname)
+                    _log().error("Failed to find Params for Qry: [%s]", sname)
                     continue
                 qobj: DbQueryCBT | None = get_query_instance(
                     sname, qparam.init_params
                 )
                 if qobj is None:
-                    _log().error("Failed to find Query : [%s]",  sname)
+                    _log().error("Failed to find Query : [%s]", sname)
                     continue
                 wf_iter = qobj.run(qparam.exec_params, wf_iter)
                 _log().info("Complete Query : [%s]", slabel)
             case "xform":
-                _log().info("Running XFormer : [%s]",  slabel)
-                xparam: BaseParamsCBT | None  = get_xformer_params(sname, wf_step)
+                _log().info("Running XFormer : [%s]", slabel)
+                xparam: BaseParamsCBT | None = get_xformer_params(sname, wf_step)
                 if xparam is None:
-                    _log().error("Failed to find Params for Xform: [%s]",  sname)
+                    _log().error("Failed to find Params for Xform: [%s]", sname)
                     continue
                 fobj: OpXFormerCBT | None = get_xformer_instance(
                     sname, xparam.init_params
@@ -81,7 +81,7 @@ def run_db_connect_workflows(
         db_label = db_name
         if RecipeKeys.LABEL in db_wcfg:
             db_label = db_wcfg[RecipeKeys.LABEL]
-        _log().info("Start db_connect workflow for db: [%s]",  db_label)
+        _log().info("Start db_connect workflow for db: [%s]", db_label)
         with tqdm_log.logging_redirect_tqdm():
             model_itr = run_workflow(
                 db_wcfg[RecipeKeys.DB_CONNECT][RecipeKeys.WORKFLOW]
