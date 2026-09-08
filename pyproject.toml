@@ -21,7 +21,7 @@ build-backend = "poetry.core.masonry.api"
 
 [project]
 name = "airavata-cerebrum"
-version = "0.1.2"
+version = "0.1.5"
 description = "Apache Airavata Cerebrum : Integrated Data-driver Modeling for Computational Neuroscience"
 authors = [{ name = "Sriram P Chockalingam", email = "srirampc@gatech.edu" }]
 maintainers = [
@@ -75,7 +75,8 @@ dependencies = [
     "jupyter",
     "lmfit",
     "pillow",
-    "psycopg2",
+    "psycopg2-binary",
+    "pyarrow",
     #"pyqt",
 ]
 #

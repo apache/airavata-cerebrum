@@ -1,0 +1,3 @@
+node_type_id population model_type model_template dynamics_params cell_class ei
+100 default point_neuron nrn:IntFire1 inhibitory_params.json inhibitory i
+200 default point_neuron nrn:IntFire1 excitatory_params.json excitatory e
